@@ -1,5 +1,5 @@
 -- ==============================================
--- BLUE MODE ESP | CONSOLE CLEAR + DRAG/LOCK FIXED
+-- BLUE MODE ESP | NO LOADSTRING NEEDED + ERROR POPUP
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -15,9 +15,9 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v4"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v4"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v4"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v6"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v6"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v6"
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
@@ -48,7 +48,7 @@ local UsedTime = LoadData(SAVE_KEY_USED, 0)
 local LastCheckTime = os.time()
 local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
 local CurrentSound = nil
-local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, BoomFrame
+local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
 local GuiElements = {}
 local ESP_Enabled = false
 local Buttons_Locked = false
@@ -66,6 +66,60 @@ local function AddRainbowGlow(target, thickness)
     Outline.Parent = target
     table.insert(GuiElements, Outline)
     return Outline
+end
+
+-- ✅ NEW: ERROR POPUP WINDOW
+local function ShowErrorPopup(Message)
+    local Popup = Instance.new("ScreenGui")
+    Popup.Name = "BLUE_ERROR_POPUP"
+    Popup.ResetOnSpawn = false
+    Popup.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    Popup.Parent = PlayerGui
+
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 400, 0, 200)
+    Frame.Position = UDim2.new(0.5, -200, 0.5, -100)
+    Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    Frame.Parent = Popup
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
+    AddRainbowGlow(Frame,4)
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1,-40,0,35)
+    Title.Position = UDim2.new(0,10,0,10)
+    Title.BackgroundTransparency = 1
+    Title.Text = "⚠️ SCRIPT ERROR"
+    Title.TextColor3 = Color3.fromRGB(255,80,80)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextScaled = true
+    Title.Parent = Frame
+
+    local ErrorText = Instance.new("TextLabel")
+    ErrorText.Size = UDim2.new(1,-30,1,-90)
+    ErrorText.Position = UDim2.new(0,15,0,50)
+    ErrorText.BackgroundTransparency = 1
+    ErrorText.Text = Message
+    ErrorText.TextColor3 = Color3.new(1,1,1)
+    ErrorText.Font = Enum.Font.Gotham
+    ErrorText.TextScaled = true
+    ErrorText.TextWrapped = true
+    ErrorText.TextXAlignment = Enum.TextXAlignment.Left
+    ErrorText.TextYAlignment = Enum.TextYAlignment.Top
+    ErrorText.Parent = Frame
+
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Size = UDim2.new(0,160,0,40)
+    CloseBtn.Position = UDim2.new(0.5,-80,1,-55)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
+    CloseBtn.Text = "✕ CLOSE"
+    CloseBtn.TextColor3 = Color3.new(1,1,1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextScaled = true
+    CloseBtn.Parent = Frame
+    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,8)
+
+    CloseBtn.MouseButton1Click:Connect(function() Popup:Destroy() end)
+    Popup.Destroying:Connect(function() Popup:Destroy() end)
 end
 
 -- VOLUME
@@ -101,7 +155,7 @@ local function OpenBoomboxMenu()
     BoomUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     BoomUI.Parent = PlayerGui
 
-    BoomFrame = Instance.new("Frame")
+    local BoomFrame = Instance.new("Frame")
     BoomFrame.Size = UDim2.new(0,320,0,250)
     BoomFrame.Position = UDim2.new(0.5,-160,0.5,-125)
     BoomFrame.BackgroundColor3 = Color3.fromRGB(22,22,22)
@@ -215,7 +269,7 @@ local function OpenBoomboxMenu()
     CloseTop.MouseButton1Click:Connect(CloseMenu)
 end
 
--- ✅ UPDATED CONSOLE: CLEAR DELETES SCRIPT FULLY
+-- ✅ UPDATED CONSOLE: RUNS WITHOUT LOADSTRING + ERROR POPUP
 local function OpenConsole()
     local ConsoleUI = Instance.new("ScreenGui")
     ConsoleUI.Name = "BLUE_CONSOLE"
@@ -224,8 +278,8 @@ local function OpenConsole()
     ConsoleUI.Parent = PlayerGui
 
     local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0,450,0,380)
-    Frame.Position = UDim2.new(0.5,-225,0.5,-190)
+    Frame.Size = UDim2.new(0,450,0,320)
+    Frame.Position = UDim2.new(0.5,-225,0.5,-160)
     Frame.BackgroundColor3 = Color3.fromRGB(22,22,22)
     Frame.Parent = ConsoleUI
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
@@ -253,10 +307,10 @@ local function OpenConsole()
     Title.Parent = Frame
 
     local Output = Instance.new("TextLabel")
-    Output.Size = UDim2.new(1,-30,0,70)
+    Output.Size = UDim2.new(1,-30,0,50)
     Output.Position = UDim2.new(0,15,0,45)
     Output.BackgroundColor3 = Color3.fromRGB(35,35,35)
-    Output.Text = "System Ready | Paste script or type command"
+    Output.Text = "Paste script.lua or code below"
     Output.TextColor3 = Color3.fromRGB(0,255,120)
     Output.Font = Enum.Font.Code
     Output.TextScaled = true
@@ -266,8 +320,8 @@ local function OpenConsole()
     Output.Parent = Frame
 
     local Input = Instance.new("TextBox")
-    Input.Size = UDim2.new(1,-30,0,150)
-    Input.Position = UDim2.new(0,15,0,125)
+    Input.Size = UDim2.new(1,-30,0,120)
+    Input.Position = UDim2.new(0,15,0,105)
     Input.BackgroundColor3 = Color3.fromRGB(45,45,45)
     Input.PlaceholderText = "Paste your script here..."
     Input.TextColor3 = Color3.new(1,1,1)
@@ -280,7 +334,7 @@ local function OpenConsole()
 
     local ExecBtn = Instance.new("TextButton")
     ExecBtn.Size = UDim2.new(0,120,0,40)
-    ExecBtn.Position = UDim2.new(0,15,0,290)
+    ExecBtn.Position = UDim2.new(0,15,0,240)
     ExecBtn.BackgroundColor3 = Color3.fromRGB(20,150,70)
     ExecBtn.Text = "▶ EXECUTE"
     ExecBtn.TextColor3 = Color3.new(1,1,1)
@@ -291,7 +345,7 @@ local function OpenConsole()
 
     local ClearBtn = Instance.new("TextButton")
     ClearBtn.Size = UDim2.new(0,120,0,40)
-    ClearBtn.Position = UDim2.new(0,165,0,290)
+    ClearBtn.Position = UDim2.new(0,150,0,240)
     ClearBtn.BackgroundColor3 = Color3.fromRGB(180,120,20)
     ClearBtn.Text = "🗑️ DELETE"
     ClearBtn.TextColor3 = Color3.new(1,1,1)
@@ -300,39 +354,44 @@ local function OpenConsole()
     ClearBtn.Parent = Frame
     Instance.new("UICorner", ClearBtn).CornerRadius = UDim.new(0,8)
 
-    local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Size = UDim2.new(0,120,0,40)
-    CloseBtn.Position = UDim2.new(0,315,0,290)
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(150,30,30)
-    CloseBtn.Text = "✕ CLOSE"
-    CloseBtn.TextColor3 = Color3.new(1,1,1)
-    CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextScaled = true
-    CloseBtn.Parent = Frame
-    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,8)
-
     local function CloseConsole() ConsoleUI:Destroy() end
+
+    -- ✅ SMART EXECUTION: WORKS WITH OR WITHOUT LOADSTRING
     ExecBtn.MouseButton1Click:Connect(function()
-        if Input.Text == "" then
+        local ScriptCode = Input.Text
+        if ScriptCode == "" then
             Output.Text = "⚠️ Nothing to run!"
             return
         end
-        local run = loadstring or load
-        if not run then
-            Output.Text = "❌ Loadstring not supported"
+
+        -- Use loadstring FIRST, fall back to plain load if missing
+        local Compile = loadstring or load
+        if not Compile then
+            ShowErrorPopup("Your executor does not support compiling scripts.\nTry a different executor like Delta, Fluxus, or Arceus X.")
             return
         end
-        local ok, err = pcall(run(Input.Text))
-        Output.Text = ok and "✅ Script Executed Successfully!" or "❌ Error: "..tostring(err)
+
+        -- Try to run and catch errors
+        local Function, ErrorMsg = Compile(ScriptCode)
+        if not Function then
+            ShowErrorPopup("Syntax Error:\n"..tostring(ErrorMsg))
+            return
+        end
+
+        local Success, RunError = pcall(Function)
+        if not Success then
+            ShowErrorPopup("Runtime Error:\n"..tostring(RunError))
+            return
+        end
+
+        Output.Text = "✅ Script executed successfully!"
     end)
 
-    -- ✅ CLEAR BUTTON: FULLY DELETES PASTED SCRIPT
     ClearBtn.MouseButton1Click:Connect(function()
-        Input.Text = "" -- Wipes all text completely
-        Output.Text = "✅ Script Deleted Fully!"
+        Input.Text = ""
+        Output.Text = "✅ Script deleted fully!"
     end)
 
-    CloseBtn.MouseButton1Click:Connect(CloseConsole)
     CloseTop.MouseButton1Click:Connect(CloseConsole)
 end
 
@@ -355,22 +414,17 @@ MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
-local DragHandle = Instance.new("Frame")
+local DragHandle = Instance.new("TextButton")
 DragHandle.Size = UDim2.new(1,-25,0,22)
 DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
 DragHandle.Active = true
+DragHandle.Text = "made by BLUE_MODE | DRAG HERE"
+DragHandle.TextColor3 = Color3.new(1,1,1)
+DragHandle.Font = Enum.Font.GothamBold
+DragHandle.TextScaled = true
+DragHandle.TextXAlignment = Enum.TextXAlignment.Left
 DragHandle.Parent = MainFrame
 AddRainbowGlow(DragHandle,2)
-
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1,-110,1,0)
-Title.BackgroundTransparency = 1
-Title.Text = "made by BLUE_MODE | DRAG HERE"
-Title.TextColor3 = Color3.new(1,1,1)
-Title.Font = Enum.Font.GothamBold
-Title.TextScaled = true
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = DragHandle
 
 local TimerLabel = Instance.new("TextLabel")
 TimerLabel.Size = UDim2.new(0,100,1,0)
@@ -514,25 +568,30 @@ UserInputService.InputChanged:Connect(function(i)
 end)
 
 -- ✅ FIXED DRAG + LOCK
-local DragState = {Active=false, StartX=0, StartY=0, FrameX=0, FrameY=0}
-local function StartDrag(Input)
+local DragState = {Active = false, StartX = 0, StartY = 0, StartPosX = 0, StartPosY = 0}
+
+DragHandle.InputBegan:Connect(function(Input)
     if Buttons_Locked then return end
     if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
         DragState.Active = true
         DragState.StartX = Input.Position.X
         DragState.StartY = Input.Position.Y
-        DragState.FrameX = MainFrame.Position.X.Offset
-        DragState.FrameY = MainFrame.Position.Y.Offset
+        DragState.StartPosX = MainFrame.Position.X.Offset
+        DragState.StartPosY = MainFrame.Position.Y.Offset
     end
-end
-DragHandle.InputBegan:Connect(StartDrag)
-MainFrame.InputBegan:Connect(StartDrag)
-UserInputService.InputEnded:Connect(function(Input)
-    if Input.UserInputType == Enum.UserInputType.MouseButton1 then DragState.Active = false end
 end)
+
+UserInputService.InputEnded:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        DragState.Active = false
+    end
+end)
+
 UserInputService.InputChanged:Connect(function(Input)
-    if DragState.Active and not Buttons_Locked and Input.UserInputType == Enum.UserInputType.MouseMovement then
-        MainFrame.Position = UDim2.new(0, DragState.FrameX + (Input.Position.X - DragState.StartX), 0, DragState.FrameY + (Input.Position.Y - DragState.StartY))
+    if DragState.Active and not Buttons_Locked then
+        local DeltaX = Input.Position.X - DragState.StartX
+        local DeltaY = Input.Position.Y - DragState.StartY
+        MainFrame.Position = UDim2.new(0, DragState.StartPosX + DeltaX, 0, DragState.StartPosY + DeltaY)
     end
 end)
 
@@ -676,4 +735,4 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ BLUE MODE ESP | CONSOLE DELETE + DRAG/LOCK WORKING!")
+print("✅ CONSOLE: Works without loadstring + Error Popup Added!")
