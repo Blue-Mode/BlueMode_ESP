@@ -1,6 +1,6 @@
 -- ==============================================
--- BLUE_MODE | ORIGINAL OLD FULL VERSION
--- WITH CREDIT + FEATURE LIST + WELCOME SCREEN
+-- BLUE_MODE | ORIGINAL OLD STYLE
+-- NO COPYRIGHT | MADE BY + FEATURES FIRST
 -- 12H TIMER + UNLOCK + LOG
 -- ==============================================
 
@@ -38,17 +38,17 @@ if #Data.Executions > MAX_LOGS then table.remove(Data.Executions) end
 
 -- SAFE UI PARENT
 local UI = Instance.new("ScreenGui")
-UI.Name = "BLUE_MODE_OLD_ORIGINAL"
+UI.Name = "BLUE_MODE"
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-UI.DisplayOrder = 10000
+UI.DisplayOrder = 99999
 
 if gethui then
     UI.Parent = gethui()
 else
     pcall(function() UI.Parent = CoreGui end)
     if not UI.Parent then
-        pcall(function() UI.Parent = LocalPlayer:WaitForChild("PlayerGui", 10) end)
+        pcall(function() UI.Parent = LocalPlayer.PlayerGui end)
     end
 end
 
@@ -56,10 +56,58 @@ end
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "BLUE_MODE",
-        Text = "Original Old Version Loaded!",
+        Text = "Loaded Successfully!",
         Duration = 3
     })
 end)
+
+-- ==============================================
+-- ✅ WELCOME SCREEN (FIRST THING YOU SEE)
+-- ✅ MADE BY + FEATURE LIST BEFORE ANYTHING ELSE
+-- ==============================================
+local Welcome = Instance.new("Frame")
+Welcome.Size = UDim2.new(0,420,0,340)
+Welcome.Position = UDim2.new(0.5,-210,0.5,-170)
+Welcome.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Welcome.BorderSizePixel = 3
+Welcome.BorderColor3 = Color3.fromRGB(0,200,200)
+Welcome.Visible = not Data.IsLocked
+Welcome.ZIndex = 9500
+Welcome.Parent = UI
+Instance.new("UICorner", Welcome).CornerRadius = UDim.new(0,10)
+
+local MadeBy = Instance.new("TextLabel")
+MadeBy.Size = UDim2.new(1,0,0,50)
+MadeBy.Position = UDim2.new(0,0,0,10)
+MadeBy.BackgroundTransparency = 1
+MadeBy.Text = "✨ MADE BY BLUE_MODE ✨"
+MadeBy.TextColor3 = Color3.new(0,1,1)
+MadeBy.Font = Enum.Font.GothamBold
+MadeBy.TextScaled = true
+MadeBy.Parent = Welcome
+
+local Features = Instance.new("TextLabel")
+Features.Size = UDim2.new(1,-30,0,170)
+Features.Position = UDim2.new(0,15,0,70)
+Features.BackgroundTransparency = 1
+Features.Text = "📋 FEATURES:\n• Player ESP Highlight\n• 12 Hour Usage Timer\n• Unlock Code System\n• Drag & Move Menu\n• Minimize Menu\n• Execution Log\n• Rainbow Theme\n• Copy YouTube Link"
+Features.TextColor3 = Color3.new(0.9,0.9,0.9)
+Features.Font = Enum.Font.Gotham
+Features.TextScaled = true
+Features.TextXAlignment = Enum.TextXAlignment.Left
+Features.LineHeight = 1.4
+Features.Parent = Welcome
+
+local WelcomeOK = Instance.new("TextButton")
+WelcomeOK.Size = UDim2.new(0,200,0,50)
+WelcomeOK.Position = UDim2.new(0.5,-100,0,265)
+WelcomeOK.BackgroundColor3 = Color3.fromRGB(0,150,120)
+WelcomeOK.Text = "✅ START USING"
+WelcomeOK.TextColor3 = Color3.new(1,1,1)
+WelcomeOK.Font = Enum.Font.GothamBold
+WelcomeOK.TextScaled = true
+WelcomeOK.Parent = Welcome
+Instance.new("UICorner", WelcomeOK).CornerRadius = UDim.new(0,8)
 
 -- ==============================================
 -- 🔒 LOCK SCREEN
@@ -68,7 +116,7 @@ local LockScreen = Instance.new("Frame")
 LockScreen.Size = UDim2.new(1,0,1,0)
 LockScreen.BackgroundColor3 = Color3.fromRGB(10,10,10)
 LockScreen.Visible = Data.IsLocked
-LockScreen.ZIndex = 9999
+LockScreen.ZIndex = 10000
 LockScreen.Parent = UI
 
 local LockTitle = Instance.new("TextLabel")
@@ -144,7 +192,7 @@ UnlockBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==============================================
--- 📜 EXECUTION LOG
+-- 📜 EXECUTION LOG (COMES AFTER WELCOME/FEATURES)
 -- ==============================================
 local LogWindow = Instance.new("Frame")
 LogWindow.Size = UDim2.new(0,380,0,300)
@@ -152,6 +200,7 @@ LogWindow.Position = UDim2.new(0.5,-190,0.5,-150)
 LogWindow.BackgroundColor3 = Color3.fromRGB(18,18,18)
 LogWindow.BorderSizePixel = 2
 LogWindow.Visible = false
+LogWindow.ZIndex = 9000
 LogWindow.Parent = UI
 Instance.new("UICorner", LogWindow).CornerRadius = UDim.new(0,10)
 
@@ -205,53 +254,6 @@ RefreshLog()
 LogClose.MouseButton1Click:Connect(function() LogWindow.Visible = false end)
 
 -- ==============================================
--- 👋 WELCOME SCREEN | CREDIT + FEATURE LIST
--- ==============================================
-local Welcome = Instance.new("Frame")
-Welcome.Size = UDim2.new(0,420,0,340)
-Welcome.Position = UDim2.new(0.5,-210,0.5,-170)
-Welcome.BackgroundColor3 = Color3.fromRGB(20,20,20)
-Welcome.BorderSizePixel = 3
-Welcome.BorderColor3 = Color3.fromRGB(0,200,200)
-Welcome.Visible = not Data.IsLocked
-Welcome.Parent = UI
-Instance.new("UICorner", Welcome).CornerRadius = UDim.new(0,10)
-
--- ✅ MADE BY TEXT
-local MadeBy = Instance.new("TextLabel")
-MadeBy.Size = UDim2.new(1,0,0,45)
-MadeBy.Position = UDim2.new(0,0,0,10)
-MadeBy.BackgroundTransparency = 1
-MadeBy.Text = "✨ MADE BY BLUE_MODE ✨"
-MadeBy.TextColor3 = Color3.new(0,1,1)
-MadeBy.Font = Enum.Font.GothamBold
-MadeBy.TextScaled = true
-MadeBy.Parent = Welcome
-
--- ✅ FEATURE LIST
-local Features = Instance.new("TextLabel")
-Features.Size = UDim2.new(1,-20,0,160)
-Features.Position = UDim2.new(0,10,0,60)
-Features.BackgroundTransparency = 1
-Features.Text = "📋 FEATURES:\n• Player ESP\n• 12 Hour Usage Timer\n• Unlock Code System\n• Drag & Move Menu\n• Minimize Menu\n• Execution Log\n• Rainbow Theme"
-Features.TextColor3 = Color3.new(0.85,0.85,0.85)
-Features.Font = Enum.Font.Gotham
-Features.TextScaled = true
-Features.TextXAlignment = Enum.TextXAlignment.Left
-Features.LineHeight = 1.3
-Features.Parent = Welcome
-
-local WelcomeOK = Instance.new("TextButton")
-WelcomeOK.Size = UDim2.new(0,180,0,45)
-WelcomeOK.Position = UDim2.new(0.5,-90,0,260)
-WelcomeOK.BackgroundColor3 = Color3.fromRGB(0,150,120)
-WelcomeOK.Text = "✅ START USING"
-WelcomeOK.TextColor3 = Color3.new(1,1,1)
-WelcomeOK.Font = Enum.Font.GothamBold
-WelcomeOK.TextScaled = true
-WelcomeOK.Parent = Welcome
-
--- ==============================================
 -- 🎯 MAIN MENU
 -- ==============================================
 local MainMenu = Instance.new("Frame")
@@ -261,6 +263,7 @@ MainMenu.BackgroundColor3 = Color3.fromRGB(24,24,24)
 MainMenu.BorderSizePixel = 2
 MainMenu.Active = true
 MainMenu.Visible = false
+MainMenu.ZIndex = 9000
 MainMenu.Parent = UI
 Instance.new("UICorner", MainMenu).CornerRadius = UDim.new(0,8)
 
@@ -356,7 +359,7 @@ local MUSIC_ON = false
 local MOVE_LOCKED = false
 local MINIMIZED = false
 
--- WELCOME BUTTON ACTION
+-- WELCOME BUTTON
 WelcomeOK.MouseButton1Click:Connect(function()
     Welcome.Visible = false
     MainMenu.Visible = true
