@@ -1,34 +1,27 @@
 -- ==============================================
--- ESP Script | FULL RAINBOW GLOW + CONSOL BUTTON
+-- FIXED VERSION | No Typos + Full Compatibility
 -- made by BLUE_MODE
--- UNLOCK CODE: Blue_Mode192823
 -- ==============================================
-
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
 
--- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui") -- Fixed for all executors
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- SETTINGS
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
-local UNLOCK_CODE = "Blue_Mode192823"
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
 local SAVE_KEY_USED = "BlueMode_UsedTime_v2"
 local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v2"
 local SAVE_KEY_VOLUME = "BlueMode_Volume_v2"
 
--- SAVE SYSTEM
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
--- CLEAR ESP
 local function ClearESP()
     for _, Plr in pairs(Players:GetPlayers()) do
         if Plr and Plr.Character then
@@ -38,7 +31,6 @@ local function ClearESP()
     end
 end
 
--- COOLDOWN CHECK
 local NowTime = os.time()
 local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
 if NowTime < CooldownEnd then
@@ -46,7 +38,6 @@ if NowTime < CooldownEnd then
     return
 end
 
--- LOAD SETTINGS
 local UsedTime = LoadData(SAVE_KEY_USED, 0)
 local LastCheck = os.time()
 local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
@@ -54,7 +45,6 @@ local CurrentSound = nil
 local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, BoomFrame
 local GuiElements = {}
 
--- RAINBOW GLOW
 local function AddRainbowGlow(target, thickness)
     local Outline = Instance.new("UIStroke")
     Outline.Name = "RainbowAura"
@@ -65,7 +55,6 @@ local function AddRainbowGlow(target, thickness)
     return Outline
 end
 
--- VOLUME & BOOMBOX
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(newVol, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
@@ -93,6 +82,7 @@ local function OpenBoomboxMenu()
     local BoomUI = Instance.new("ScreenGui")
     BoomUI.Name = "BLUE_BOOMBOX_MENU"
     BoomUI.ResetOnSpawn = false
+    BoomUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     BoomUI.Parent = PlayerGui
 
     BoomFrame = Instance.new("Frame")
@@ -209,20 +199,20 @@ local function OpenBoomboxMenu()
     CloseTop.MouseButton1Click:Connect(CloseMenu)
 end
 
--- 💻 NEW CONSOL MENU
 local function OpenConsol()
     local ConsolUI = Instance.new("ScreenGui")
     ConsolUI.Name = "BLUE_CONSOL"
     ConsolUI.ResetOnSpawn = false
+    ConsolUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ConsolUI.Parent = PlayerGui
 
     local Frame = Instance.new("Frame")
     Frame.Size = UDim2.new(0,450,0,380)
     Frame.Position = UDim2.new(0.5,-225,0.5,-190)
     Frame.BackgroundColor3 = Color3.fromRGB(22,22,22)
+    Frame.Parent = ConsolUI
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
     AddRainbowGlow(Frame,5)
-    Frame.Parent = ConsolUI
 
     local CloseTop = Instance.new("TextButton")
     CloseTop.Size = UDim2.new(0,32,0,32)
@@ -267,9 +257,9 @@ local function OpenConsol()
     Input.Font = Enum.Font.Code
     Input.TextScaled = true
     Input.MultiLine = true
+    Input.Parent = Frame
     Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
     AddRainbowGlow(Input,2)
-    Input.Parent = Frame
 
     local ExecBtn = Instance.new("TextButton")
     ExecBtn.Size = UDim2.new(0,120,0,40)
@@ -279,8 +269,8 @@ local function OpenConsol()
     ExecBtn.TextColor3 = Color3.new(1,1,1)
     ExecBtn.Font = Enum.Font.GothamBold
     ExecBtn.TextScaled = true
-    Instance.new("UICorner", ExecBtn).CornerRadius = UDim.new(0,8)
     ExecBtn.Parent = Frame
+    Instance.new("UICorner", ExecBtn).CornerRadius = UDim.new(0,8)
 
     local ClearBtn = Instance.new("TextButton")
     ClearBtn.Size = UDim2.new(0,120,0,40)
@@ -290,8 +280,8 @@ local function OpenConsol()
     ClearBtn.TextColor3 = Color3.new(1,1,1)
     ClearBtn.Font = Enum.Font.GothamBold
     ClearBtn.TextScaled = true
-    Instance.new("UICorner", ClearBtn).CornerRadius = UDim.new(0,8)
     ClearBtn.Parent = Frame
+    Instance.new("UICorner", ClearBtn).CornerRadius = UDim.new(0,8)
 
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Size = UDim2.new(0,120,0,40)
@@ -301,8 +291,8 @@ local function OpenConsol()
     CloseBtn.TextColor3 = Color3.new(1,1,1)
     CloseBtn.Font = Enum.Font.GothamBold
     CloseBtn.TextScaled = true
-    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,8)
     CloseBtn.Parent = Frame
+    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,8)
 
     local function CloseConsol() ConsolUI:Destroy() end
     ExecBtn.MouseButton1Click:Connect(function()
@@ -317,13 +307,13 @@ local function OpenConsol()
     CloseTop.MouseButton1Click:Connect(CloseConsol)
 end
 
--- 🎮 MAIN UI | WIDER FOR NEW BUTTON
 local UI = Instance.new("ScreenGui")
 UI.Name = "BLUE_MODE_ESP"
 UI.ResetOnSpawn = false
+UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.Parent = PlayerGui
 
-local MAIN_SIZE = UDim2.new(0, 680, 0, 105) -- Wider to fit Consol button
+local MAIN_SIZE = UDim2.new(0, 680, 0, 105)
 local MIN_SIZE = UDim2.new(0, 50, 0, 50)
 local Main = Instance.new("Frame")
 Main.Size = MAIN_SIZE
@@ -374,18 +364,17 @@ MinBtn.TextScaled = true
 MinBtn.Parent = Main
 AddRainbowGlow(MinBtn,2)
 
--- ALL BUTTONS
 local ESPBtn = Instance.new("TextButton")
-ESPBt n.Size = UDim2.new(0, 85, 0, 30)
-ESPBt n.Position = UDim2.new(0, 10, 0, 30)
-ESPBt n.BackgroundColor3 = Color3.fromRGB(40,40,40)
-ESPBt n.Text = "ESP: OFF"
-ESPBt n.TextColor3 = Color3.new(1,1,1)
-ESPBt n.Font = Enum.Font.GothamBold
-ESPBt n.TextScaled = true
-ESPBt n.Parent = Main
+ESPBtn.Size = UDim2.new(0, 85, 0, 30)
+ESPBtn.Position = UDim2.new(0, 10, 0, 30)
+ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+ESPBtn.Text = "ESP: OFF"
+ESPBtn.TextColor3 = Color3.new(1,1,1)
+ESPBtn.Font = Enum.Font.GothamBold
+ESPBtn.TextScaled = true
+ESPBtn.Parent = Main
 Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-AddRainbowGlow(ESPBt n,2)
+AddRainbowGlow(ESPBtn,2)
 
 local YtBtn = Instance.new("TextButton")
 YtBtn.Size = UDim2.new(0, 95, 0, 30)
@@ -423,7 +412,6 @@ LockBtn.Parent = Main
 Instance.new("UICorner", LockBtn).CornerRadius = UDim.new(0,6)
 AddRainbowGlow(LockBtn,2)
 
--- ✨ NEW BUTTON: 💻 CONSOL
 local ConsolBtn = Instance.new("TextButton")
 ConsolBtn.Size = UDim2.new(0, 110, 0, 30)
 ConsolBtn.Position = UDim2.new(0, 400, 0, 30)
@@ -448,7 +436,6 @@ DelBtn.Parent = Main
 Instance.new("UICorner", DelBtn).CornerRadius = UDim.new(0,6)
 AddRainbowGlow(DelBtn,2)
 
--- VOLUME SLIDER
 local VolLabelMain = Instance.new("TextLabel")
 VolLabelMain.Size = UDim2.new(0,70,0,25)
 VolLabelMain.Position = UDim2.new(0,10,0,65)
@@ -496,13 +483,11 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 
--- VARIABLES
 local ESP_Enabled = false
 local Buttons_Locked = false
 local Hue = 0
 local IsSmall = false
 
--- DRAG SYSTEM
 local Drag = {Active=false, SX=0, SY=0, PX=0, PY=0}
 local function StartDrag(input)
     if Buttons_Locked then return end
@@ -523,11 +508,10 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 
--- BUTTON ACTIONS
-ESPBt n.MouseButton1Click:Connect(function()
+ESPBtn.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
-    ESPBt n.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
-    ESPBt n.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
+    ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
+    ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
     if not ESP_Enabled then ClearESP() end
 end)
 
@@ -552,7 +536,7 @@ MinBtn.MouseButton1Click:Connect(function()
     if IsSmall then
         Main.Size = MIN_SIZE
         DragBar.Visible = false
-        ESPBt n.Visible = false
+        ESPBtn.Visible = false
         YtBtn.Visible = false
         BoomBtn.Visible = false
         LockBtn.Visible = false
@@ -565,7 +549,7 @@ MinBtn.MouseButton1Click:Connect(function()
     else
         Main.Size = MAIN_SIZE
         DragBar.Visible = true
-        ESPBt n.Visible = true
+        ESPBtn.Visible = true
         YtBtn.Visible = true
         BoomBtn.Visible = true
         LockBtn.Visible = true
@@ -585,11 +569,9 @@ DelBtn.MouseButton1Click:Connect(function()
     getgenv().BlueMode_Loaded = nil
 end)
 
--- MAIN LOOP
 RunService.Heartbeat:Connect(function(delta)
     if not UI or not UI.Parent then return end
 
-    -- Timer
     local Now = os.time()
     UsedTime = UsedTime + math.max(0, Now - LastCheck)
     LastCheck = Now
@@ -606,7 +588,6 @@ RunService.Heartbeat:Connect(function(delta)
         return
     end
 
-    -- Rainbow Animation
     Hue = (Hue + delta * 0.5) % 1
     local GlowColor = Color3.fromHSV(Hue, 1, 1)
     for _, s in pairs(GuiElements) do s.Color = GlowColor end
@@ -614,7 +595,6 @@ RunService.Heartbeat:Connect(function(delta)
     if VolFillMenu then VolFillMenu.BackgroundColor3 = GlowColor end
     if BoomFrame then BoomFrame.BorderColor3 = GlowColor end
 
-    -- ESP
     if not ESP_Enabled then return end
     for _, Plr in pairs(Players:GetPlayers()) do
         if Plr == LocalPlayer then continue end
@@ -656,4 +636,4 @@ RunService.Heartbeat:Connect(function(delta)
     end
 end)
 
-print("✅ 💻 CONSOL BUTTON ADDED! ALL FEATURES READY!")
+print("✅ BLUE MODE ESP LOADED SUCCESSFULLY!")
