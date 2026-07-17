@@ -1,7 +1,6 @@
 -- ==============================================
--- BLUE_MODE | ORIGINAL OLD STYLE
--- NO COPYRIGHT | MADE BY + FEATURES FIRST
--- 12H TIMER + UNLOCK + LOG
+-- BLUE_MODE | FULL RAINBOW + TIME SAVE + FIXED BUTTON
+-- NO COPYRIGHT | NO GLOBAL CHAT / NO PLAYER LIST
 -- ==============================================
 
 -- Prevent duplicate load
@@ -21,6 +20,7 @@ local MAX_HOURS = 12
 local MAX_SECONDS = MAX_HOURS * 3600
 local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
 local MAX_LOGS = 50
+local SAVE_KEY = "BlueMode_SavedTime"
 
 -- DATA
 local Data = {
@@ -29,85 +29,52 @@ local Data = {
     Executions = {}
 }
 
--- ADD CURRENT USER TO LOG
+-- LOAD SAVED TIME
+pcall(function()
+    if syn and syn.get_raw then
+        Data.UsedTime = tonumber(syn.get_raw(SAVE_KEY)) or 0
+    else
+        Data.UsedTime = tonumber(_G[SAVE_KEY]) or 0
+    end
+    if Data.UsedTime >= MAX_SECONDS then Data.IsLocked = true end
+end)
+
+-- SAVE TIME FUNCTION
+local function SaveTime()
+    pcall(function()
+        if syn and syn.set_raw then
+            syn.set_raw(SAVE_KEY, tostring(Data.UsedTime))
+        else
+            _G[SAVE_KEY] = tostring(Data.UsedTime)
+        end
+    end)
+end
+
+-- ADD LOG
 table.insert(Data.Executions, 1, {
     Username = LocalPlayer.Name,
     Time = os.date("%Y-%m-%d | %H:%M:%S")
 })
 if #Data.Executions > MAX_LOGS then table.remove(Data.Executions) end
 
--- SAFE UI PARENT
+-- SAFE UI
 local UI = Instance.new("ScreenGui")
-UI.Name = "BLUE_MODE"
+UI.Name = "BLUE_MODE_RAINBOW"
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.DisplayOrder = 99999
 
-if gethui then
-    UI.Parent = gethui()
-else
-    pcall(function() UI.Parent = CoreGui end)
-    if not UI.Parent then
-        pcall(function() UI.Parent = LocalPlayer.PlayerGui end)
-    end
+if gethui then UI.Parent = gethui()
+else pcall(function() UI.Parent = CoreGui end)
+    if not UI.Parent then pcall(function() UI.Parent = LocalPlayer.PlayerGui end) end
 end
 
 -- NOTIFICATION
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "BLUE_MODE",
-        Text = "Loaded Successfully!",
-        Duration = 3
+        Title = "BLUE_MODE", Text = "Loaded! Full Rainbow Enabled", Duration = 3
     })
 end)
-
--- ==============================================
--- ✅ WELCOME SCREEN (FIRST THING YOU SEE)
--- ✅ MADE BY + FEATURE LIST BEFORE ANYTHING ELSE
--- ==============================================
-local Welcome = Instance.new("Frame")
-Welcome.Size = UDim2.new(0,420,0,340)
-Welcome.Position = UDim2.new(0.5,-210,0.5,-170)
-Welcome.BackgroundColor3 = Color3.fromRGB(20,20,20)
-Welcome.BorderSizePixel = 3
-Welcome.BorderColor3 = Color3.fromRGB(0,200,200)
-Welcome.Visible = not Data.IsLocked
-Welcome.ZIndex = 9500
-Welcome.Parent = UI
-Instance.new("UICorner", Welcome).CornerRadius = UDim.new(0,10)
-
-local MadeBy = Instance.new("TextLabel")
-MadeBy.Size = UDim2.new(1,0,0,50)
-MadeBy.Position = UDim2.new(0,0,0,10)
-MadeBy.BackgroundTransparency = 1
-MadeBy.Text = "✨ MADE BY BLUE_MODE ✨"
-MadeBy.TextColor3 = Color3.new(0,1,1)
-MadeBy.Font = Enum.Font.GothamBold
-MadeBy.TextScaled = true
-MadeBy.Parent = Welcome
-
-local Features = Instance.new("TextLabel")
-Features.Size = UDim2.new(1,-30,0,170)
-Features.Position = UDim2.new(0,15,0,70)
-Features.BackgroundTransparency = 1
-Features.Text = "📋 FEATURES:\n• Player ESP Highlight\n• 12 Hour Usage Timer\n• Unlock Code System\n• Drag & Move Menu\n• Minimize Menu\n• Execution Log\n• Rainbow Theme\n• Copy YouTube Link"
-Features.TextColor3 = Color3.new(0.9,0.9,0.9)
-Features.Font = Enum.Font.Gotham
-Features.TextScaled = true
-Features.TextXAlignment = Enum.TextXAlignment.Left
-Features.LineHeight = 1.4
-Features.Parent = Welcome
-
-local WelcomeOK = Instance.new("TextButton")
-WelcomeOK.Size = UDim2.new(0,200,0,50)
-WelcomeOK.Position = UDim2.new(0.5,-100,0,265)
-WelcomeOK.BackgroundColor3 = Color3.fromRGB(0,150,120)
-WelcomeOK.Text = "✅ START USING"
-WelcomeOK.TextColor3 = Color3.new(1,1,1)
-WelcomeOK.Font = Enum.Font.GothamBold
-WelcomeOK.TextScaled = true
-WelcomeOK.Parent = Welcome
-Instance.new("UICorner", WelcomeOK).CornerRadius = UDim.new(0,8)
 
 -- ==============================================
 -- 🔒 LOCK SCREEN
@@ -124,7 +91,6 @@ LockTitle.Size = UDim2.new(1,0,0,60)
 LockTitle.Position = UDim2.new(0,0,0.15,0)
 LockTitle.BackgroundTransparency = 1
 LockTitle.Text = "⏰ TIME LIMIT REACHED"
-LockTitle.TextColor3 = Color3.fromRGB(255,60,60)
 LockTitle.Font = Enum.Font.GothamBold
 LockTitle.TextScaled = true
 LockTitle.Parent = LockScreen
@@ -158,7 +124,6 @@ UnlockBtn.Size = UDim2.new(0,200,0,45)
 UnlockBtn.Position = UDim2.new(0.5,-100,0.46,0)
 UnlockBtn.BackgroundColor3 = Color3.fromRGB(25,150,100)
 UnlockBtn.Text = "🔓 UNLOCK"
-UnlockBtn.TextColor3 = Color3.new(1,1,1)
 UnlockBtn.Font = Enum.Font.GothamBold
 UnlockBtn.TextScaled = true
 UnlockBtn.Parent = LockScreen
@@ -169,7 +134,6 @@ LockMsg.Size = UDim2.new(0,300,0,30)
 LockMsg.Position = UDim2.new(0.5,-150,0.55,0)
 LockMsg.BackgroundTransparency = 1
 LockMsg.Text = ""
-LockMsg.TextColor3 = Color3.fromRGB(255,80,80)
 LockMsg.Font = Enum.Font.Gotham
 LockMsg.TextScaled = true
 LockMsg.Parent = LockScreen
@@ -178,12 +142,11 @@ UnlockBtn.MouseButton1Click:Connect(function()
     if CodeBox.Text == UNLOCK_CODE then
         Data.IsLocked = false
         Data.UsedTime = 0
+        SaveTime()
         LockScreen.Visible = false
         Welcome.Visible = true
         pcall(function()
-            game:GetService("StarterGui"):SetCore("SendNotification",{
-                Title = "✅ UNLOCKED", Text = "Timer reset!", Duration = 3
-            })
+            game:GetService("StarterGui"):SetCore("SendNotification",{Title = "✅ UNLOCKED", Text = "Timer Reset!", Duration = 3})
         end)
     else
         LockMsg.Text = "❌ WRONG CODE!"
@@ -192,15 +155,150 @@ UnlockBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==============================================
--- 📜 EXECUTION LOG (COMES AFTER WELCOME/FEATURES)
+-- 🎯 MAIN MENU
+-- ==============================================
+local MainMenu = Instance.new("Frame")
+MainMenu.Size = UDim2.new(0,520,0,100)
+MainMenu.Position = UDim2.new(0,20,0.5,-50)
+MainMenu.BackgroundColor3 = Color3.fromRGB(24,24,24)
+MainMenu.BorderSizePixel = 3
+MainMenu.Active = true
+MainMenu.Visible = false
+MainMenu.ZIndex = 9000
+MainMenu.Parent = UI
+Instance.new("UICorner", MainMenu).CornerRadius = UDim.new(0,8)
+
+local DragBar = Instance.new("Frame")
+DragBar.Size = UDim2.new(1,0,0,25)
+DragBar.BackgroundColor3 = Color3.fromRGB(50,130,210)
+DragBar.Active = true
+DragBar.Parent = MainMenu
+
+local MTitle = Instance.new("TextLabel")
+MTitle.Size = UDim2.new(1,-30,1,0)
+MTitle.BackgroundTransparency = 1
+MTitle.Text = "BLUE_MODE ESP"
+MTitle.Font = Enum.Font.GothamBold
+MTitle.TextScaled = true
+MTitle.Parent = DragBar
+
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0,25,0,25)
+MinBtn.Position = UDim2.new(1,-25,0,0)
+MinBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+MinBtn.Text = "−"
+MinBtn.Font = Enum.Font.GothamBold
+MinBtn.TextScaled = true
+MinBtn.Parent = DragBar
+
+local TimerText = Instance.new("TextLabel")
+TimerText.Size = UDim2.new(1,-20,0,25)
+TimerText.Position = UDim2.new(0,10,0,30)
+TimerText.BackgroundTransparency = 1
+TimerText.Font = Enum.Font.GothamBold
+TimerText.TextScaled = true
+TimerText.Parent = MainMenu
+
+-- BUTTONS
+local ESPBtn = Instance.new("TextButton")
+ESPBtn.Size = UDim2.new(0,65,0,30)
+ESPBtn.Position = UDim2.new(0,10,0,60)
+ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+ESPBtn.Text = "ESP OFF"
+ESPBtn.Font = Enum.Font.GothamBold
+ESPBtn.TextScaled = true
+ESPBtn.Parent = MainMenu
+
+local MusicBtn = Instance.new("TextButton")
+MusicBtn.Size = UDim2.new(0,65,0,30)
+MusicBtn.Position = UDim2.new(0,80,0,60)
+MusicBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+MusicBtn.Text = "🎵 OFF"
+MusicBtn.Font = Enum.Font.GothamBold
+MusicBtn.TextScaled = true
+MusicBtn.Parent = MainMenu
+
+local LinkBtn = Instance.new("TextButton")
+LinkBtn.Size = UDim2.new(0,65,0,30)
+LinkBtn.Position = UDim2.new(0,150,0,60)
+LinkBtn.BackgroundColor3 = Color3.fromRGB(20,110,180)
+LinkBtn.Text = "📺 YT"
+LinkBtn.Font = Enum.Font.GothamBold
+LinkBtn.TextScaled = true
+LinkBtn.Parent = MainMenu
+
+local LogBtn = Instance.new("TextButton")
+LogBtn.Size = UDim2.new(0,65,0,30)
+LogBtn.Position = UDim2.new(0,220,0,60)
+LogBtn.BackgroundColor3 = Color3.fromRGB(120,50,160)
+LogBtn.Text = "📜 LOG"
+LogBtn.Font = Enum.Font.GothamBold
+LogBtn.TextScaled = true
+LogBtn.Parent = MainMenu
+
+local LockBtn = Instance.new("TextButton")
+LockBtn.Size = UDim2.new(0,80,0,30)
+LockBtn.Position = UDim2.new(0,290,0,60)
+LockBtn.BackgroundColor3 = Color3.fromRGB(70,70,70)
+LockBtn.Text = "🔒 LOCK"
+LockBtn.Font = Enum.Font.GothamBold
+LockBtn.TextScaled = true
+LockBtn.Parent = MainMenu
+
+-- ==============================================
+-- 👋 WELCOME SCREEN (FIRST)
+-- ==============================================
+local Welcome = Instance.new("Frame")
+Welcome.Size = UDim2.new(0,420,0,340)
+Welcome.Position = UDim2.new(0.5,-210,0.5,-170)
+Welcome.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Welcome.BorderSizePixel = 3
+Welcome.Visible = not Data.IsLocked
+Welcome.ZIndex = 9500
+Welcome.Parent = UI
+Instance.new("UICorner", Welcome).CornerRadius = UDim.new(0,10)
+
+local MadeBy = Instance.new("TextLabel")
+MadeBy.Size = UDim2.new(1,0,0,50)
+MadeBy.Position = UDim2.new(0,0,0,10)
+MadeBy.BackgroundTransparency = 1
+MadeBy.Text = "✨ MADE BY BLUE_MODE ✨"
+MadeBy.Font = Enum.Font.GothamBold
+MadeBy.TextScaled = true
+MadeBy.Parent = Welcome
+
+local Features = Instance.new("TextLabel")
+Features.Size = UDim2.new(1,-30,0,170)
+Features.Position = UDim2.new(0,15,0,70)
+Features.BackgroundTransparency = 1
+Features.Text = "📋 FEATURES:\n• Player ESP Highlight\n• 12 Hour Usage Timer\n• Unlock Code System\n• Draggable Menu\n• Minimize Menu\n• Execution Log\n• Full Rainbow Theme\n• Copy YouTube Link"
+Features.TextColor3 = Color3.new(0.9,0.9,0.9)
+Features.Font = Enum.Font.Gotham
+Features.TextScaled = true
+Features.TextXAlignment = Enum.TextXAlignment.Left
+Features.LineHeight = 1.4
+Features.Parent = Welcome
+
+local WelcomeOK = Instance.new("TextButton")
+WelcomeOK.Size = UDim2.new(0,200,0,50)
+WelcomeOK.Position = UDim2.new(0.5,-100,0,265)
+WelcomeOK.BackgroundColor3 = Color3.fromRGB(0,150,120)
+WelcomeOK.Text = "✅ START USING"
+WelcomeOK.Font = Enum.Font.GothamBold
+WelcomeOK.TextScaled = true
+WelcomeOK.Parent = Welcome
+Instance.new("UICorner", WelcomeOK).CornerRadius = UDim.new(0,8)
+
+-- ==============================================
+-- 📜 EXECUTION LOG
 -- ==============================================
 local LogWindow = Instance.new("Frame")
 LogWindow.Size = UDim2.new(0,380,0,300)
 LogWindow.Position = UDim2.new(0.5,-190,0.5,-150)
 LogWindow.BackgroundColor3 = Color3.fromRGB(18,18,18)
-LogWindow.BorderSizePixel = 2
+LogWindow.BorderSizePixel = 3
 LogWindow.Visible = false
-LogWindow.ZIndex = 9000
+LogWindow.ZIndex = 9200
 LogWindow.Parent = UI
 Instance.new("UICorner", LogWindow).CornerRadius = UDim.new(0,10)
 
@@ -209,7 +307,6 @@ LogTitle.Size = UDim2.new(1,0,0,35)
 LogTitle.Position = UDim2.new(0,0,0,5)
 LogTitle.BackgroundTransparency = 1
 LogTitle.Text = "📜 EXECUTION LOG"
-LogTitle.TextColor3 = Color3.new(1,1,1)
 LogTitle.Font = Enum.Font.GothamBold
 LogTitle.TextScaled = true
 LogTitle.Parent = LogWindow
@@ -219,7 +316,6 @@ LogClose.Size = UDim2.new(0,30,0,30)
 LogClose.Position = UDim2.new(1,-35,0,5)
 LogClose.BackgroundColor3 = Color3.fromRGB(160,30,30)
 LogClose.Text = "✕"
-LogClose.TextColor3 = Color3.new(1,1,1)
 LogClose.Font = Enum.Font.GothamBold
 LogClose.TextScaled = true
 LogClose.Parent = LogWindow
@@ -254,118 +350,20 @@ RefreshLog()
 LogClose.MouseButton1Click:Connect(function() LogWindow.Visible = false end)
 
 -- ==============================================
--- 🎯 MAIN MENU
+-- ⚙️ SETUP & BUTTONS
 -- ==============================================
-local MainMenu = Instance.new("Frame")
-MainMenu.Size = UDim2.new(0,520,0,100)
-MainMenu.Position = UDim2.new(0,20,0.5,-50)
-MainMenu.BackgroundColor3 = Color3.fromRGB(24,24,24)
-MainMenu.BorderSizePixel = 2
-MainMenu.Active = true
-MainMenu.Visible = false
-MainMenu.ZIndex = 9000
-MainMenu.Parent = UI
-Instance.new("UICorner", MainMenu).CornerRadius = UDim.new(0,8)
-
-local DragBar = Instance.new("Frame")
-DragBar.Size = UDim2.new(1,0,0,25)
-DragBar.BackgroundColor3 = Color3.fromRGB(50,130,210)
-DragBar.Active = true
-DragBar.Parent = MainMenu
-
-local MTitle = Instance.new("TextLabel")
-MTitle.Size = UDim2.new(1,-30,1,0)
-MTitle.BackgroundTransparency = 1
-MTitle.Text = "BLUE_MODE ESP"
-MTitle.TextColor3 = Color3.new(1,1,1)
-MTitle.Font = Enum.Font.GothamBold
-MTitle.TextScaled = true
-MTitle.Parent = DragBar
-
-local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0,25,0,25)
-MinBtn.Position = UDim2.new(1,-25,0,0)
-MinBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-MinBtn.Text = "−"
-MinBtn.TextColor3 = Color3.new(1,1,1)
-MinBtn.Font = Enum.Font.GothamBold
-MinBtn.TextScaled = true
-MinBtn.Parent = DragBar
-
-local TimerText = Instance.new("TextLabel")
-TimerText.Size = UDim2.new(1,-20,0,25)
-TimerText.Position = UDim2.new(0,10,0,30)
-TimerText.BackgroundTransparency = 1
-TimerText.Text = "00:00:00 / 12:00:00"
-TimerText.TextColor3 = Color3.new(0,1,1)
-TimerText.Font = Enum.Font.GothamBold
-TimerText.TextScaled = true
-TimerText.Parent = MainMenu
-
--- BUTTONS
-local ESPBtn = Instance.new("TextButton")
-ESPBtn.Size = UDim2.new(0,65,0,30)
-ESPBtn.Position = UDim2.new(0,10,0,60)
-ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-ESPBtn.Text = "ESP OFF"
-ESPBtn.TextColor3 = Color3.new(1,1,1)
-ESPBtn.Font = Enum.Font.GothamBold
-ESPBtn.TextScaled = true
-ESPBtn.Parent = MainMenu
-
-local MusicBtn = Instance.new("TextButton")
-MusicBtn.Size = UDim2.new(0,65,0,30)
-MusicBtn.Position = UDim2.new(0,80,0,60)
-MusicBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-MusicBtn.Text = "🎵 OFF"
-MusicBtn.TextColor3 = Color3.new(1,1,1)
-MusicBtn.Font = Enum.Font.GothamBold
-MusicBtn.TextScaled = true
-MusicBtn.Parent = MainMenu
-
-local LinkBtn = Instance.new("TextButton")
-LinkBtn.Size = UDim2.new(0,65,0,30)
-LinkBtn.Position = UDim2.new(0,150,0,60)
-LinkBtn.BackgroundColor3 = Color3.fromRGB(20,110,180)
-LinkBtn.Text = "📺 YT"
-LinkBtn.TextColor3 = Color3.new(1,1,1)
-LinkBtn.Font = Enum.Font.GothamBold
-LinkBtn.TextScaled = true
-LinkBtn.Parent = MainMenu
-
-local LogBtn = Instance.new("TextButton")
-LogBtn.Size = UDim2.new(0,65,0,30)
-LogBtn.Position = UDim2.new(0,220,0,60)
-LogBtn.BackgroundColor3 = Color3.fromRGB(120,50,160)
-LogBtn.Text = "📜 LOG"
-LogBtn.TextColor3 = Color3.new(1,1,1)
-LogBtn.Font = Enum.Font.GothamBold
-LogBtn.TextScaled = true
-LogBtn.Parent = MainMenu
-
-local LockBtn = Instance.new("TextButton")
-LockBtn.Size = UDim2.new(0,80,0,30)
-LockBtn.Position = UDim2.new(0,290,0,60)
-LockBtn.BackgroundColor3 = Color3.fromRGB(70,70,70)
-LockBtn.Text = "🔒 LOCK"
-LockBtn.TextColor3 = Color3.new(1,1,1)
-LockBtn.Font = Enum.Font.GothamBold
-LockBtn.TextScaled = true
-LockBtn.Parent = MainMenu
-
--- FLAGS
 local ESP_ON = false
 local MUSIC_ON = false
 local MOVE_LOCKED = false
 local MINIMIZED = false
 
--- WELCOME BUTTON
+-- START BUTTON (FIXED)
 WelcomeOK.MouseButton1Click:Connect(function()
     Welcome.Visible = false
     MainMenu.Visible = true
 end)
 
--- DRAG MENU
+-- DRAG
 local Drag = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
 DragBar.InputBegan:Connect(function(Input)
     if MOVE_LOCKED then return end
@@ -387,16 +385,17 @@ UIS.InputEnded:Connect(function() Drag.Active = false end)
 ESPBtn.MouseButton1Click:Connect(function()
     ESP_ON = not ESP_ON
     ESPBtn.Text = ESP_ON and "ESP ON" or "ESP OFF"
-    ESPBtn.BackgroundColor3 = ESP_ON and Color3.fromRGB(25,110,25) or Color3.fromRGB(40,40,40)
 end)
 MusicBtn.MouseButton1Click:Connect(function()
     MUSIC_ON = not MUSIC_ON
     MusicBtn.Text = MUSIC_ON and "🎵 ON" or "🎵 OFF"
-    MusicBtn.BackgroundColor3 = MUSIC_ON and Color3.fromRGB(20,120,190) or Color3.fromRGB(40,40,40)
 end)
 LinkBtn.MouseButton1Click:Connect(function() pcall(function() if setclipboard then setclipboard(YT_LINK) end end) end)
 LogBtn.MouseButton1Click:Connect(function() RefreshLog(); LogWindow.Visible = true end)
-LockBtn.MouseButton1Click:Connect(function() MOVE_LOCKED = not MOVE_LOCKED; LockBtn.Text = MOVE_LOCKED and "🔓 UNLOCK" or "🔒 LOCK" end)
+LockBtn.MouseButton1Click:Connect(function()
+    MOVE_LOCKED = not MOVE_LOCKED
+    LockBtn.Text = MOVE_LOCKED and "🔓 UNLOCK" or "🔒 LOCK"
+end)
 MinBtn.MouseButton1Click:Connect(function()
     MINIMIZED = not MINIMIZED
     MainMenu.Size = MINIMIZED and UDim2.new(0,100,0,30) or UDim2.new(0,520,0,100)
@@ -405,48 +404,74 @@ MinBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==============================================
--- MAIN LOOP
+-- 🔄 MAIN LOOP + FULL RAINBOW EFFECT
 -- ==============================================
 RunService.Heartbeat:Connect(function(dt)
     if Data.IsLocked then return end
 
-    -- UPDATE TIMER
-    Data.UsedTime = Data.UsedTime + dt
-    TimerText.Text = string.format("%02d:%02d:%02d / 12:00:00", math.floor(Data.UsedTime/3600), math.floor((Data.UsedTime%3600)/60), math.floor(Data.UsedTime%60))
+    -- UPDATE & SAVE TIME
+    Data.UsedTime += dt
+    if Data.UsedTime % 5 < dt then SaveTime() end -- Save every 5s
+    TimerText.Text = string.format("%02d:%02d:%02d / 12:00:00",
+        math.floor(Data.UsedTime/3600)%24,
+        math.floor(Data.UsedTime/60)%60,
+        math.floor(Data.UsedTime%60))
 
-    -- AUTO LOCK AFTER 12H
+    -- AUTO LOCK
     if Data.UsedTime >= MAX_SECONDS then
         Data.IsLocked = true
+        SaveTime()
         MainMenu.Visible = false
         Welcome.Visible = false
         LockScreen.Visible = true
-        pcall(function()
-            game:GetService("StarterGui"):SetCore("SendNotification",{
-                Title = "⏰ TIME UP", Text = "12 Hours reached!", Duration = 5
-            })
-        end)
+        pcall(function() game:GetService("StarterGui"):SetCore("SendNotification",{Title = "⏰ TIME UP", Text = "12 Hours reached!", Duration = 5}) end)
         return
     end
 
-    -- RAINBOW BORDERS
-    local Rainbow = Color3.fromHSV((os.clock()*0.7)%1,1,1)
+    -- ✅ FULL RAINBOW EVERYWHERE
+    local Hue = (os.clock() * 0.5) % 1 -- Smooth speed
+    local Rainbow = Color3.fromHSV(Hue, 1, 1)
+    local Rainbow2 = Color3.fromHSV((Hue + 0.33) % 1, 1, 1)
+    local Rainbow3 = Color3.fromHSV((Hue + 0.66) % 1, 1, 1)
+
+    -- BORDERS
     Welcome.BorderColor3 = Rainbow
     MainMenu.BorderColor3 = Rainbow
     LogWindow.BorderColor3 = Rainbow
 
-    -- ESP
-    if not ESP_ON then return end
-    for _,p in ipairs(Players:GetPlayers()) do
-        if p == LocalPlayer then continue end
-        local Char = p.Character
-        if Char and Char:FindFirstChild("Humanoid") and Char.Humanoid.Health > 0 then
-            local ESP = Char:FindFirstChild("BlueESP") or Instance.new("Highlight")
-            ESP.Name = "BlueESP"
-            ESP.FillTransparency = 1
-            ESP.OutlineTransparency = 0
-            ESP.OutlineColor = Rainbow
-            ESP.Adornee = Char
-            ESP.Parent = Char
+    -- ALL TEXT
+    MadeBy.TextColor3 = Rainbow
+    Features.TextColor3 = Rainbow2
+    MTitle.TextColor3 = Rainbow
+    TimerText.TextColor3 = Rainbow
+    LockTitle.TextColor3 = Rainbow
+    LogTitle.TextColor3 = Rainbow
+    UnlockBtn.TextColor3 = Rainbow
+    WelcomeOK.TextColor3 = Rainbow
+
+    -- BUTTON TEXT
+    ESPBtn.TextColor3 = Rainbow
+    MusicBtn.TextColor3 = Rainbow2
+    LinkBtn.TextColor3 = Rainbow3
+    LogBtn.TextColor3 = Rainbow2
+    LockBtn.TextColor3 = Rainbow3
+    MinBtn.TextColor3 = Rainbow
+    LogClose.TextColor3 = Rainbow
+
+    -- ESP RAINBOW
+    if ESP_ON then
+        for _,p in ipairs(Players:GetPlayers()) do
+            if p == LocalPlayer then continue end
+            local Char = p.Character
+            if Char and Char:FindFirstChild("Humanoid") and Char.Humanoid.Health > 0 then
+                local ESP = Char:FindFirstChild("BlueESP") or Instance.new("Highlight")
+                ESP.Name = "BlueESP"
+                ESP.FillTransparency = 1
+                ESP.OutlineTransparency = 0
+                ESP.OutlineColor = Rainbow
+                ESP.Adornee = Char
+                ESP.Parent = Char
+            end
         end
     end
 end)
