@@ -1,34 +1,33 @@
 -- ==============================================
--- COPYRIGHT © BLUE_MODE | ALL RIGHTS RESERVED
--- PROTECTED & FULLY WORKING VERSION
+-- ✅ BLUE_MODE ESP | FULLY PROTECTED VERSION
+-- ✅ COPYRIGHT © BLUE_MODE | ALL RIGHTS RESERVED
+-- ✅ UNAUTHORIZED REBRANDING, MODIFICATION OR THEFT IS PROHIBITED
 -- ==============================================
 
 -- Prevent duplicate loading
 if getgenv and getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
 
--- 🛡️ Anti-copy protection (simplified, no breakage)
-local BLOCK = function() end
-setclipboard = BLOCK
-if set_clipboard then set_clipboard = BLOCK end
+-- 🛡️ HIDDEN ANTI-REBRAND PROTECTION (DO NOT REMOVE!)
+local ORIGINAL_CREATOR = "BLUE_MODE"
+local ORIGINAL_UI_NAME = "BLUE_MODE_FULL_PROTECTED"
 
--- ==============================================
--- YOUR ORIGINAL FULL SCRIPT STARTS HERE
--- ==============================================
-
+-- 🛠️ SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
-local USE_LIMIT = 43200
-local LOCK_TIME = 43200
+-- ⚙️ SETTINGS
+local USE_LIMIT = 43200 -- 12 HOURS
+local LOCK_TIME = 43200 -- 12 HOUR LOCK
 local OWNER_CODE = "Blue_Mode192823"
 local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
 local DEFAULT_SOUND_ID = "rbxassetid://6001487560"
 local VOLUME = 0.7
 
+-- 📊 VARIABLES
 local USED_TIME = 0
 local LOCK_END = 0
 local WRONG_COUNT = 0
@@ -39,9 +38,11 @@ local MINIMIZED = false
 local SCRIPT_HIDDEN = false
 local CONNECTIONS = {}
 local TEXT_OBJS = {}
+local UI -- Global for anti-tamper
 
-local UI = Instance.new("ScreenGui")
-UI.Name = "BLUE_MODE_FIXED"
+-- 🖼️ SAFE UI PARENT
+UI = Instance.new("ScreenGui")
+UI.Name = ORIGINAL_UI_NAME
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.DisplayOrder = 9999
@@ -53,6 +54,20 @@ else
     if not UI.Parent then UI.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 end
 
+-- 🛡️ ANTI-TAMPER CHECK (RUNS EVERY 8 SECONDS)
+task.spawn(function()
+    while task.wait(8) do
+        if not UI or UI.Name ~= ORIGINAL_UI_NAME then
+            warn("\n⚠️ WARNING: MODIFIED/STOLEN VERSION DETECTED!")
+            warn("✅ ORIGINAL CREATOR: BLUE_MODE")
+            warn("🔗 OFFICIAL CHANNEL: "..YT_LINK.."\n")
+            -- Restore original name if changed
+            pcall(function() if UI then UI.Name = ORIGINAL_UI_NAME end end)
+        end
+    end
+end)
+
+-- 🎵 MUSIC SYSTEM (FULLY WORKING)
 local Song = Instance.new("Sound")
 Song.Name = "BlueModeSound"
 Song.SoundId = DEFAULT_SOUND_ID
@@ -60,9 +75,10 @@ Song.Looped = true
 Song.Volume = VOLUME
 Song.Parent = UI
 
+-- 🎵 BOOMBOX GUI (CUSTOM ID FULLY WORKING)
 local BoomboxGui = Instance.new("Frame")
-BoomboxGui.Size = UDim2.new(0,220,0,140)
-BoomboxGui.Position = UDim2.new(0.5,-110,0.5,-70)
+BoomboxGui.Size = UDim2.new(0,240,0,160)
+BoomboxGui.Position = UDim2.new(0.5,-120,0.5,-80)
 BoomboxGui.BackgroundColor3 = Color3.fromRGB(22,22,22)
 BoomboxGui.BorderSizePixel = 2
 BoomboxGui.Visible = false
@@ -80,25 +96,36 @@ BTitle.TextScaled = true
 BTitle.Parent = BoomboxGui
 
 local IDInput = Instance.new("TextBox")
-IDInput.Size = UDim2.new(0,200,0,35)
-IDInput.Position = UDim2.new(0.5,-100,0,38)
+IDInput.Size = UDim2.new(0,220,0,40)
+IDInput.Position = UDim2.new(0.5,-110,0,40)
 IDInput.BackgroundColor3 = Color3.fromRGB(35,35,35)
 IDInput.Text = DEFAULT_SOUND_ID
-IDInput.PlaceholderText = "Paste Sound/Boombox ID"
+IDInput.PlaceholderText = "Paste Song ID / Boombox ID"
 IDInput.TextColor3 = Color3.new(1,1,1)
 IDInput.Font = Enum.Font.Gotham
 IDInput.TextScaled = true
+IDInput.ClearTextOnFocus = false
 IDInput.Parent = BoomboxGui
 
 local ApplyBtn = Instance.new("TextButton")
-ApplyBtn.Size = UDim2.new(0,90,0,30)
-ApplyBtn.Position = UDim2.new(0.5,-95,0,80)
+ApplyBtn.Size = UDim2.new(0,100,0,35)
+ApplyBtn.Position = UDim2.new(0.5,-105,0,90)
 ApplyBtn.BackgroundColor3 = Color3.fromRGB(20,140,60)
-ApplyBtn.Text = "✅ USE ID"
+ApplyBtn.Text = "✅ PLAY SONG"
 ApplyBtn.TextColor3 = Color3.new(1,1,1)
 ApplyBtn.Font = Enum.Font.GothamBold
 ApplyBtn.TextScaled = true
 ApplyBtn.Parent = BoomboxGui
+
+local StopBtn = Instance.new("TextButton")
+StopBtn.Size = UDim2.new(0,100,0,35)
+StopBtn.Position = UDim2.new(0.5,5,0,90)
+StopBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
+StopBtn.Text = "⏹️ STOP"
+StopBtn.TextColor3 = Color3.new(1,1,1)
+StopBtn.Font = Enum.Font.GothamBold
+StopBtn.TextScaled = true
+StopBtn.Parent = BoomboxGui
 
 local BClose = Instance.new("TextButton")
 BClose.Size = UDim2.new(0,30,0,30)
@@ -110,6 +137,7 @@ BClose.Font = Enum.Font.GothamBold
 BClose.TextScaled = true
 BClose.Parent = BoomboxGui
 
+-- 👋 WELCOME SCREEN
 local Welcome = Instance.new("Frame")
 Welcome.Size = UDim2.new(0,400,0,320)
 Welcome.Position = UDim2.new(0.5,-200,0.5,-160)
@@ -139,18 +167,16 @@ WhatsNew.Font = Enum.Font.Gotham
 WhatsNew.TextScaled = true
 WhatsNew.TextXAlignment = Enum.TextXAlignment.Left
 WhatsNew.TextYAlignment = Enum.TextYAlignment.Top
-WhatsNew.Text = [[📋 WHAT'S NEW:
+WhatsNew.Text = [[📋 FEATURES:
+• ✅ Fully working Boombox & Custom IDs
+• ✅ Fixed YouTube Copy + Manual Link
 • ✅ Fixed drag lock logic
-• ✅ Added delete button with confirm
-• ✅ Fixed music & custom ID
+• ✅ Delete button with confirm/cancel
 • ✅ 12h use → 12h lock system
 • ✅ Owner unlock: Blue_Mode192823
-• ✅ 2 wrong codes = hide until unlock
-• ✅ Draggable + lock drag
 • ✅ Minimize/Maximize menu
-• ✅ Rainbow dot only on friends
-• ✅ YouTube link copy button
-• ✅ Light anti-copy protection]]
+• ✅ Rainbow ESP & Friend Dot
+• ✅ Anti-rebrand protection active]]
 WhatsNew.Parent = Welcome
 
 local WelcomeOK = Instance.new("TextButton")
@@ -163,6 +189,7 @@ WelcomeOK.Font = Enum.Font.GothamBold
 WelcomeOK.TextScaled = true
 WelcomeOK.Parent = Welcome
 
+-- 🗑️ DELETE CONFIRM POPUP
 local DeletePopup = Instance.new("Frame")
 DeletePopup.Size = UDim2.new(0,320,0,150)
 DeletePopup.Position = UDim2.new(0.5,-160,0.5,-75)
@@ -204,6 +231,7 @@ DelNo.Font = Enum.Font.GothamBold
 DelNo.TextScaled = true
 DelNo.Parent = DeletePopup
 
+-- 📌 HELPER FUNCTIONS
 local function FormatTime(s)
     s = math.max(0, math.floor(s))
     return string.format("%02d:%02d:%02d", s/3600, (s%3600)/60, s%60)
@@ -214,8 +242,13 @@ local function IsFriend(userId)
     return ok and res
 end
 
+-- ✅ FIXED COPY LINK (WORKS + SHOWS LINK IF CLIPBOARD FAILS)
 local function CopyLink(text)
     pcall(function() setclipboard(text) end)
+    pcall(function() if set_clipboard then set_clipboard(text) end end)
+    print("\n📺 OFFICIAL YOUTUBE CHANNEL:")
+    print(text)
+    print("📺 COPY IT MANUALLY FROM HERE IF NEEDED!\n")
 end
 
 local function ClearESP()
@@ -235,6 +268,7 @@ local function FullDelete()
     getgenv().BlueMode_Loaded = nil
 end
 
+-- ⛔ LOCK SCREEN
 local LockScreen = Instance.new("Frame")
 LockScreen.Size = UDim2.new(0,380,0,240)
 LockScreen.Position = UDim2.new(0.5,-190,0.5,-120)
@@ -297,6 +331,7 @@ UnlockBtn.Font = Enum.Font.GothamBold
 UnlockBtn.TextScaled = true
 UnlockBtn.Parent = LockScreen
 
+-- 🎯 MAIN MENU
 local MainMenu = Instance.new("Frame")
 MainMenu.Size = UDim2.new(0,480,0,110)
 MainMenu.Position = UDim2.new(0,20,0.5,-55)
@@ -395,21 +430,23 @@ DelBtn.TextScaled = true
 DelBtn.Parent = MainMenu
 
 local CopyNotice = Instance.new("TextLabel")
-CopyNotice.Size = UDim2.new(0,120,0,22)
-CopyNotice.Position = UDim2.new(0,405,0,65)
+CopyNotice.Size = UDim2.new(0,160,0,22)
+CopyNotice.Position = UDim2.new(0,400,0,65)
 CopyNotice.BackgroundColor3 = Color3.fromRGB(0,130,80)
-CopyNotice.Text = "✅ COPIED!"
+CopyNotice.Text = "✅ LINK SHOWN IN CONSOLE!"
 CopyNotice.TextColor3 = Color3.new(1,1,1)
 CopyNotice.Font = Enum.Font.Gotham
 CopyNotice.TextScaled = true
 CopyNotice.Visible = false
 CopyNotice.Parent = MainMenu
 
+-- 🖱️ WELCOME OK
 WelcomeOK.MouseButton1Click:Connect(function()
     Welcome.Visible = false
     MainMenu.Visible = true
 end)
 
+-- 🖱️ DRAG SYSTEM
 local Drag = {Active=false, StartX=0, StartY=0, StartPosX=0, StartPosY=0}
 table.insert(CONNECTIONS, DragBar.InputBegan:Connect(function(Input)
     if MOVE_LOCKED then return end
@@ -427,6 +464,7 @@ table.insert(CONNECTIONS, UIS.InputChanged:Connect(function(Input)
 end))
 table.insert(CONNECTIONS, UIS.InputEnded:Connect(function() Drag.Active = false end))
 
+-- 📌 BUTTON FUNCTIONS
 ESPBtn.MouseButton1Click:Connect(function()
     ESP_ON = not ESP_ON
     ESPBtn.Text = ESP_ON and "ESP ON" or "ESP OFF"
@@ -434,12 +472,13 @@ ESPBtn.MouseButton1Click:Connect(function()
     if not ESP_ON then ClearESP() end
 end)
 
+-- 🎵 MUSIC / BOOMBOX FULLY WORKING
 MusicBtn.MouseButton1Click:Connect(function()
     MUSIC_ON = not MUSIC_ON
     MusicBtn.Text = MUSIC_ON and "🎵 ON" or "🎵 OFF"
     MusicBtn.BackgroundColor3 = MUSIC_ON and Color3.fromRGB(20,120,190) or Color3.fromRGB(40,40,40)
     BoomboxGui.Visible = MUSIC_ON
-    if MUSIC_ON then pcall(function() Song:Play() end) else pcall(function() Song:Stop() end) end
+    if MUSIC_ON then pcall(function() Song:Play() end) else pcall(function() Song:Pause() end) end
 end)
 
 BClose.MouseButton1Click:Connect(function()
@@ -452,16 +491,26 @@ end)
 
 ApplyBtn.MouseButton1Click:Connect(function()
     local NewID = IDInput.Text
-    if NewID ~= "" then
-        Song.SoundId = NewID
-        if MUSIC_ON then pcall(function() Song:Play() end) end
+    if NewID == "" then return end
+    -- Auto fix ID format if needed
+    if not NewID:find("rbxassetid://") then
+        NewID = "rbxassetid://"..NewID
     end
+    Song.SoundId = NewID
+    print("✅ LOADED SONG ID: "..NewID)
+    if MUSIC_ON then
+        pcall(function() Song:Play() end)
+    end
+end)
+
+StopBtn.MouseButton1Click:Connect(function()
+    pcall(function() Song:Stop() end)
 end)
 
 LinkBtn.MouseButton1Click:Connect(function()
     CopyLink(YT_LINK)
     CopyNotice.Visible = true
-    task.delay(2, function() CopyNotice.Visible = false end)
+    task.delay(3, function() CopyNotice.Visible = false end)
 end)
 
 LockBtn.MouseButton1Click:Connect(function()
@@ -521,6 +570,7 @@ UnlockBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ⚡ MAIN LOOP
 table.insert(CONNECTIONS, RunService.Heartbeat:Connect(function(dt)
     local Rainbow = Color3.fromHSV((os.clock()*0.7)%1,1,1)
     Welcome.BorderColor3 = Rainbow
@@ -602,4 +652,8 @@ table.insert(CONNECTIONS, RunService.Heartbeat:Connect(function(dt)
     end
 end))
 
-print("✅ BLUE_MODE ESP | FULLY WORKING & PROTECTED!")
+print("\n✅ ==========================================")
+print("✅ BLUE_MODE ESP | FULLY PROTECTED VERSION")
+print("✅ COPYRIGHT © BLUE_MODE | ALL RIGHTS RESERVED")
+print("✅ ==========================================\n")
+
