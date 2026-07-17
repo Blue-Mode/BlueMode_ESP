@@ -1,23 +1,26 @@
 -- ==============================================
--- ✅ BLUE_MODE ESP | OWNER BADGE + PUBLIC LOG
--- ✅ LOCK SURVIVES RESTARTS / RE-EXECUTES
--- ✅ ONLY DWAYNEKEAN015 SHOWS AS 👑 OWNER
--- ✅ COPYRIGHT © BLUE_MODE | ALL RIGHTS RESERVED
+-- ✅ BLUE_MODE ESP | GLOBAL CHAT + OWNER BADGE
+-- ✅ LOCK SURVIVES RESTARTS / NO BREAKS
+-- ✅ COPYRIGHT © BLUE_MODE
 -- ==============================================
 
--- Prevent duplicate loading
+-- Prevent duplicate load
 if getgenv and getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
 
--- ⏳ SMALL DELAY SO ACCOUNT LOADS FULLY
-task.wait(1)
+-- Small delay for safe load
+task.wait(0.8)
 
--- 🛡️ SECURITY SETTINGS
-local ORIGINAL_UI_NAME = "BLUE_MODE_OWNER_LOG_v6"
-local OWNER_USERNAME = "Dwaynekean015" -- ONLY YOU GET OWNER BADGE
+-- ⚙️ SETTINGS
+local ORIGINAL_UI_NAME = "BLUE_MODE_CHAT_v8"
+local OWNER_USERNAME = "Dwaynekean015"
 local OWNER_CODE = "Blue_Mode192823"
-local USE_LIMIT = 43200 -- 12 HOURS USE
-local LOCK_TIME = 43200 -- 12 HOURS LOCK
+local USE_LIMIT = 43200 -- 12h use
+local LOCK_TIME = 43200 -- 12h lock
+local MAX_MESSAGES = 80 -- Keep chat clean
+local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
+local DEFAULT_SOUND_ID = "rbxassetid://6001487560"
+local VOLUME = 0.7
 
 -- 🛠️ SERVICES
 local Players = game:GetService("Players")
@@ -27,14 +30,14 @@ local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
--- 📌 PERMANENT SAVE SYSTEM
+-- 📂 PERMANENT SAVE SYSTEM
 local function GetSavedData()
     local ok, data = pcall(function() return readfile and readfile("BlueMode_Data.json") end)
     if ok and data then
-        local decodeOk, result = pcall(function() return HttpService:JSONDecode(data) end)
-        if decodeOk then return result end
+        local decodeOk, res = pcall(function() return HttpService:JSONDecode(data) end)
+        if decodeOk then return res end
     end
-    return {UsedTime = 0, LockEnd = 0, Executions = {}}
+    return {UsedTime = 0, LockEnd = 0, Executions = {}, ChatMessages = {}}
 end
 
 local function SaveData(data)
@@ -45,30 +48,26 @@ local function SaveData(data)
     end)
 end
 
--- 📊 LOAD SAVED STATE
+-- 📊 LOAD DATA
 local Saved = GetSavedData()
 local USED_TIME = Saved.UsedTime or 0
 local LOCK_END = Saved.LockEnd or 0
 local EXECUTION_LOG = Saved.Executions or {}
+local GLOBAL_CHAT = Saved.ChatMessages or {}
 local WRONG_COUNT = 0
 
--- 📝 ADD CURRENT USER TO LOG WITH OWNER BADGE IF IT'S YOU
+-- 📝 ADD CURRENT USER TO EXECUTION LOG
 local IsOwnerNow = LocalPlayer.Name == OWNER_USERNAME
-local CurrentEntry = {
+table.insert(EXECUTION_LOG, 1, {
     Username = LocalPlayer.Name,
     IsOwner = IsOwnerNow,
     Time = os.date("%Y-%m-%d | %H:%M:%S"),
     Timestamp = os.time()
-}
-table.insert(EXECUTION_LOG, 1, CurrentEntry) -- NEWEST FIRST
--- KEEP ONLY LAST 50 ENTRIES
+})
 if #EXECUTION_LOG > 50 then table.remove(EXECUTION_LOG) end
-SaveData({UsedTime = USED_TIME, LockEnd = LOCK_END, Executions = EXECUTION_LOG})
+SaveData({UsedTime = USED_TIME, LockEnd = LOCK_END, Executions = EXECUTION_LOG, ChatMessages = GLOBAL_CHAT})
 
--- REST OF SETTINGS
-local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
-local DEFAULT_SOUND_ID = "rbxassetid://6001487560"
-local VOLUME = 0.7
+-- 📌 FLAGS
 local ESP_ON = false
 local MUSIC_ON = false
 local MOVE_LOCKED = false
@@ -90,7 +89,7 @@ else
     if not UI.Parent then UI.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 end
 
--- 📜 EXECUTION LOG WINDOW (VISIBLE TO ALL)
+-- 📜 EXECUTION LOG WINDOW
 local LogWindow = Instance.new("Frame")
 LogWindow.Size = UDim2.new(0,420,0,340)
 LogWindow.Position = UDim2.new(0.5,-210,0.5,-170)
@@ -132,7 +131,6 @@ local LogList = Instance.new("UIListLayout")
 LogList.Padding = UDim.new(0,4)
 LogList.Parent = LogContainer
 
--- FUNCTION TO REFRESH LOG — SHOWS 👑 OWNER FOR YOU
 local function RefreshLog()
     LogContainer:ClearAllChildren()
     LogList.Parent = LogContainer
@@ -141,14 +139,8 @@ local function RefreshLog()
         EntryLabel.Size = UDim2.new(1,0,0,26)
         EntryLabel.BackgroundColor3 = entry.IsOwner and Color3.fromRGB(35,25,0) or Color3.fromRGB(28,28,28)
         EntryLabel.BackgroundTransparency = 0.2
-        -- SHOW OWNER BADGE ONLY FOR YOUR ACCOUNT
-        local DisplayName = entry.Username
-        if entry.IsOwner then
-            DisplayName = "👑 OWNER: "..DisplayName
-        else
-            DisplayName = "👤 "..DisplayName
-        end
-        EntryLabel.Text = DisplayName.." | 🕒 "..entry.Time
+        local Display = entry.IsOwner and "👑 OWNER: "..entry.Username or "👤 "..entry.Username
+        EntryLabel.Text = Display.." | 🕒 "..entry.Time
         EntryLabel.TextColor3 = entry.IsOwner and Color3.fromRGB(255,215,0) or Color3.new(0.9,0.9,0.9)
         EntryLabel.Font = Enum.Font.GothamBold
         EntryLabel.TextScaled = true
@@ -157,8 +149,120 @@ local function RefreshLog()
     end
 end
 RefreshLog()
-
 LogClose.MouseButton1Click:Connect(function() LogWindow.Visible = false end)
+
+-- 🌐 GLOBAL CHAT WINDOW
+local ChatWindow = Instance.new("Frame")
+ChatWindow.Size = UDim2.new(0,420,0,380)
+ChatWindow.Position = UDim2.new(0.5,-210,0.5,-190)
+ChatWindow.BackgroundColor3 = Color3.fromRGB(18,18,18)
+ChatWindow.BorderSizePixel = 2
+ChatWindow.Visible = false
+ChatWindow.ZIndex = 20
+ChatWindow.Parent = UI
+Instance.new("UICorner", ChatWindow).CornerRadius = UDim.new(0,10)
+
+local ChatTitle = Instance.new("TextLabel")
+ChatTitle.Size = UDim2.new(1,0,0,35)
+ChatTitle.Position = UDim2.new(0,0,0,5)
+ChatTitle.BackgroundTransparency = 1
+ChatTitle.Text = "🌐 GLOBAL CHAT | ALL USERS"
+ChatTitle.TextColor3 = Color3.new(1,1,1)
+ChatTitle.Font = Enum.Font.GothamBold
+ChatTitle.TextScaled = true
+ChatTitle.Parent = ChatWindow
+
+local ChatClose = Instance.new("TextButton")
+ChatClose.Size = UDim2.new(0,30,0,30)
+ChatClose.Position = UDim2.new(1,-35,0,5)
+ChatClose.BackgroundColor3 = Color3.fromRGB(160,30,30)
+ChatClose.Text = "✕"
+ChatClose.TextColor3 = Color3.new(1,1,1)
+ChatClose.Font = Enum.Font.GothamBold
+ChatClose.TextScaled = true
+ChatClose.Parent = ChatWindow
+
+local ChatContainer = Instance.new("ScrollingFrame")
+ChatContainer.Size = UDim2.new(1,-20,0,270)
+ChatContainer.Position = UDim2.new(0,10,0,45)
+ChatContainer.BackgroundTransparency = 1
+ChatContainer.ScrollBarThickness = 6
+ChatContainer.CanvasSize = UDim2.new(0,0,0,0)
+ChatContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ChatContainer.Parent = ChatWindow
+
+local ChatList = Instance.new("UIListLayout")
+ChatList.Padding = UDim.new(0,5)
+ChatList.HorizontalAlignment = Enum.HorizontalAlignment.Left
+ChatList.VerticalAlignment = Enum.VerticalAlignment.Top
+ChatList.Parent = ChatContainer
+
+local ChatInput = Instance.new("TextBox")
+ChatInput.Size = UDim2.new(0,300,0,35)
+ChatInput.Position = UDim2.new(0.5,-305,0,325)
+ChatInput.BackgroundColor3 = Color3.fromRGB(35,35,35)
+ChatInput.Text = ""
+ChatInput.PlaceholderText = "Type message here..."
+ChatInput.TextColor3 = Color3.new(1,1,1)
+ChatInput.Font = Enum.Font.Gotham
+ChatInput.TextScaled = true
+ChatInput.ClearTextOnFocus = false
+ChatInput.Parent = ChatWindow
+
+local SendBtn = Instance.new("TextButton")
+SendBtn.Size = UDim2.new(0,100,0,35)
+SendBtn.Position = UDim2.new(0.5,5,0,325)
+SendBtn.BackgroundColor3 = Color3.fromRGB(20,140,60)
+SendBtn.Text = "📤 SEND"
+SendBtn.TextColor3 = Color3.new(1,1,1)
+SendBtn.Font = Enum.Font.GothamBold
+SendBtn.TextScaled = true
+SendBtn.Parent = ChatWindow
+
+-- FUNCTION TO REFRESH CHAT
+local function RefreshChat()
+    ChatContainer:ClearAllChildren()
+    ChatList.Parent = ChatContainer
+    for _,msg in ipairs(GLOBAL_CHAT) do
+        local MsgLabel = Instance.new("TextLabel")
+        MsgLabel.Size = UDim2.new(1,0,0,28)
+        MsgLabel.AutomaticSize = Enum.AutomaticSize.X
+        MsgLabel.BackgroundTransparency = 1
+        MsgLabel.TextColor3 = msg.IsOwner and Color3.fromRGB(255,215,0) or Color3.new(0.85,0.85,0.85)
+        MsgLabel.Font = Enum.Font.Gotham
+        MsgLabel.TextScaled = true
+        MsgLabel.TextXAlignment = Enum.TextXAlignment.Left
+        MsgLabel.RichText = true
+        local SenderName = msg.IsOwner and "<b>👑 "..msg.Sender.."</b>" or "👤 "..msg.Sender
+        MsgLabel.Text = SenderName..": "..msg.Text
+        MsgLabel.Parent = ChatContainer
+    end
+    -- Auto scroll to bottom
+    ChatContainer.CanvasPosition = Vector2.new(0, ChatContainer.AbsoluteCanvasSize.Y)
+end
+
+-- SEND MESSAGE FUNCTION
+local function SendMessage()
+    local Text = ChatInput.Text:sub(1, 200) -- Max 200 chars
+    if Text == "" then return end
+    table.insert(GLOBAL_CHAT, {
+        Sender = LocalPlayer.Name,
+        IsOwner = IsOwnerNow,
+        Text = Text,
+        Time = os.date("%H:%M:%S")
+    })
+    -- Keep chat size clean
+    if #GLOBAL_CHAT > MAX_MESSAGES then table.remove(GLOBAL_CHAT, 1) end
+    SaveData({UsedTime = USED_TIME, LockEnd = LOCK_END, Executions = EXECUTION_LOG, ChatMessages = GLOBAL_CHAT})
+    ChatInput.Text = ""
+    RefreshChat()
+end
+
+-- CHAT BUTTON ACTIONS
+RefreshChat()
+ChatClose.MouseButton1Click:Connect(function() ChatWindow.Visible = false end)
+SendBtn.MouseButton1Click:Connect(SendMessage)
+ChatInput.FocusLost:Connect(function(enter) if enter then SendMessage() end end)
 
 -- 🎵 MUSIC SYSTEM
 local Song = Instance.new("Sound")
@@ -232,9 +336,9 @@ BClose.TextScaled = true
 BClose.Parent = BoomboxGui
 
 ApplyBtn.MouseButton1Click:Connect(function()
-    local songId = IDInput.Text:gsub("%D", "")
-    if songId == "" then return end
-    Song.SoundId = "rbxassetid://"..songId
+    local sid = IDInput.Text:gsub("%D", "")
+    if sid == "" then return end
+    Song.SoundId = "rbxassetid://"..sid
     Song:Play()
     ApplyBtn.Text = "✅ PLAYING"
     task.delay(2, function() ApplyBtn.Text = "✅ PLAY" end)
@@ -244,8 +348,8 @@ BClose.MouseButton1Click:Connect(function() BoomboxGui.Visible = false end)
 
 -- 👋 WELCOME SCREEN
 local Welcome = Instance.new("Frame")
-Welcome.Size = UDim2.new(0,400,0,320)
-Welcome.Position = UDim2.new(0.5,-200,0.5,-160)
+Welcome.Size = UDim2.new(0,400,0,340)
+Welcome.Position = UDim2.new(0.5,-200,0.5,-170)
 Welcome.BackgroundColor3 = Color3.fromRGB(20,20,20)
 Welcome.BorderSizePixel = 3
 Welcome.BorderColor3 = Color3.fromRGB(0,200,200)
@@ -264,7 +368,7 @@ MadeBy.Parent = Welcome
 table.insert(TEXT_OBJS, MadeBy)
 
 local WhatsNew = Instance.new("TextLabel")
-WhatsNew.Size = UDim2.new(1,-20,0,190)
+WhatsNew.Size = UDim2.new(1,-20,0,210)
 WhatsNew.Position = UDim2.new(0,10,0,55)
 WhatsNew.BackgroundTransparency = 1
 WhatsNew.TextColor3 = Color3.new(0.9,0.9,0.9)
@@ -273,18 +377,19 @@ WhatsNew.TextScaled = true
 WhatsNew.TextXAlignment = Enum.TextXAlignment.Left
 WhatsNew.TextYAlignment = Enum.TextYAlignment.Top
 WhatsNew.Text = [[📋 FEATURES:
+• ✅ 🆕 🌐 GLOBAL CHAT — all users talk here
 • ✅ Music stays playing when closed
 • ✅ Lock survives restarts / re-executes
 • ✅ Only Dwaynekean015 can unlock early
 • ✅ Rainbow ESP through walls
-• ✅ 📜 PUBLIC LOG: see all users & time
+• ✅ 📜 LOG: see all users who ran the script
 • ✅ 👑 OWNER badge for your account
 • ✅ 12h use → 12h lock system]]
 WhatsNew.Parent = Welcome
 
 local WelcomeOK = Instance.new("TextButton")
 WelcomeOK.Size = UDim2.new(0,160,0,40)
-WelcomeOK.Position = UDim2.new(0.5,-80,0,260)
+WelcomeOK.Position = UDim2.new(0.5,-80,0,290)
 WelcomeOK.BackgroundColor3 = Color3.fromRGB(0,150,120)
 WelcomeOK.Text = "✅ OK, GOT IT!"
 WelcomeOK.TextColor3 = Color3.new(1,1,1)
@@ -355,9 +460,9 @@ UnlockBtn.Font = Enum.Font.GothamBold
 UnlockBtn.TextScaled = true
 UnlockBtn.Parent = LockScreen
 
--- 🎯 MAIN MENU
+-- 🎯 MAIN MENU (WIDENED FOR NEW CHAT BUTTON)
 local MainMenu = Instance.new("Frame")
-MainMenu.Size = UDim2.new(0,560,0,110)
+MainMenu.Size = UDim2.new(0,640,0,110)
 MainMenu.Position = UDim2.new(0,20,0.5,-55)
 MainMenu.BackgroundColor3 = Color3.fromRGB(24,24,24)
 MainMenu.BorderSizePixel = 2
@@ -434,7 +539,7 @@ LinkBtn.TextScaled = true
 LinkBtn.Parent = MainMenu
 
 local LogBtn = Instance.new("TextButton")
-LogBtn.Size = UDim2.new(0,80,0,32)
+LogBtn.Size = UDim2.new(0,70,0,32)
 LogBtn.Position = UDim2.new(0,235,0,60)
 LogBtn.BackgroundColor3 = Color3.fromRGB(120,50,160)
 LogBtn.Text = "📜 LOG"
@@ -443,9 +548,20 @@ LogBtn.Font = Enum.Font.GothamBold
 LogBtn.TextScaled = true
 LogBtn.Parent = MainMenu
 
+-- 🆕 GLOBAL CHAT BUTTON
+local ChatBtn = Instance.new("TextButton")
+ChatBtn.Size = UDim2.new(0,75,0,32)
+ChatBtn.Position = UDim2.new(0,310,0,60)
+ChatBtn.BackgroundColor3 = Color3.fromRGB(0,160,120)
+ChatBtn.Text = "🌐 CHAT"
+ChatBtn.TextColor3 = Color3.new(1,1,1)
+ChatBtn.Font = Enum.Font.GothamBold
+ChatBtn.TextScaled = true
+ChatBtn.Parent = MainMenu
+
 local LockBtn = Instance.new("TextButton")
 LockBtn.Size = UDim2.new(0,85,0,32)
-LockBtn.Position = UDim2.new(0,325,0,60)
+LockBtn.Position = UDim2.new(0,390,0,60)
 LockBtn.BackgroundColor3 = Color3.fromRGB(70,70,70)
 LockBtn.Text = "🔒 LOCK MOVE"
 LockBtn.TextColor3 = Color3.new(1,1,1)
@@ -455,26 +571,23 @@ LockBtn.Parent = MainMenu
 
 -- 🖱️ BUTTON ACTIONS
 WelcomeOK.MouseButton1Click:Connect(function() Welcome.Visible = false; MainMenu.Visible = true end)
+LogBtn.MouseButton1Click:Connect(function() RefreshLog(); LogWindow.Visible = true end)
+ChatBtn.MouseButton1Click:Connect(function() RefreshChat(); ChatWindow.Visible = true end)
 
-LogBtn.MouseButton1Click:Connect(function()
-    RefreshLog()
-    LogWindow.Visible = true
-end)
-
-local Drag = {Active=false, StartX=0, StartY=0, StartPosX=0, StartPosY=0}
+local Drag = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
 DragBar.InputBegan:Connect(function(Input)
     if MOVE_LOCKED then return end
     if Input.UserInputType == Enum.UserInputType.MouseButton1 then
         Drag.Active = true
         Drag.StartX = Input.Position.X
         Drag.StartY = Input.Position.Y
-        Drag.StartPosX = MainMenu.Position.X.Offset
-        Drag.StartPosY = MainMenu.Position.Y.Offset
+        Drag.PosX = MainMenu.Position.X.Offset
+        Drag.PosY = MainMenu.Position.Y.Offset
     end
 end)
 UIS.InputChanged:Connect(function(Input)
     if not Drag.Active or MOVE_LOCKED then return end
-    MainMenu.Position = UDim2.new(0, Drag.StartPosX + (Input.Position.X - Drag.StartX), 0, Drag.StartPosY + (Input.Position.Y - Drag.StartY))
+    MainMenu.Position = UDim2.new(0, Drag.PosX + (Input.Position.X - Drag.StartX), 0, Drag.PosY + (Input.Position.Y - Drag.StartY))
 end)
 UIS.InputEnded:Connect(function() Drag.Active = false end)
 
@@ -493,7 +606,7 @@ end)
 
 LinkBtn.MouseButton1Click:Connect(function()
     pcall(function() setclipboard(YT_LINK) end)
-    print("📺 OFFICIAL YOUTUBE:", YT_LINK)
+    print("📺 YOUTUBE:", YT_LINK)
 end)
 
 LockBtn.MouseButton1Click:Connect(function()
@@ -503,36 +616,24 @@ end)
 
 MinBtn.MouseButton1Click:Connect(function()
     MINIMIZED = not MINIMIZED
-    MainMenu.Size = MINIMIZED and UDim2.new(0,120,0,30) or UDim2.new(0,560,0,110)
-    for _,v in pairs({TimerText, ESPBtn, MusicBtn, LinkBtn, LogBtn, LockBtn}) do v.Visible = not MINIMIZED end
+    MainMenu.Size = MINIMIZED and UDim2.new(0,120,0,30) or UDim2.new(0,640,0,110)
+    for _,v in pairs({TimerText, ESPBtn, MusicBtn, LinkBtn, LogBtn, ChatBtn, LockBtn}) do v.Visible = not MINIMIZED end
     MinBtn.Text = MINIMIZED and "+" or "−"
 end)
 
 -- 🔒 OWNER UNLOCK
 UnlockBtn.MouseButton1Click:Connect(function()
-    local attempts = 0
-    local IsOwner = false
-    repeat
-        local name = LocalPlayer and LocalPlayer.Name or "Loading..."
-        if name == OWNER_USERNAME then
-            IsOwner = true
-            break
-        end
-        attempts += 1
-        task.wait(0.1)
-    until attempts >= 10 or IsOwner
-
+    local IsOwner = LocalPlayer.Name == OWNER_USERNAME
     if not IsOwner then
         CodeStatus.Text = "❌ ONLY DWAYNEKEAN015 CAN UNLOCK!"
         CodeStatus.TextColor3 = Color3.new(1,.2,.2)
         return
     end
-
     if CodeBox.Text == OWNER_CODE then
         WRONG_COUNT = 0
         LOCK_END = 0
         USED_TIME = 0
-        SaveData({UsedTime = 0, LockEnd = 0, Executions = EXECUTION_LOG})
+        SaveData({UsedTime = 0, LockEnd = 0, Executions = EXECUTION_LOG, ChatMessages = GLOBAL_CHAT})
         LockScreen.Visible = false
         MainMenu.Visible = true
         CodeStatus.Text = "✅ OWNER UNLOCKED!"
@@ -556,13 +657,13 @@ RunService.Heartbeat:Connect(function(dt)
     LockScreen.BorderColor3 = Rainbow
     BoomboxGui.BorderColor3 = Rainbow
     LogWindow.BorderColor3 = Rainbow
+    ChatWindow.BorderColor3 = Rainbow
 
-    -- PERMANENT LOCK CHECK
     if LOCK_END > 0 then
         local Remain = math.max(0, LOCK_END - os.time())
         if Remain <= 0 then
             LOCK_END = 0
-            SaveData({UsedTime = 0, LockEnd = 0, Executions = EXECUTION_LOG})
+            SaveData({UsedTime = 0, LockEnd = 0, Executions = EXECUTION_LOG, ChatMessages = GLOBAL_CHAT})
             LockScreen.Visible = false
             MainMenu.Visible = true
         else
@@ -573,22 +674,19 @@ RunService.Heartbeat:Connect(function(dt)
         return
     end
 
-    -- COUNT & SAVE TIME
     USED_TIME += dt
-    SaveData({UsedTime = USED_TIME, LockEnd = LOCK_END, Executions = EXECUTION_LOG})
+    SaveData({UsedTime = USED_TIME, LockEnd = LOCK_END, Executions = EXECUTION_LOG, ChatMessages = GLOBAL_CHAT})
     TimerText.Text = string.format("%02d:%02d:%02d", USED_TIME/3600, (USED_TIME%3600)/60, USED_TIME%60).." / 12:00:00"
 
-    -- AUTO LOCK WHEN TIME UP
     if USED_TIME >= USE_LIMIT then
         LOCK_END = os.time() + LOCK_TIME
         USED_TIME = 0
-        SaveData({UsedTime = 0, LockEnd = LOCK_END, Executions = EXECUTION_LOG})
+        SaveData({UsedTime = 0, LockEnd = LOCK_END, Executions = EXECUTION_LOG, ChatMessages = GLOBAL_CHAT})
         MUSIC_ON = false
         MusicBtn.Text = "🎵 OFF"
         BoomboxGui.Visible = false
     end
 
-    -- ESP SYSTEM
     if not ESP_ON then return end
     for _,p in pairs(Players:GetPlayers()) do
         if p == LocalPlayer then continue end
@@ -607,8 +705,7 @@ RunService.Heartbeat:Connect(function(dt)
     end
 end)
 
-print("\n✅ ==========================================")
-print("✅ BLUE_MODE ESP | OWNER BADGE + PUBLIC LOG")
-print("✅ 👑 DWAYNEKEAN015 SHOWS AS OWNER IN LOG")
-print("✅ EVERYONE CAN SEE FULL USER LIST")
+print("\n✅ BLUE_MODE ESP | GLOBAL CHAT ADDED!")
+print("✅ 🌐 ALL USERS CAN SEND & READ MESSAGES")
+print("✅ 👑 YOUR MESSAGES SHOW AS GOLD OWNER")
 print("✅ ==========================================\n")
