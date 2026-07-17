@@ -1,7 +1,7 @@
 -- ==============================================
--- ✅ BLUE_MODE | FULL OLD GUI + GITHUB WORKING
--- ✅ ALL ORIGINAL BUTTONS + CLICK USERNAME
--- ✅ NO ERRORS | DELTA + ALL EXECUTORS
+-- ✅ BLUE_MODE | ORIGINAL OLD STYLE
+-- ✅ NO GLOBAL CHAT | FULL PLAYER LOG
+-- ✅ ALL BUTTONS WORKING | DELTA + GITHUB
 -- ✅ COPYRIGHT © BLUE_MODE
 -- ==============================================
 
@@ -14,11 +14,50 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
+
+-- Settings
+local OWNER_USERNAME = "Dwaynekean015"
+local OWNER_CODE = "Blue_Mode192823"
+local MAX_LOGS = 50
+local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
+
+-- Save System
+local function GetLogs()
+    local data = {Executions = {}}
+    pcall(function()
+        if readfile then
+            local ok, res = pcall(function() return HttpService:JSONDecode(readfile("BlueMode_Data.json")) end)
+            if ok and res then data = res end
+        end
+    end)
+    return data
+end
+
+local function SaveLogs(data)
+    pcall(function()
+        if writefile then
+            writefile("BlueMode_Data.json", HttpService:JSONEncode(data))
+        end
+    end)
+end
+
+-- Load & Add Current User
+local Saved = GetLogs()
+local IsOwnerNow = LocalPlayer.Name == OWNER_USERNAME
+
+table.insert(Saved.Executions, 1, {
+    Username = LocalPlayer.Name,
+    IsOwner = IsOwnerNow,
+    Time = os.date("%Y-%m-%d | %H:%M:%S")
+})
+if #Saved.Executions > MAX_LOGS then table.remove(Saved.Executions) end
+SaveLogs(Saved)
 
 -- Safe UI Parent
 local UI = Instance.new("ScreenGui")
-UI.Name = "BLUE_MODE_FULL"
+UI.Name = "BLUE_MODE_OLD"
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.DisplayOrder = 10000
@@ -32,17 +71,17 @@ else
     end
 end
 
--- Load Notification
+-- Notification
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "✅ BLUE_MODE",
-        Text = "Full GUI Loaded!",
+        Text = "Original Version Loaded!",
         Duration = 3
     })
 end)
 
 -- ==============================================
--- 👤 USER PROFILE POPUP (NEW FEATURE)
+-- 👤 USER PROFILE POPUP
 -- ==============================================
 local CurrentTargetUser = ""
 
@@ -123,6 +162,77 @@ CopyLinkBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==============================================
+-- 📜 PLAYER EXECUTION LOG WINDOW
+-- ==============================================
+local LogWindow = Instance.new("Frame")
+LogWindow.Size = UDim2.new(0,420,0,340)
+LogWindow.Position = UDim2.new(0.5,-210,0.5,-170)
+LogWindow.BackgroundColor3 = Color3.fromRGB(18,18,18)
+LogWindow.BorderSizePixel = 2
+LogWindow.Visible = false
+LogWindow.Parent = UI
+Instance.new("UICorner", LogWindow).CornerRadius = UDim.new(0,10)
+
+local LogTitle = Instance.new("TextLabel")
+LogTitle.Size = UDim2.new(1,0,0,35)
+LogTitle.Position = UDim2.new(0,0,0,5)
+LogTitle.BackgroundTransparency = 1
+LogTitle.Text = "📜 SCRIPT EXECUTION LOG"
+LogTitle.TextColor3 = Color3.new(1,1,1)
+LogTitle.Font = Enum.Font.GothamBold
+LogTitle.TextScaled = true
+LogTitle.Parent = LogWindow
+
+local LogClose = Instance.new("TextButton")
+LogClose.Size = UDim2.new(0,30,0,30)
+LogClose.Position = UDim2.new(1,-35,0,5)
+LogClose.BackgroundColor3 = Color3.fromRGB(160,30,30)
+LogClose.Text = "✕"
+LogClose.TextColor3 = Color3.new(1,1,1)
+LogClose.Font = Enum.Font.GothamBold
+LogClose.TextScaled = true
+LogClose.Parent = LogWindow
+
+local LogContainer = Instance.new("ScrollingFrame")
+LogContainer.Size = UDim2.new(1,-20,1,-50)
+LogContainer.Position = UDim2.new(0,10,0,40)
+LogContainer.BackgroundTransparency = 1
+LogContainer.ScrollBarThickness = 6
+LogContainer.Parent = LogWindow
+
+local LogList = Instance.new("UIListLayout")
+LogList.Padding = UDim.new(0,4)
+LogList.Parent = LogContainer
+
+local function RefreshLog()
+    LogContainer:ClearAllChildren()
+    LogList.Parent = LogContainer
+    for _,entry in ipairs(Saved.Executions) do
+        local EntryBtn = Instance.new("TextButton")
+        EntryBtn.Size = UDim2.new(1,0,0,28)
+        EntryBtn.BackgroundColor3 = entry.IsOwner and Color3.fromRGB(35,25,0) or Color3.fromRGB(28,28,28)
+        EntryBtn.BackgroundTransparency = 0.2
+        local Display = entry.IsOwner and "👑 OWNER: "..entry.Username or "👤 "..entry.Username
+        EntryBtn.Text = Display.." | 🕒 "..entry.Time
+        EntryBtn.TextColor3 = entry.IsOwner and Color3.fromRGB(255,215,0) or Color3.new(0.9,0.9,0.9)
+        EntryBtn.Font = Enum.Font.GothamBold
+        EntryBtn.TextScaled = true
+        EntryBtn.TextXAlignment = Enum.TextXAlignment.Left
+        EntryBtn.AutoButtonColor = true
+        EntryBtn.Parent = LogContainer
+
+        -- CLICK LOG NAME → OPEN PROFILE
+        EntryBtn.MouseButton1Click:Connect(function()
+            CurrentTargetUser = entry.Username
+            TargetNameLabel.Text = "Username: "..CurrentTargetUser
+            ProfileGui.Visible = true
+        end)
+    end
+end
+RefreshLog()
+LogClose.MouseButton1Click:Connect(function() LogWindow.Visible = false end)
+
+-- ==============================================
 -- 👋 WELCOME SCREEN
 -- ==============================================
 local Welcome = Instance.new("Frame")
@@ -155,7 +265,7 @@ WelcomeOK.TextScaled = true
 WelcomeOK.Parent = Welcome
 
 -- ==============================================
--- 🎯 ORIGINAL FULL MAIN MENU
+-- 🎯 FULL ORIGINAL MAIN MENU + ALL BUTTONS
 -- ==============================================
 local MainMenu = Instance.new("Frame")
 MainMenu.Size = UDim2.new(0,640,0,110)
@@ -196,13 +306,13 @@ local TimerText = Instance.new("TextLabel")
 TimerText.Size = UDim2.new(1,-20,0,25)
 TimerText.Position = UDim2.new(0,10,0,30)
 TimerText.BackgroundTransparency = 1
-TimerText.Text = "00:00:00 / 12:00:00"
+TimerText.Text = "00:00:00"
 TimerText.TextColor3 = Color3.new(0,1,1)
 TimerText.Font = Enum.Font.GothamBold
 TimerText.TextScaled = true
 TimerText.Parent = MainMenu
 
--- ALL ORIGINAL BUTTONS BACK!
+-- 🎮 ALL ORIGINAL WORKING BUTTONS
 local ESPBtn = Instance.new("TextButton")
 ESPBtn.Size = UDim2.new(0,70,0,32)
 ESPBtn.Position = UDim2.new(0,10,0,60)
@@ -243,19 +353,9 @@ LogBtn.Font = Enum.Font.GothamBold
 LogBtn.TextScaled = true
 LogBtn.Parent = MainMenu
 
-local ChatBtn = Instance.new("TextButton")
-ChatBtn.Size = UDim2.new(0,75,0,32)
-ChatBtn.Position = UDim2.new(0,310,0,60)
-ChatBtn.BackgroundColor3 = Color3.fromRGB(0,160,120)
-ChatBtn.Text = "🌐 CHAT"
-ChatBtn.TextColor3 = Color3.new(1,1,1)
-ChatBtn.Font = Enum.Font.GothamBold
-ChatBtn.TextScaled = true
-ChatBtn.Parent = MainMenu
-
 local LockBtn = Instance.new("TextButton")
 LockBtn.Size = UDim2.new(0,85,0,32)
-LockBtn.Position = UDim2.new(0,390,0,60)
+LockBtn.Position = UDim2.new(0,310,0,60)
 LockBtn.BackgroundColor3 = Color3.fromRGB(70,70,70)
 LockBtn.Text = "🔒 LOCK"
 LockBtn.TextColor3 = Color3.new(1,1,1)
@@ -268,6 +368,7 @@ local ESP_ON = false
 local MUSIC_ON = false
 local MOVE_LOCKED = false
 local MINIMIZED = false
+local USED_TIME = 0
 
 -- Welcome Button
 WelcomeOK.MouseButton1Click:Connect(function() Welcome.Visible = false; MainMenu.Visible = true end)
@@ -290,7 +391,7 @@ UIS.InputChanged:Connect(function(Input)
 end)
 UIS.InputEnded:Connect(function() Drag.Active = false end)
 
--- Button Functions
+-- Button Actions
 ESPBtn.MouseButton1Click:Connect(function()
     ESP_ON = not ESP_ON
     ESPBtn.Text = ESP_ON and "ESP ON" or "ESP OFF"
@@ -301,89 +402,27 @@ MusicBtn.MouseButton1Click:Connect(function()
     MusicBtn.Text = MUSIC_ON and "🎵 ON" or "🎵 OFF"
     MusicBtn.BackgroundColor3 = MUSIC_ON and Color3.fromRGB(20,120,190) or Color3.fromRGB(40,40,40)
 end)
-LinkBtn.MouseButton1Click:Connect(function() pcall(function() if setclipboard then setclipboard("https://youtube.com/@blue_mode") end end) end)
+LinkBtn.MouseButton1Click:Connect(function() pcall(function() if setclipboard then setclipboard(YT_LINK) end end) end)
+LogBtn.MouseButton1Click:Connect(function() RefreshLog(); LogWindow.Visible = true end)
 LockBtn.MouseButton1Click:Connect(function() MOVE_LOCKED = not MOVE_LOCKED; LockBtn.Text = MOVE_LOCKED and "🔓 UNLOCK" or "🔒 LOCK" end)
 MinBtn.MouseButton1Click:Connect(function()
     MINIMIZED = not MINIMIZED
     MainMenu.Size = MINIMIZED and UDim2.new(0,120,0,30) or UDim2.new(0,640,0,110)
-    for _,v in ipairs({TimerText, ESPBtn, MusicBtn, LinkBtn, LogBtn, ChatBtn, LockBtn}) do v.Visible = not MINIMIZED end
+    for _,v in ipairs({TimerText, ESPBtn, MusicBtn, LinkBtn, LogBtn, LockBtn}) do v.Visible = not MINIMIZED end
     MinBtn.Text = MINIMIZED and "+" or "−"
 end)
 
 -- ==============================================
--- 🌐 CHAT WINDOW WITH CLICKABLE NAMES
+-- ⚡ MAIN LOOP + ESP
 -- ==============================================
-local ChatWindow = Instance.new("Frame")
-ChatWindow.Size = UDim2.new(0,420,0,380)
-ChatWindow.Position = UDim2.new(0.5,-210,0.5,-190)
-ChatWindow.BackgroundColor3 = Color3.fromRGB(18,18,18)
-ChatWindow.BorderSizePixel = 2
-ChatWindow.Visible = false
-ChatWindow.Parent = UI
-Instance.new("UICorner", ChatWindow).CornerRadius = UDim.new(0,10)
+RunService.Heartbeat:Connect(function(dt)
+    USED_TIME = USED_TIME + dt
+    TimerText.Text = string.format("%02d:%02d:%02d", USED_TIME/3600, (USED_TIME%3600)/60, USED_TIME%60)
 
-local ChatTitle = Instance.new("TextLabel")
-ChatTitle.Size = UDim2.new(1,0,0,35)
-ChatTitle.Position = UDim2.new(0,0,0,5)
-ChatTitle.BackgroundTransparency = 1
-ChatTitle.Text = "🌐 GLOBAL CHAT"
-ChatTitle.TextColor3 = Color3.new(1,1,1)
-ChatTitle.Font = Enum.Font.GothamBold
-ChatTitle.TextScaled = true
-ChatTitle.Parent = ChatWindow
-
-local ChatClose = Instance.new("TextButton")
-ChatClose.Size = UDim2.new(0,30,0,30)
-ChatClose.Position = UDim2.new(1,-35,0,5)
-ChatClose.BackgroundColor3 = Color3.fromRGB(160,30,30)
-ChatClose.Text = "✕"
-ChatClose.TextColor3 = Color3.new(1,1,1)
-ChatClose.Font = Enum.Font.GothamBold
-ChatClose.TextScaled = true
-ChatClose.Parent = ChatWindow
-
-local MsgArea = Instance.new("ScrollingFrame")
-MsgArea.Size = UDim2.new(1,-20,0,270)
-MsgArea.Position = UDim2.new(0,10,0,45)
-MsgArea.BackgroundTransparency = 1
-MsgArea.ScrollBarThickness = 6
-MsgArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
-MsgArea.Parent = ChatWindow
-
-local MsgLayout = Instance.new("UIListLayout")
-MsgLayout.Padding = UDim.new(0,5)
-MsgLayout.Parent = MsgArea
-
--- Clickable messages
-local testNames = {"Dwaynekean015", "BlueMode_Official", "Player_001", "TestUser"}
-for _,name in ipairs(testNames) do
-    local Msg = Instance.new("TextButton")
-    Msg.Size = UDim2.new(1,0,0,28)
-    Msg.BackgroundTransparency = 1
-    Msg.TextColor3 = Color3.new(0.9,0.9,0.9)
-    Msg.Font = Enum.Font.Gotham
-    Msg.TextScaled = true
-    Msg.Text = "👤 "..name..": Click my name!"
-    Msg.Parent = MsgArea
-
-    Msg.MouseButton1Click:Connect(function()
-        CurrentTargetUser = name
-        TargetNameLabel.Text = "Username: "..CurrentTargetUser
-        ProfileGui.Visible = true
-    end)
-end
-
-ChatClose.MouseButton1Click:Connect(function() ChatWindow.Visible = false end)
-ChatBtn.MouseButton1Click:Connect(function() ChatWindow.Visible = true end)
-
--- ==============================================
--- ⚡ ESP LOOP
--- ==============================================
-RunService.Heartbeat:Connect(function()
     local Rainbow = Color3.fromHSV((os.clock()*0.7)%1,1,1)
     Welcome.BorderColor3 = Rainbow
     MainMenu.BorderColor3 = Rainbow
-    ChatWindow.BorderColor3 = Rainbow
+    LogWindow.BorderColor3 = Rainbow
     ProfileGui.BorderColor3 = Rainbow
 
     if not ESP_ON then return end
@@ -402,5 +441,5 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("✅ BLUE_MODE | FULL OLD GUI RESTORED!")
-print("✅ All buttons + clickable chat working!")
+print("✅ BLUE_MODE | OLD VERSION LOADED!")
+print("✅ No Global Chat | Player Log + All Buttons Working!")
