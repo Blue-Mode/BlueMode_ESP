@@ -1,8 +1,7 @@
 -- ==============================================
--- ✅ BLUE_MODE ESP | SECURED VERSION
+-- ✅ BLUE_MODE ESP | SECURED FOR DWAYNEKEAN015
 -- ✅ COPYRIGHT © BLUE_MODE | ALL RIGHTS RESERVED
--- ✅ UNAUTHORIZED REBRANDING OR MODIFICATION IS PROHIBITED
--- ✅ OWNER UNLOCK ONLY FOR DWAYNEKEAN015
+-- ✅ ONLY YOUR ACCOUNT CAN BYPASS THE LOCK
 -- ==============================================
 
 -- Prevent duplicate loading
@@ -27,9 +26,8 @@ local OWNER_CODE = "Blue_Mode192823"
 local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
 local DEFAULT_SOUND_ID = "rbxassetid://6001487560"
 local VOLUME = 0.7
--- 👇 YOUR OWNER INFO — ONLY YOU CAN UNLOCK 👇
+-- ✅ YOUR ACCOUNT — ONLY YOU CAN UNLOCK
 local OWNER_USERNAME = "Dwaynekean015"
-local OWNER_USER_ID = 0 -- << REPLACE 0 WITH YOUR REAL ROBLOX USER ID!
 
 -- 📊 VARIABLES
 local USED_TIME = 0
@@ -164,7 +162,7 @@ BClose.MouseButton1Click:Connect(function()
     BoomboxGui.Visible = false
 end)
 
--- 👋 WELCOME SCREEN (CODE REMOVED FOR SECURITY!)
+-- 👋 WELCOME SCREEN
 local Welcome = Instance.new("Frame")
 Welcome.Size = UDim2.new(0,400,0,320)
 Welcome.Position = UDim2.new(0.5,-200,0.5,-160)
@@ -533,17 +531,16 @@ DelBtn.MouseButton1Click:Connect(function() DeletePopup.Visible = true end)
 DelNo.MouseButton1Click:Connect(function() DeletePopup.Visible = false end)
 DelYes.MouseButton1Click:Connect(function() DeletePopup.Visible = false; FullDelete() end)
 
--- 🔒 SECURED OWNER UNLOCK (ONLY DWAYNEKEAN015 CAN USE!)
+-- 🔒 UNLOCK SYSTEM — WORKS FOR YOUR ACCOUNT!
 UnlockBtn.MouseButton1Click:Connect(function()
-    -- Check if it's really you
-    local IsOwner = (LocalPlayer.Name == OWNER_USERNAME) or (OWNER_USER_ID > 0 and LocalPlayer.UserId == OWNER_USER_ID)
-    if not IsOwner then
+    -- ✅ CHECKS YOUR USERNAME EXACTLY
+    if LocalPlayer.Name ~= OWNER_USERNAME then
         CodeStatus.Text = "❌ ONLY OWNER CAN UNLOCK!"
         CodeStatus.TextColor3 = Color3.new(1,.2,.2)
         return
     end
 
-    -- Only runs for you
+    -- ✅ ONLY YOU CAN USE THE CODE
     if CodeBox.Text == OWNER_CODE then
         WRONG_COUNT = 0
         LOCK_END = 0
@@ -648,7 +645,6 @@ table.insert(CONNECTIONS, RunService.Heartbeat:Connect(function(dt)
 end))
 
 print("\n✅ ==========================================")
-print("✅ BLUE_MODE ESP | SECURED VERSION")
+print("✅ BLUE_MODE ESP | SECURED FOR DWAYNEKEAN015")
 print("✅ COPYRIGHT © BLUE_MODE | ALL RIGHTS RESERVED")
-print("✅ OWNER UNLOCK ONLY FOR DWAYNEKEAN015")
 print("✅ ==========================================\n")
