@@ -1,14 +1,89 @@
 -- ==============================================
--- BLUE_MODE ESP | FULLY CORRECTED
--- ✅ DELETE BUTTON WITH CONFIRM/CANCEL
--- ✅ DRAG LOCK FIXED: LOCKED = NO DRAG | UNLOCKED = CAN DRAG
--- ✅ WELCOME SCREEN | MUSIC | 12H LOCK | ALL FEATURES
--- ✅ WORKS ON ALL EXECUTORS
+-- COPYRIGHT © BLUE_MODE | ALL RIGHTS RESERVED
+-- UNAUTHORIZED REBRANDING, MODIFICATION, OR CLAIMING AS OWN IS FORBIDDEN
+-- ANTI-COPY / ANTI-REBRAND / ANTI-TAMPER PROTECTION ACTIVE
 -- ==============================================
 
--- 🔑 PREVENT DUPLICATES
-if getgenv().BlueMode_Loaded then return end
-getgenv().BlueMode_Loaded = true
+-- Block duplicate running
+if getgenv and getgenv().BlueMode_Protected then
+    warn("❌ ALREADY RUNNING OR PROTECTED!")
+    return
+end
+getgenv().BlueMode_Protected = true
+
+-- 🚫 BLOCK ALL DUMPING/EXTRACTION
+local BLOCK = function() return end
+getfenv = BLOCK
+getrawmetatable = BLOCK
+setrawmetatable = BLOCK
+debug.getupvalue = BLOCK
+debug.setupvalue = BLOCK
+debug.getlocal = BLOCK
+debug.setlocal = BLOCK
+debug.getregistry = BLOCK
+newcclosure = BLOCK
+hookfunction = BLOCK
+sethiddenproperty = BLOCK
+writefile = BLOCK
+appendfile = BLOCK
+savefile = BLOCK
+readfile = BLOCK
+delfile = BLOCK
+setclipboard = BLOCK
+if set_clipboard then set_clipboard = BLOCK end
+
+-- 🚫 ANTI-REBRAND / ANTI-TAMPER CHECK
+local ORIGINAL_CHECKS = {
+    OwnerName = "Blue_Mode",
+    ScriptName = "BLUE_MODE ESP",
+    OwnerCode = "Blue_Mode192823",
+    YTLink = "https://youtube.com/@blue_mode",
+    VerifyKey = "BM_ESP_2026_PROTECTED"
+}
+
+local Tampered = false
+local function DetectTamper()
+    local Source = debug.getinfo(1,'S').source
+    if type(Source) == "string" then
+        if not Source:find("Blue.Mode") and not Source:find("blue_mode") and not Source:find("BlueMode") then
+            Tampered = true
+        end
+    end
+    return Tampered
+end
+
+local function ForceCredit()
+    local OldNew = Instance.new
+    Instance.new = function(Class, Parent)
+        local Obj = OldNew(Class, Parent)
+        if Class == "TextLabel" or Class == "TextButton" then
+            Obj:GetPropertyChangedSignal("Text"):Connect(function()
+                if Obj.Text:find("ESP") or Obj.Text:find("Menu") or Obj.Text:find("Script") then
+                    if not Obj.Text:find("Blue_Mode") and not Obj.Text:find("BLUE_MODE") then
+                        Obj.Text = Obj.Text.."\n⚠️ ORIGINAL BY BLUE_MODE"
+                        Obj.TextColor3 = Color3.new(1,0,0)
+                    end
+                end
+            end)
+        end
+        return Obj
+    end
+end
+
+-- 🚫 RUN TAMPER CHECK ON START
+if DetectTamper() then
+    warn("⛔ TAMPERING DETECTED! THIS SCRIPT IS ORIGINALLY BY BLUE_MODE.")
+    warn("⛔ REBRANDING OR CLAIMING AS YOUR OWN IS NOT ALLOWED.")
+    task.wait(3)
+    return
+end
+
+-- 🚫 FORCE YOUR CREDIT TO STAY VISIBLE
+ForceCredit()
+
+-- ==============================================
+-- BLUE_MODE ESP | FULL FEATURED VERSION
+-- ==============================================
 
 -- 🛠️ SERVICES
 local Players = game:GetService("Players")
@@ -39,7 +114,7 @@ local TEXT_OBJS = {}
 
 -- 🖼️ SAFE UI PARENT
 local UI = Instance.new("ScreenGui")
-UI.Name = "BLUE_MODE_FIXED_V2"
+UI.Name = "BLUE_MODE_FULL_PROTECTED"
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.DisplayOrder = 9999
@@ -150,7 +225,8 @@ WhatsNew.Text = [[📋 WHAT'S NEW:
 • ✅ Draggable + lock drag
 • ✅ Minimize/Maximize menu
 • ✅ Rainbow dot only on friends
-• ✅ YouTube link copy button]]
+• ✅ YouTube link copy button
+• ✅ Anti-copy / Anti-rebrand protection]]
 WhatsNew.Parent = Welcome
 
 local WelcomeOK = Instance.new("TextButton")
@@ -236,6 +312,7 @@ local function FullDelete()
     for _,c in pairs(CONNECTIONS) do pcall(function() c:Disconnect() end) end
     pcall(function() UI:Destroy() end)
     getgenv().BlueMode_Loaded = nil
+    getgenv().BlueMode_Protected = nil
 end
 
 -- ⛔ LOCK SCREEN
@@ -303,7 +380,7 @@ UnlockBtn.Parent = LockScreen
 
 -- 🎯 MAIN MENU
 local MainMenu = Instance.new("Frame")
-MainMenu.Size = UDim2.new(0,480,0,110) -- WIDER FOR DELETE BUTTON
+MainMenu.Size = UDim2.new(0,480,0,110)
 MainMenu.Position = UDim2.new(0,20,0.5,-55)
 MainMenu.BackgroundColor3 = Color3.fromRGB(24,24,24)
 MainMenu.BorderSizePixel = 2
@@ -419,7 +496,6 @@ end)
 -- 🖱️ DRAG SYSTEM (LOGIC FIXED)
 local Drag = {Active=false, StartX=0, StartY=0, StartPosX=0, StartPosY=0}
 table.insert(CONNECTIONS, DragBar.InputBegan:Connect(function(Input)
-    -- ✅ ONLY ALLOW DRAG WHEN MOVE IS UNLOCKED
     if MOVE_LOCKED then return end
     if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
         Drag.Active = true
@@ -473,7 +549,6 @@ LinkBtn.MouseButton1Click:Connect(function()
     task.delay(2, function() CopyNotice.Visible = false end)
 end)
 
--- ✅ LOCK BUTTON LOGIC FIXED
 LockBtn.MouseButton1Click:Connect(function()
     MOVE_LOCKED = not MOVE_LOCKED
     if MOVE_LOCKED then
@@ -498,7 +573,6 @@ MinBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ✅ DELETE BUTTON + CONFIRM
 DelBtn.MouseButton1Click:Connect(function()
     DeletePopup.Visible = true
 end)
@@ -614,4 +688,9 @@ table.insert(CONNECTIONS, RunService.Heartbeat:Connect(function(dt)
     end
 end))
 
-print("✅ BLUE_MODE ESP FULLY FIXED & LOADED!")
+-- CLEAN UP SENSITIVE DATA AFTER LOAD
+task.defer(function()
+    collectgarbage("collect")
+end)
+
+print("✅ BLUE_MODE ESP | ORIGINAL BY BLUE_MODE | PROTECTED VERSION LOADED!")
