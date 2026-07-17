@@ -1,6 +1,6 @@
 -- ==============================================
--- BLUE_MODE | ORIGINAL OLD VERSION
--- NO GLOBAL CHAT | NO PLAYER LIST
+-- BLUE_MODE | ORIGINAL OLD FULL VERSION
+-- WITH CREDIT + FEATURE LIST + WELCOME SCREEN
 -- 12H TIMER + UNLOCK + LOG
 -- ==============================================
 
@@ -38,7 +38,7 @@ if #Data.Executions > MAX_LOGS then table.remove(Data.Executions) end
 
 -- SAFE UI PARENT
 local UI = Instance.new("ScreenGui")
-UI.Name = "BLUE_MODE_OLD"
+UI.Name = "BLUE_MODE_OLD_ORIGINAL"
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.DisplayOrder = 10000
@@ -56,13 +56,13 @@ end
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "BLUE_MODE",
-        Text = "Old Version Loaded!",
+        Text = "Original Old Version Loaded!",
         Duration = 3
     })
 end)
 
 -- ==============================================
--- LOCK SCREEN
+-- 🔒 LOCK SCREEN
 -- ==============================================
 local LockScreen = Instance.new("Frame")
 LockScreen.Size = UDim2.new(1,0,1,0)
@@ -75,7 +75,7 @@ local LockTitle = Instance.new("TextLabel")
 LockTitle.Size = UDim2.new(1,0,0,60)
 LockTitle.Position = UDim2.new(0,0,0.15,0)
 LockTitle.BackgroundTransparency = 1
-LockTitle.Text = "TIME LIMIT REACHED"
+LockTitle.Text = "⏰ TIME LIMIT REACHED"
 LockTitle.TextColor3 = Color3.fromRGB(255,60,60)
 LockTitle.Font = Enum.Font.GothamBold
 LockTitle.TextScaled = true
@@ -109,7 +109,7 @@ local UnlockBtn = Instance.new("TextButton")
 UnlockBtn.Size = UDim2.new(0,200,0,45)
 UnlockBtn.Position = UDim2.new(0.5,-100,0.46,0)
 UnlockBtn.BackgroundColor3 = Color3.fromRGB(25,150,100)
-UnlockBtn.Text = "UNLOCK"
+UnlockBtn.Text = "🔓 UNLOCK"
 UnlockBtn.TextColor3 = Color3.new(1,1,1)
 UnlockBtn.Font = Enum.Font.GothamBold
 UnlockBtn.TextScaled = true
@@ -131,19 +131,20 @@ UnlockBtn.MouseButton1Click:Connect(function()
         Data.IsLocked = false
         Data.UsedTime = 0
         LockScreen.Visible = false
+        Welcome.Visible = true
         pcall(function()
             game:GetService("StarterGui"):SetCore("SendNotification",{
-                Title = "UNLOCKED", Text = "Timer reset!", Duration = 3
+                Title = "✅ UNLOCKED", Text = "Timer reset!", Duration = 3
             })
         end)
     else
-        LockMsg.Text = "WRONG CODE!"
+        LockMsg.Text = "❌ WRONG CODE!"
         task.delay(2, function() LockMsg.Text = "" end)
     end
 end)
 
 -- ==============================================
--- EXECUTION LOG WINDOW
+-- 📜 EXECUTION LOG
 -- ==============================================
 local LogWindow = Instance.new("Frame")
 LogWindow.Size = UDim2.new(0,380,0,300)
@@ -204,11 +205,11 @@ RefreshLog()
 LogClose.MouseButton1Click:Connect(function() LogWindow.Visible = false end)
 
 -- ==============================================
--- WELCOME SCREEN
+-- 👋 WELCOME SCREEN | CREDIT + FEATURE LIST
 -- ==============================================
 local Welcome = Instance.new("Frame")
-Welcome.Size = UDim2.new(0,380,0,280)
-Welcome.Position = UDim2.new(0.5,-190,0.5,-140)
+Welcome.Size = UDim2.new(0,420,0,340)
+Welcome.Position = UDim2.new(0.5,-210,0.5,-170)
 Welcome.BackgroundColor3 = Color3.fromRGB(20,20,20)
 Welcome.BorderSizePixel = 3
 Welcome.BorderColor3 = Color3.fromRGB(0,200,200)
@@ -216,28 +217,42 @@ Welcome.Visible = not Data.IsLocked
 Welcome.Parent = UI
 Instance.new("UICorner", Welcome).CornerRadius = UDim.new(0,10)
 
-local WelcomeTitle = Instance.new("TextLabel")
-WelcomeTitle.Size = UDim2.new(1,0,0,50)
-WelcomeTitle.Position = UDim2.new(0,0,0,20)
-WelcomeTitle.BackgroundTransparency = 1
-WelcomeTitle.Text = "BLUE_MODE"
-WelcomeTitle.TextColor3 = Color3.new(0,1,1)
-WelcomeTitle.Font = Enum.Font.GothamBold
-WelcomeTitle.TextScaled = true
-WelcomeTitle.Parent = Welcome
+-- ✅ MADE BY TEXT
+local MadeBy = Instance.new("TextLabel")
+MadeBy.Size = UDim2.new(1,0,0,45)
+MadeBy.Position = UDim2.new(0,0,0,10)
+MadeBy.BackgroundTransparency = 1
+MadeBy.Text = "✨ MADE BY BLUE_MODE ✨"
+MadeBy.TextColor3 = Color3.new(0,1,1)
+MadeBy.Font = Enum.Font.GothamBold
+MadeBy.TextScaled = true
+MadeBy.Parent = Welcome
+
+-- ✅ FEATURE LIST
+local Features = Instance.new("TextLabel")
+Features.Size = UDim2.new(1,-20,0,160)
+Features.Position = UDim2.new(0,10,0,60)
+Features.BackgroundTransparency = 1
+Features.Text = "📋 FEATURES:\n• Player ESP\n• 12 Hour Usage Timer\n• Unlock Code System\n• Drag & Move Menu\n• Minimize Menu\n• Execution Log\n• Rainbow Theme"
+Features.TextColor3 = Color3.new(0.85,0.85,0.85)
+Features.Font = Enum.Font.Gotham
+Features.TextScaled = true
+Features.TextXAlignment = Enum.TextXAlignment.Left
+Features.LineHeight = 1.3
+Features.Parent = Welcome
 
 local WelcomeOK = Instance.new("TextButton")
-WelcomeOK.Size = UDim2.new(0,160,0,40)
-WelcomeOK.Position = UDim2.new(0.5,-80,0,200)
+WelcomeOK.Size = UDim2.new(0,180,0,45)
+WelcomeOK.Position = UDim2.new(0.5,-90,0,260)
 WelcomeOK.BackgroundColor3 = Color3.fromRGB(0,150,120)
-WelcomeOK.Text = "START"
+WelcomeOK.Text = "✅ START USING"
 WelcomeOK.TextColor3 = Color3.new(1,1,1)
 WelcomeOK.Font = Enum.Font.GothamBold
 WelcomeOK.TextScaled = true
 WelcomeOK.Parent = Welcome
 
 -- ==============================================
--- MAIN MENU
+-- 🎯 MAIN MENU
 -- ==============================================
 local MainMenu = Instance.new("Frame")
 MainMenu.Size = UDim2.new(0,520,0,100)
@@ -341,8 +356,11 @@ local MUSIC_ON = false
 local MOVE_LOCKED = false
 local MINIMIZED = false
 
--- WELCOME BUTTON
-WelcomeOK.MouseButton1Click:Connect(function() Welcome.Visible = false; MainMenu.Visible = true end)
+-- WELCOME BUTTON ACTION
+WelcomeOK.MouseButton1Click:Connect(function()
+    Welcome.Visible = false
+    MainMenu.Visible = true
+end)
 
 -- DRAG MENU
 local Drag = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
@@ -401,7 +419,7 @@ RunService.Heartbeat:Connect(function(dt)
         LockScreen.Visible = true
         pcall(function()
             game:GetService("StarterGui"):SetCore("SendNotification",{
-                Title = "TIME UP", Text = "12 Hours reached!", Duration = 5
+                Title = "⏰ TIME UP", Text = "12 Hours reached!", Duration = 5
             })
         end)
         return
