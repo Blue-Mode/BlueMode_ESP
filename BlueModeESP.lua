@@ -1,9 +1,9 @@
 -- ==============================================
--- BLUE_MODE | FIXED STUCK OUTLINES + ALL FEATURES
--- ✅ ESP OFF = ALL OUTLINES REMOVED INSTANTLY
--- ✅ NO DUPLICATES / NO STUCK RAINBOW
--- ✅ Delete clears everything fully
--- ✅ Green=ON/Red=OFF, Minimize stays, draggable rule
+-- BLUE_MODE | FRIENDS RAINBOW DOTS + CLEAN ESP
+-- ✅ ESP OFF = ALL OUTLINES/DOTS REMOVED
+-- ✅ ESP ON = RAINBOW DOT ONLY ON FRIENDS
+-- ✅ Custom Music ID Input + Delete Confirm
+-- ✅ Minimize stays + Green/Red status
 -- ==============================================
 
 if BlueModeLoaded then return end
@@ -30,6 +30,61 @@ UI.Name = "BLUE_MODE"
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.Parent = PlayerGui
+
+-- ==============================================
+-- 🎵 MUSIC ID POPUP
+-- ==============================================
+local MusicPopup = Instance.new("Frame")
+MusicPopup.Size = UDim2.new(0,320,0,180)
+MusicPopup.Position = UDim2.new(0.5,-160,0.5,-90)
+MusicPopup.BackgroundColor3 = Color3.fromRGB(30,30,30)
+MusicPopup.Visible = false
+MusicPopup.Parent = UI
+Instance.new("UICorner", MusicPopup).CornerRadius = UDim.new(0,8)
+
+local MusicTitle = Instance.new("TextLabel")
+MusicTitle.Size = UDim2.new(1,-20,0,40)
+MusicTitle.Position = UDim2.new(0,10,0,10)
+MusicTitle.BackgroundTransparency = 1
+MusicTitle.Text = "🎵 ENTER SOUND ID"
+MusicTitle.Font = Enum.Font.GothamBold
+MusicTitle.TextScaled = true
+MusicTitle.TextColor3 = Color3.new(1,1,1)
+MusicTitle.Parent = MusicPopup
+
+local IDInput = Instance.new("TextBox")
+IDInput.Size = UDim2.new(1,-30,0,45)
+IDInput.Position = UDim2.new(0,15,0,55)
+IDInput.BackgroundColor3 = Color3.fromRGB(45,45,45)
+IDInput.Text = "rbxassetid://"
+IDInput.Font = Enum.Font.Gotham
+IDInput.TextScaled = true
+IDInput.TextColor3 = Color3.new(1,1,1)
+IDInput.ClearTextOnFocus = false
+IDInput.Parent = MusicPopup
+Instance.new("UICorner", IDInput).CornerRadius = UDim.new(0,6)
+
+local PlayBtn = Instance.new("TextButton")
+PlayBtn.Size = UDim2.new(0,120,0,40)
+PlayBtn.Position = UDim2.new(0,15,0,115)
+PlayBtn.BackgroundColor3 = Color3.fromRGB(40,150,60)
+PlayBtn.Text = "▶ PLAY"
+PlayBtn.TextColor3 = Color3.new(1,1,1)
+PlayBtn.Font = Enum.Font.GothamBold
+PlayBtn.TextScaled = true
+PlayBtn.Parent = MusicPopup
+Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0,6)
+
+local CloseMusicBtn = Instance.new("TextButton")
+CloseMusicBtn.Size = UDim2.new(0,120,0,40)
+CloseMusicBtn.Position = UDim2.new(1,-135,0,115)
+CloseMusicBtn.BackgroundColor3 = Color3.fromRGB(170,40,40)
+CloseMusicBtn.Text = "✕ CLOSE"
+CloseMusicBtn.TextColor3 = Color3.new(1,1,1)
+CloseMusicBtn.Font = Enum.Font.GothamBold
+CloseMusicBtn.TextScaled = true
+CloseMusicBtn.Parent = MusicPopup
+Instance.new("UICorner", CloseMusicBtn).CornerRadius = UDim.new(0,6)
 
 -- ==============================================
 -- DELETE CONFIRM
@@ -241,15 +296,15 @@ RestoreBtn.TextScaled = true
 RestoreBtn.Parent = MinBar
 
 -- ==============================================
--- ✅ FULL CLEANUP: REMOVE ALL OUTLINES
+-- ✅ FULL CLEANUP: REMOVE ALL HIGHLIGHTS/DOTS
 -- ==============================================
 local function RemoveAllESP()
     for _, Player in pairs(Players:GetPlayers()) do
         if Player.Character then
-            -- Destroy EVERY Highlight, not just named one (fixes stuck duplicates)
-            for _, Desc in pairs(Player.Character:GetDescendants()) do
-                if Desc:IsA("Highlight") then
-                    Desc:Destroy()
+            -- Delete ALL highlights
+            for _, v in pairs(Player.Character:GetChildren()) do
+                if v:IsA("Highlight") or v.Name == "FriendDot" then
+                    v:Destroy()
                 end
             end
         end
@@ -278,47 +333,61 @@ RestoreBtn.MouseButton1Click:Connect(function()
     MainMenu.Visible = true
 end)
 
-ESPBtn.MouseButton1Click:Connect(function()
-    ESP_ON = not ESP_ON
-    if ESP_ON then
-        ESPBtn.BackgroundColor3 = Color3.fromRGB(40,150,60) -- GREEN = ON
-        ESPBtn.Text = "ESP ON"
+-- MUSIC BUTTON
+MusicBtn.MouseButton1Click:Connect(function()
+    if not MusicOn then
+        MusicPopup.Visible = true
     else
-        ESPBtn.BackgroundColor3 = Color3.fromRGB(170,40,40) -- RED = OFF
-        ESPBtn.Text = "ESP OFF"
-        RemoveAllESP() -- ✅ WIPES ALL OUTLINES INSTANTLY
+        MusicOn = false
+        MusicBtn.BackgroundColor3 = Color3.fromRGB(170,40,40)
+        MusicBtn.Text = "🎵 OFF"
+        if MusicSound then MusicSound:Stop() end
     end
 end)
 
-MusicBtn.MouseButton1Click:Connect(function()
-    MusicOn = not MusicOn
-    if MusicOn then
-        MusicBtn.BackgroundColor3 = Color3.fromRGB(40,150,60) -- GREEN = ON
-        MusicBtn.Text = "🎵 ON"
-        if not MusicSound then
-            MusicSound = Instance.new("Sound")
-            MusicSound.SoundId = "rbxassetid://9112854440"
-            MusicSound.Looped = true
-            MusicSound.Volume = 0.25
-            MusicSound.Parent = UI
-        end
-        MusicSound:Play()
+PlayBtn.MouseButton1Click:Connect(function()
+    local InputID = IDInput.Text
+    if InputID == "" or InputID == "rbxassetid://" then return end
+    if MusicSound then MusicSound:Destroy() end
+    MusicSound = Instance.new("Sound")
+    MusicSound.SoundId = InputID
+    MusicSound.Looped = true
+    MusicSound.Volume = 0.3
+    MusicSound.Parent = UI
+    MusicSound:Play()
+    MusicOn = true
+    MusicBtn.BackgroundColor3 = Color3.fromRGB(40,150,60)
+    MusicBtn.Text = "🎵 ON"
+    MusicPopup.Visible = false
+end)
+PlayBtn.TouchTap:Connect(function() PlayBtn:Fire("MouseButton1Click") end)
+
+CloseMusicBtn.MouseButton1Click:Connect(function()
+    MusicPopup.Visible = false
+end)
+
+-- ESP BUTTON
+ESPBtn.MouseButton1Click:Connect(function()
+    ESP_ON = not ESP_ON
+    if ESP_ON then
+        ESPBtn.BackgroundColor3 = Color3.fromRGB(40,150,60)
+        ESPBtn.Text = "ESP ON"
     else
-        MusicBtn.BackgroundColor3 = Color3.fromRGB(170,40,40) -- RED = OFF
-        MusicBtn.Text = "🎵 OFF"
-        if MusicSound then MusicSound:Stop() end
+        ESPBtn.BackgroundColor3 = Color3.fromRGB(170,40,40)
+        ESPBtn.Text = "ESP OFF"
+        RemoveAllESP() -- ✅ REMOVE EVERYTHING WHEN OFF
     end
 end)
 
 LockBtn.MouseButton1Click:Connect(function()
     MOVE_LOCKED = not MOVE_LOCKED
     if MOVE_LOCKED then
-        LockBtn.BackgroundColor3 = Color3.fromRGB(170,40,40) -- RED = LOCKED
+        LockBtn.BackgroundColor3 = Color3.fromRGB(170,40,40)
         LockBtn.Text = "LOCKED"
         MainMenu.Draggable = false
         MinBar.Draggable = false
     else
-        LockBtn.BackgroundColor3 = Color3.fromRGB(40,150,60) -- GREEN = UNLOCKED
+        LockBtn.BackgroundColor3 = Color3.fromRGB(40,150,60)
         LockBtn.Text = "UNLOCK"
         MainMenu.Draggable = true
         MinBar.Draggable = true
@@ -333,7 +402,7 @@ NoBtn.MouseButton1Click:Connect(function()
 end)
 YesBtn.MouseButton1Click:Connect(function()
     ConfirmFrame.Visible = false
-    RemoveAllESP() -- ✅ DELETE = WIPES ALL OUTLINES FIRST
+    RemoveAllESP()
     if MusicSound then MusicSound:Destroy() end
     UI:Destroy()
 end)
@@ -347,7 +416,7 @@ CloseBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==============================================
--- MAIN LOOP
+-- MAIN LOOP: FRIENDS RAINBOW DOTS
 -- ==============================================
 RunService.Heartbeat:Connect(function(dt)
     -- Timer
@@ -359,7 +428,7 @@ RunService.Heartbeat:Connect(function(dt)
     TimerText.Text = TimeStr.." / 12:00:00"
     BarTimer.Text = TimeStr
 
-    -- Time up = full cleanup
+    -- Time up cleanup
     if UsedTime >= MAX_SECONDS then
         MainMenu.Visible = false
         MinBar.Visible = false
@@ -370,7 +439,7 @@ RunService.Heartbeat:Connect(function(dt)
         return
     end
 
-    -- Rainbow colors
+    -- Rainbow color
     local Hue = (os.clock() * 0.3) % 1
     local Col = Color3.fromHSV(Hue,1,1)
     TitleBar.BackgroundColor3 = Col
@@ -378,25 +447,37 @@ RunService.Heartbeat:Connect(function(dt)
     MadeBy.TextColor3 = Col
     MenuTitle.TextColor3 = Col
 
-    -- ✅ ONLY CREATE OUTLINES WHEN ESP IS EXPLICITLY ON
+    -- ✅ ONLY RUN WHEN ESP IS EXPLICITLY ON
     if ESP_ON then
-        for _,v in pairs(Players:GetPlayers()) do
-            if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("Humanoid") then
-                -- Only add if NO existing highlight exists
-                if not v.Character:FindFirstChildOfClass("Highlight") then
-                    local H = Instance.new("Highlight")
-                    H.Name = "BlueESP"
-                    H.FillTransparency = 1
-                    H.OutlineTransparency = 0
-                    H.OutlineColor = Col
-                    H.Adornee = v.Character
-                    H.Parent = v.Character
-                else
-                    -- Update color only if it exists
-                    local Exists = v.Character:FindFirstChildOfClass("Highlight")
-                    Exists.OutlineColor = Col
+        for _, Player in pairs(Players:GetPlayers()) do
+            if Player == LocalPlayer then continue end
+            if not Player.Character then continue end
+            local Humanoid = Player.Character:FindFirstChild("Humanoid")
+            if not Humanoid then continue end
+
+            -- Check if FRIEND
+            local IsFriend = false
+            pcall(function() IsFriend = LocalPlayer:IsFriendsWith(Player.UserId) end)
+
+            -- Remove old if not friend anymore
+            if not IsFriend then
+                if Player.Character:FindFirstChildOfClass("Highlight") then
+                    Player.Character:FindFirstChildOfClass("Highlight"):Destroy()
                 end
+                if Player.Character:FindFirstChild("FriendDot") then
+                    Player.Character.FriendDot:Destroy()
+                end
+                continue
             end
+
+            -- ✅ ADD RAINBOW HIGHLIGHT ONLY TO FRIENDS
+            local Highlight = Player.Character:FindFirstChildOfClass("Highlight") or Instance.new("Highlight")
+            Highlight.Name = "FriendHighlight"
+            Highlight.FillTransparency = 1
+            Highlight.OutlineTransparency = 0
+            Highlight.OutlineColor = Col
+            Highlight.Adornee = Player.Character
+            Highlight.Parent = Player.Character
         end
     end
 end)
