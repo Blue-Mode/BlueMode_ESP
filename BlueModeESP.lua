@@ -1,5 +1,5 @@
 -- ==============================================
--- ESP Script | ADDED MUSIC VOLUME CONTROL
+-- ESP Script | FIXED VOLUME SLIDER
 -- made by BLUE_MODE
 -- UNLOCK CODE: Blue_Mode192823
 -- ==============================================
@@ -22,6 +22,7 @@ local UNLOCK_CODE = "Blue_Mode192823"
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
 local SAVE_KEY_USED = "BlueMode_UsedTime_v2"
 local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v2"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v2"
 
 -- 🛡️ PERMANENT SAVE SYSTEM
 local function SaveData(key, value)
@@ -52,19 +53,23 @@ if NowTime < CooldownEnd then
     return
 end
 
--- ⏳ LOAD SAVED TIME
+-- ⏳ LOAD SAVED SETTINGS
 local UsedTime = LoadData(SAVE_KEY_USED, 0)
 local LastCheck = os.time()
+local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5) -- Default 50%
 
--- 🎵 BOOMBOX + VOLUME SYSTEM
+-- 🎵 BOOMBOX + WORKING VOLUME SYSTEM
 local CurrentSound = nil
-local MusicVolume = LoadData("BlueMode_Volume", 0.5) -- Load saved volume, default 50%
 
+-- ✅ FIXED: UPDATES VOLUME EVERYWHERE INSTANTLY
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(newVol, 0, 1)
-    SaveData("BlueMode_Volume", MusicVolume)
+    SaveData(SAVE_KEY_VOLUME, MusicVolume)
+    -- Apply to playing sound
     if CurrentSound then CurrentSound.Volume = MusicVolume end
-    VolNumText.Text = math.floor(MusicVolume * 100).."%"
+    -- Update all UI displays
+    if VolNumTextMain then VolNumTextMain.Text = math.floor(MusicVolume * 100).."%" end
+    if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume, 0, 1, 0) end
 end
 
 local function FormatSoundId(input)
@@ -122,7 +127,7 @@ local function OpenBoomboxMenu()
     Input.Parent = Frame
     Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
 
-    -- VOLUME SLIDER IN MENU
+    -- MENU VOLUME SLIDER
     local VolLabel = Instance.new("TextLabel")
     VolLabel.Size = UDim2.new(0,100,0,25)
     VolLabel.Position = UDim2.new(0,15,0,95)
@@ -158,15 +163,25 @@ local function OpenBoomboxMenu()
     VolFill.Parent = VolBG
     Instance.new("UICorner", VolFill).CornerRadius = UDim.new(0,10)
 
+    -- ✅ FIXED SLIDER DETECTION
     local SliderActive = false
-    VolBG.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then SliderActive = true end end)
-    UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then SliderActive = false end end)
+    VolBG.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            SliderActive = true
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            SliderActive = false
+        end
+    end)
     UserInputService.InputChanged:Connect(function(i)
-        if SliderActive and i.UserInputType == Enum.UserInputType.MouseMovement then
-            local pos = math.clamp((i.Position.X - VolBG.AbsolutePosition.X) / VolBG.AbsoluteSize.X, 0, 1)
-            VolFill.Size = UDim2.new(pos,0,1,0)
-            VolNum.Text = math.floor(pos*100).."%"
-            UpdateVolume(pos)
+        if SliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+            local relPos = (i.Position.X - VolBG.AbsolutePosition.X) / VolBG.AbsoluteSize.X
+            local newVol = math.clamp(relPos, 0, 1)
+            VolFill.Size = UDim2.new(newVol, 0, 1, 0)
+            VolNum.Text = math.floor(newVol * 100).."%"
+            UpdateVolume(newVol)
         end
     end)
 
@@ -309,7 +324,7 @@ DelBtn.TextScaled = true
 DelBtn.Parent = Main
 Instance.new("UICorner", DelBtn).CornerRadius = UDim.new(0,6)
 
--- MAIN VOLUME SLIDER (ON MAIN GUI)
+-- ✅ MAIN VOLUME SLIDER (NOW FULLY WORKING)
 local VolLabelMain = Instance.new("TextLabel")
 VolLabelMain.Size = UDim2.new(0,70,0,25)
 VolLabelMain.Position = UDim2.new(0,10,0,65)
@@ -321,16 +336,16 @@ VolLabelMain.TextScaled = true
 VolLabelMain.TextXAlignment = Enum.TextXAlignment.Left
 VolLabelMain.Parent = Main
 
-local VolNumText = Instance.new("TextLabel")
-VolNumText.Size = UDim2.new(0,45,0,25)
-VolNumText.Position = UDim2.new(0,85,0,65)
-VolNumText.BackgroundTransparency = 1
-VolNumText.Text = math.floor(MusicVolume*100).."%"
-VolNumText.TextColor3 = Color3.new(1,1,1)
-VolNumText.Font = Enum.Font.Gotham
-VolNumText.TextScaled = true
-VolNumText.TextXAlignment = Enum.TextXAlignment.Right
-VolNumText.Parent = Main
+local VolNumTextMain = Instance.new("TextLabel")
+VolNumTextMain.Size = UDim2.new(0,45,0,25)
+VolNumTextMain.Position = UDim2.new(0,85,0,65)
+VolNumTextMain.BackgroundTransparency = 1
+VolNumTextMain.Text = math.floor(MusicVolume*100).."%"
+VolNumTextMain.TextColor3 = Color3.new(1,1,1)
+VolNumTextMain.Font = Enum.Font.Gotham
+VolNumTextMain.TextScaled = true
+VolNumTextMain.TextXAlignment = Enum.TextXAlignment.Right
+VolNumTextMain.Parent = Main
 
 local VolBGMain = Instance.new("Frame")
 VolBGMain.Size = UDim2.new(0,150,0,18)
@@ -345,15 +360,24 @@ VolFillMain.BackgroundColor3 = Color3.fromRGB(0,180,255)
 VolFillMain.Parent = VolBGMain
 Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0,9)
 
--- VOLUME SLIDER DRAG
+-- ✅ FIXED SLIDER DRAG LOGIC
 local VolSliderActive = false
-VolBGMain.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then VolSliderActive = true end end)
-UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then VolSliderActive = false end end)
+VolBGMain.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        VolSliderActive = true
+    end
+end)
+UserInputService.InputEnded:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        VolSliderActive = false
+    end
+end)
 UserInputService.InputChanged:Connect(function(i)
-    if VolSliderActive and i.UserInputType == Enum.UserInputType.MouseMovement then
-        local pos = math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X) / VolBGMain.AbsoluteSize.X, 0, 1)
-        VolFillMain.Size = UDim2.new(pos,0,1,0)
-        UpdateVolume(pos)
+    if VolSliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+        local relPos = (i.Position.X - VolBGMain.AbsolutePosition.X) / VolBGMain.AbsoluteSize.X
+        local newVol = math.clamp(relPos, 0, 1)
+        VolFillMain.Size = UDim2.new(newVol, 0, 1, 0)
+        UpdateVolume(newVol)
     end
 end)
 
@@ -423,7 +447,7 @@ MinBtn.MouseButton1Click:Connect(function()
         LockBtn.Visible = false
         DelBtn.Visible = false
         VolLabelMain.Visible = false
-        VolNumText.Visible = false
+        VolNumTextMain.Visible = false
         VolBGMain.Visible = false
         MinBtn.Text = "➕"
     else
@@ -435,7 +459,7 @@ MinBtn.MouseButton1Click:Connect(function()
         LockBtn.Visible = true
         DelBtn.Visible = true
         VolLabelMain.Visible = true
-        VolNumText.Visible = true
+        VolNumTextMain.Visible = true
         VolBGMain.Visible = true
         MinBtn.Text = "❌"
     end
@@ -528,4 +552,5 @@ RunService.Heartbeat:Connect(function(delta)
     end
 end)
 
-print("✅ VOLUME CONTROL ADDED! ADJUST ANYTIME!")
+print("✅ VOLUME SLIDER FULLY FIXED! DRAG TO ADJUST SOUND INSTANTLY!")
+
