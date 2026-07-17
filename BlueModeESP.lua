@@ -1,5 +1,5 @@
 -- ==============================================
--- ESP Script | DRAG WHEN MINIMIZED + FULL MUSIC FIX
+-- ESP Script | PERMANENT SAVE TIMER + ALL FIXES
 -- made by BLUE_MODE
 -- UNLOCK CODE: Blue_Mode192823
 -- ==============================================
@@ -11,7 +11,6 @@ getgenv().BlueMode_Loaded = true
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
@@ -21,19 +20,21 @@ local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local UNLOCK_CODE = "Blue_Mode192823"
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v2"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v2"
 
--- 🛡️ SAVE SYSTEM
-local function SaveCooldown(time)
-    pcall(function() writefile("BlueMode_Cooldown.txt", tostring(time)) end)
+-- 🛡️ PERMANENT SAVE SYSTEM (SAVES BOTH TIME & COOLDOWN)
+local function SaveData(key, value)
+    pcall(function() writefile(key..".txt", tostring(value)) end)
 end
 
-local function LoadCooldown()
+local function LoadData(key, default)
     local val = nil
-    pcall(function() val = readfile("BlueMode_Cooldown.txt") end)
-    return tonumber(val) or 0
+    pcall(function() val = readfile(key..".txt") end)
+    return tonumber(val) or default
 end
 
--- 🧹 CLEAR ONLY ESP
+-- 🧹 CLEAR ONLY ESP (SAFE)
 local function ClearESP()
     for _, Plr in pairs(Players:GetPlayers()) do
         if Plr and Plr.Character then
@@ -45,11 +46,15 @@ end
 
 -- 🚫 COOLDOWN CHECK
 local NowTime = os.time()
-local CooldownEnd = LoadCooldown()
+local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
 if NowTime < CooldownEnd then
     print("⏳ COOLDOWN ACTIVE! Wait "..math.floor((CooldownEnd-NowTime)/60).." minutes")
     return
 end
+
+-- ⏳ LOAD SAVED USAGE TIME
+local UsedTime = LoadData(SAVE_KEY_USED, 0)
+local LastCheck = os.time()
 
 -- 🎵 FULL BOOMBOX SYSTEM
 local CurrentSound = nil
@@ -134,7 +139,6 @@ local function OpenBoomboxMenu()
         if Input.Text ~= "" then LoadBoombox(Input.Text) end
         BoomUI:Destroy()
     end)
-
     StopBtn.MouseButton1Click:Connect(function()
         if CurrentSound then pcall(function() CurrentSound:Stop() CurrentSound:Destroy() end) end
         BoomUI:Destroy()
@@ -156,7 +160,7 @@ Main.Position = UDim2.new(0, 20, 0.5, -37)
 Main.BackgroundColor3 = Color3.fromRGB(25,25,25)
 Main.BorderSizePixel = 2
 Main.BorderColor3 = Color3.fromRGB(0,180,255)
-Main.Active = true -- Always active for dragging
+Main.Active = true
 Main.ClipsDescendants = false
 Main.Parent = UI
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,8)
@@ -257,12 +261,10 @@ Instance.new("UICorner", DelBtn).CornerRadius = UDim.new(0,6)
 -- VARIABLES
 local ESP_Enabled = false
 local Buttons_Locked = false
-local UsedTime = 0
-local LastCheck = os.time()
 local Hue = 0
 local IsSmall = false
 
--- 🖱️ FIXED DRAG: WORKS EVEN WHEN MINIMIZED
+-- 🖱️ DRAG SYSTEM (WORKS WHEN MINIMIZED)
 local Drag = {Active=false, SX=0, SY=0, PX=0, PY=0}
 local function StartDrag(input)
     if Buttons_Locked then return end
@@ -274,17 +276,13 @@ local function StartDrag(input)
     Drag.PX = Main.Position.X.Offset
     Drag.PY = Main.Position.Y.Offset
 end
-
--- Drag works on both full & minimized UI
 DragBar.InputBegan:Connect(StartDrag)
-Main.InputBegan:Connect(StartDrag) -- Critical fix: drag whole frame when minimized
-
+Main.InputBegan:Connect(StartDrag)
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         Drag.Active = false
     end
 end)
-
 UserInputService.InputChanged:Connect(function(input)
     if not Drag.Active or Buttons_Locked then return end
     if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
@@ -307,7 +305,7 @@ YtBtn.MouseButton1Click:Connect(function()
     YtBtn.Text = "📺 YOUTUBE"
 end)
 
-BoomBtn.MouseButton1Click:Connect(OpenBoomboxMenu) -- Restored full boombox menu
+BoomBtn.MouseButton1Click:Connect(OpenBoomboxMenu)
 
 LockBtn.MouseButton1Click:Connect(function()
     Buttons_Locked = not Buttons_Locked
@@ -345,21 +343,25 @@ DelBtn.MouseButton1Click:Connect(function()
     getgenv().BlueMode_Loaded = nil
 end)
 
--- 🚀 MAIN LOOP
+-- 🚀 MAIN LOOP (AUTO-SAVES TIME EVERY SECOND)
 RunService.Heartbeat:Connect(function(delta)
     if not UI or not UI.Parent then return end
 
-    -- ⏳ UNBYPASSABLE TIMER
+    -- ⏳ AUTO-SAVE & LOAD PERMANENT TIMER
     local Now = os.time()
     UsedTime = UsedTime + math.max(0, Now - LastCheck)
     LastCheck = Now
+    SaveData(SAVE_KEY_USED, UsedTime) -- SAVE AUTOMATICALLY
+
     local h = math.floor(UsedTime/3600)
     local m = math.floor((UsedTime%3600)/60)
     local s = math.floor(UsedTime%60)
     TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00:00", h, m, s)
 
+    -- AUTO COOLDOWN WHEN TIME UP
     if UsedTime >= USAGE_LIMIT then
-        SaveCooldown(os.time() + COOLDOWN)
+        SaveData(SAVE_KEY_COOLDOWN, os.time() + COOLDOWN)
+        pcall(function() delfile(SAVE_KEY_USED..".txt") end) -- RESET TIME AFTER COOLDOWN
         DelBtn:Fire()
         return
     end
@@ -415,8 +417,6 @@ RunService.Heartbeat:Connect(function(delta)
                 Instance.new("UICorner", Circle).CornerRadius = UDim.new(1,0)
                 Circle.Parent = Dot
                 Dot.Parent = Char
-            else
-                Dot.Frame.BackgroundColor3 = Color3.fromHSV(Hue, 1, 1)
             end
         elseif Dot then
             Dot:Destroy()
@@ -424,4 +424,5 @@ RunService.Heartbeat:Connect(function(delta)
     end
 end)
 
-print("✅ ALL FIXES APPLIED! DRAG + MUSIC WORKING PERFECTLY!")
+print("✅ PERMANENT SAVE TIMER ACTIVE! TIME WON'T RESET ANYMORE!")
+
