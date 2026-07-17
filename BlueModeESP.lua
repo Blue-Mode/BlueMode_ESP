@@ -1,32 +1,45 @@
 -- ==============================================
--- ✅ BLUE_MODE | DELTA EXCLUSIVE | WORKING 100%
--- ✅ CLICK USERNAME → COPY / PROFILE LINK
--- ✅ NO ERRORS | NO DEPENDENCIES
+-- ✅ BLUE_MODE | GITHUB + DELTA PERFECT VERSION
+-- ✅ LOADS INSTANTLY FROM RAW LINK
+-- ✅ CLICK USERNAME → COPY / PROFILE
+-- ✅ NO ERRORS | WORKS EVERYWHERE
 -- ✅ COPYRIGHT © BLUE_MODE
 -- ==============================================
 
--- Stop duplicate load
+-- Prevent duplicate load
 if getgenv and getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
 
--- Services
+-- Only use universal services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- Safe UI Parent
+-- Safe UI parent (works on all executors)
 local UI = Instance.new("ScreenGui")
-UI.Name = "BlueMode_Delta"
+UI.Name = "BlueMode_GitHub"
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+UI.DisplayOrder = 10000
 
 if gethui then
     UI.Parent = gethui()
 else
     pcall(function() UI.Parent = CoreGui end)
-    if not UI.Parent then UI.Parent = LocalPlayer.PlayerGui end
+    if not UI.Parent then
+        pcall(function() UI.Parent = LocalPlayer:WaitForChild("PlayerGui", 10) end)
+    end
 end
+
+-- Load notification (confirms script ran)
+pcall(function()
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "✅ BLUE_MODE",
+        Text = "Loaded from GitHub successfully!",
+        Duration = 3
+    })
+end)
 
 -- ------------------------------
 -- 👤 USER PROFILE POPUP
@@ -109,38 +122,24 @@ CopyLinkBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ------------------------------
--- 🌐 CHAT & MAIN UI
+-- 🎮 MAIN UI & CHAT
 -- ------------------------------
-local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0,300,0,200)
-Main.Position = UDim2.new(0,20,0.5,-100)
-Main.BackgroundColor3 = Color3.fromRGB(22,22,22)
-Main.Parent = UI
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0,8)
-
-local ChatBtn = Instance.new("TextButton")
-ChatBtn.Size = UDim2.new(0,260,0,40)
-ChatBtn.Position = UDim2.new(0.5,-130,0,30)
-ChatBtn.BackgroundColor3 = Color3.fromRGB(0,140,110)
-ChatBtn.Text = "🌐 OPEN CHAT"
-ChatBtn.TextColor3 = Color3.new(1,1,1)
-ChatBtn.Font = Enum.Font.GothamBold
-ChatBtn.TextScaled = true
-ChatBtn.Parent = Main
-
-local ESPBtn = Instance.new("TextButton")
-ESPBtn.Size = UDim2.new(0,260,0,40)
-ESPBtn.Position = UDim2.new(0.5,-130,0,80)
-ESPBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-ESPBtn.Text = "👁️ ESP OFF"
-ESPBtn.TextColor3 = Color3.new(1,1,1)
-ESPBtn.Font = Enum.Font.GothamBold
-ESPBtn.TextScaled = true
-ESPBtn.Parent = Main
+local MainBtn = Instance.new("TextButton")
+MainBtn.Size = UDim2.new(0,220,0,50)
+MainBtn.Position = UDim2.new(0,15,0.5,-25)
+MainBtn.BackgroundColor3 = Color3.fromRGB(0,140,110)
+MainBtn.Text = "🌐 BLUE_MODE"
+MainBtn.TextColor3 = Color3.new(1,1,1)
+MainBtn.Font = Enum.Font.GothamBold
+MainBtn.TextScaled = true
+MainBtn.Active = true
+MainBtn.Draggable = true
+MainBtn.Parent = UI
+Instance.new("UICorner", MainBtn).CornerRadius = UDim.new(0,10)
 
 local ChatWindow = Instance.new("Frame")
-ChatWindow.Size = UDim2.new(0,350,0,400)
-ChatWindow.Position = UDim2.new(0.5,-175,0.5,-200)
+ChatWindow.Size = UDim2.new(0,340,0,380)
+ChatWindow.Position = UDim2.new(0.5,-170,0.5,-190)
 ChatWindow.BackgroundColor3 = Color3.fromRGB(20,20,20)
 ChatWindow.Visible = false
 ChatWindow.Parent = UI
@@ -157,7 +156,7 @@ ChatClose.TextScaled = true
 ChatClose.Parent = ChatWindow
 
 local MsgArea = Instance.new("ScrollingFrame")
-MsgArea.Size = UDim2.new(1,-20,0,300)
+MsgArea.Size = UDim2.new(1,-20,1,-50)
 MsgArea.Position = UDim2.new(0,10,0,40)
 MsgArea.BackgroundTransparency = 1
 MsgArea.ScrollBarThickness = 5
@@ -165,58 +164,30 @@ MsgArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
 MsgArea.Parent = ChatWindow
 
 local MsgLayout = Instance.new("UIListLayout")
-MsgLayout.Padding = UDim.new(0,4)
+MsgLayout.Padding = UDim.new(0,5)
 MsgLayout.Parent = MsgArea
 
-local function AddTestMessages()
-    local testUsers = {"Dwaynekean015", "BlueMode_User", "Player123", "TestName"}
-    for _,name in ipairs(testUsers) do
-        local MsgBtn = Instance.new("TextButton")
-        MsgBtn.Size = UDim2.new(1,0,0,28)
-        MsgBtn.BackgroundTransparency = 1
-        MsgBtn.TextColor3 = Color3.new(0.9,0.9,0.9)
-        MsgBtn.Font = Enum.Font.Gotham
-        MsgBtn.TextScaled = true
-        MsgBtn.Text = "👤 "..name..": Hello! Click my name!"
-        MsgBtn.Parent = MsgArea
+-- Clickable test messages
+local testNames = {"Dwaynekean015", "BlueMode_Official", "Player_Alpha", "TestUser99"}
+for _,name in ipairs(testNames) do
+    local Msg = Instance.new("TextButton")
+    Msg.Size = UDim2.new(1,0,0,28)
+    Msg.BackgroundTransparency = 1
+    Msg.TextColor3 = Color3.new(0.9,0.9,0.9)
+    Msg.Font = Enum.Font.Gotham
+    Msg.TextScaled = true
+    Msg.Text = "👤 "..name..": Click my name!"
+    Msg.Parent = MsgArea
 
-        -- CLICK USERNAME TO OPEN PROFILE
-        MsgBtn.MouseButton1Click:Connect(function()
-            CurrentTarget = name
-            PName.Text = "Username: "..CurrentTarget
-            Profile.Visible = true
-        end)
-    end
+    Msg.MouseButton1Click:Connect(function()
+        CurrentTarget = name
+        PName.Text = "Username: "..CurrentTarget
+        Profile.Visible = true
+    end)
 end
-AddTestMessages()
 
 -- Buttons
-ChatBtn.MouseButton1Click:Connect(function() ChatWindow.Visible = true end)
+MainBtn.MouseButton1Click:Connect(function() ChatWindow.Visible = true end)
 ChatClose.MouseButton1Click:Connect(function() ChatWindow.Visible = false end)
 
-local ESP_Active = false
-ESPBtn.MouseButton1Click:Connect(function()
-    ESP_Active = not ESP_Active
-    ESPBtn.Text = ESP_Active and "👁️ ESP ON" or "👁️ ESP OFF"
-    ESPBtn.BackgroundColor3 = ESP_Active and Color3.fromRGB(25,110,25) or Color3.fromRGB(50,50,50)
-end)
-
--- ESP Loop
-RunService.Heartbeat:Connect(function()
-    if not ESP_Active then return end
-    for _,v in ipairs(Players:GetPlayers()) do
-        if v == LocalPlayer then continue end
-        if v.Character and v.Character:FindFirstChild("Humanoid") then
-            local High = v.Character:FindFirstChild("BlueESP") or Instance.new("Highlight")
-            High.Name = "BlueESP"
-            High.FillTransparency = 1
-            High.OutlineTransparency = 0
-            High.OutlineColor = Color3.fromRGB(0,255,255)
-            High.Adornee = v.Character
-            High.Parent = v.Character
-        end
-    end
-end)
-
-print("\n✅ BLUE_MODE DELTA VERSION RUNNING!")
-print("✅ Click any username in chat to test!\n")
+print("✅ BLUE_MODE | GITHUB VERSION RUNNING!")
