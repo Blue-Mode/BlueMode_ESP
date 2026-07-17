@@ -1,5 +1,5 @@
 -- ==============================================
--- ESP Script | FULL CLEANUP ON DELETE + OFF
+-- ESP Script | CLEAN BOOMBOX BUTTON ONLY
 -- made by BLUE_MODE
 -- YouTube: https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M
 -- UNLOCK CODE: Blue_Mode192823
@@ -13,57 +13,153 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
 
--- ⚙️ TIME SETTINGS
+-- ⚙️ SETTINGS
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local UNLOCK_CODE = "Blue_Mode192823"
 local UsedTime = 0
+local DEFAULT_BOOMBOX_ID = "1842836532"
+local MusicVolume = 0.5
+local MusicEnabled = false
+local CurrentSound = nil
 
--- Settings
 local ESP_Enabled = false
 local Buttons_Locked = false
 local RAINBOW_SPEED = 1
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local MAIN_SIZE = UDim2.new(0, 420, 0, 80)
+local MAIN_SIZE = UDim2.new(0, 580, 0, 80) -- Slimmed down, no extra width
 local MAIN_POS = UDim2.new(0, 20, 0.5, 0)
 local SQUARE_SIZE = UDim2.new(0, 50, 0, 50)
 local IsSmall = false
 
--- 🧹 100% FULL CLEANUP — REMOVES EVERYTHING FROM ALL PLAYERS
+-- 🧹 CLEANUP
 local function ClearAllESP()
-    -- Clean ALL players
     for _, Plr in pairs(Players:GetPlayers()) do
-        if Plr.Character then
+        if Plr and Plr.Character then
             local Char = Plr.Character
-            -- Destroy outline
-            if Char:FindFirstChild("BLUE_MODE_Outline") then Char.BLUE_MODE_Outline:Destroy() end
-            -- Destroy dot + all related children
-            for _, Desc in pairs(Char:GetDescendants()) do
-                if Desc.Name == "FriendRainbowDot" or Desc.Name == "DotCircle" or Desc.Name == "BLUE_MODE_Outline" then
-                    Desc:Destroy()
+            pcall(function() if Char:FindFirstChild("BLUE_MODE_Outline") then Char.BLUE_MODE_Outline:Destroy() end end)
+            pcall(function()
+                for _, Desc in pairs(Char:GetDescendants()) do
+                    if Desc.Name == "FriendRainbowDot" or Desc.Name == "DotCircle" or Desc.Name == "BLUE_MODE_Outline" then
+                        Desc:Destroy()
+                    end
                 end
-            end
+            end)
         end
     end
-    -- Extra scan for any hidden leftovers
-    for _, Gui in pairs(CoreGui:GetChildren()) do
-        if Gui.Name == "FriendRainbowDot" or Gui.Name == "BLUE_MODE_Outline" then Gui:Destroy() end
-    end
+    pcall(function()
+        for _, Gui in pairs(CoreGui:GetChildren()) do
+            if Gui.Name == "BLUE_MODE_ESP" or Gui.Name == "FriendRainbowDot" or Gui.Name == "BLUE_MODE_Outline" then
+                Gui:Destroy()
+            end
+        end
+    end)
 end
 
--- 💾 SAVE / LOAD COOLDOWN
+-- 🎵 BOOMBOX FUNCTIONS
+local function FormatSoundId(input)
+    local num = tostring(input):gsub("[^%d]", "")
+    return "rbxassetid://"..num
+end
+
+local function LoadBoombox(boomboxId)
+    pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
+    CurrentSound = Instance.new("Sound")
+    CurrentSound.Name = "BLUE_MODE_BOOMBOX"
+    CurrentSound.SoundId = FormatSoundId(boomboxId)
+    CurrentSound.Volume = MusicVolume
+    CurrentSound.Looped = true
+    CurrentSound.Parent = SoundService
+    pcall(function() CurrentSound:Play() end)
+    MusicEnabled = true
+end
+
+local function OpenBoomboxMenu()
+    local BoomUI = Instance.new("ScreenGui")
+    BoomUI.Name = "BLUE_MODE_BOOMBOX_MENU"
+    BoomUI.ResetOnSpawn = false
+    BoomUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    BoomUI.DisplayOrder = 10000
+    BoomUI.Parent = CoreGui
+
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 320, 0, 180)
+    Frame.Position = UDim2.new(0.5, -160, 0.5, -90)
+    Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    Frame.BorderSizePixel = 2
+    Frame.BorderColor3 = Color3.fromRGB(0,180,255)
+    Frame.Parent = BoomUI
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,10)
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, 0, 0, 40)
+    Title.Position = UDim2.new(0,0,0,5)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🎵 BOOMBOX ID"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextColor3 = Color3.new(1,1,1)
+    Title.TextScaled = true
+    Title.Parent = Frame
+
+    local Input = Instance.new("TextBox")
+    Input.Size = UDim2.new(1, -30, 0, 40)
+    Input.Position = UDim2.new(0,15,0,55)
+    Input.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    Input.Text = ""
+    Input.PlaceholderText = "Paste Boombox ID here..."
+    Input.TextColor3 = Color3.new(1,1,1)
+    Input.Font = Enum.Font.Gotham
+    Input.TextScaled = true
+    Input.ClearTextOnFocus = true
+    Input.Parent = Frame
+    Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
+
+    local PlayBtn = Instance.new("TextButton")
+    PlayBtn.Size = UDim2.new(0, 130, 0, 35)
+    PlayBtn.Position = UDim2.new(0,15,0,115)
+    PlayBtn.BackgroundColor3 = Color3.fromRGB(30,130,220)
+    PlayBtn.Text = "▶ PLAY"
+    PlayBtn.TextColor3 = Color3.new(1,1,1)
+    PlayBtn.Font = Enum.Font.GothamBold
+    PlayBtn.TextScaled = true
+    PlayBtn.Parent = Frame
+    Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0,6)
+
+    local StopBtn = Instance.new("TextButton")
+    StopBtn.Size = UDim2.new(0, 130, 0, 35)
+    StopBtn.Position = UDim2.new(0,175,0,115)
+    StopBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
+    StopBtn.Text = "⏹ STOP"
+    StopBtn.TextColor3 = Color3.new(1,1,1)
+    StopBtn.Font = Enum.Font.GothamBold
+    StopBtn.TextScaled = true
+    StopBtn.Parent = Frame
+    Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0,6)
+
+    PlayBtn.MouseButton1Click:Connect(function()
+        if Input.Text ~= "" then LoadBoombox(Input.Text) end
+        BoomUI:Destroy()
+    end)
+
+    StopBtn.MouseButton1Click:Connect(function()
+        if CurrentSound then pcall(function() CurrentSound:Stop() CurrentSound:Destroy() end) end
+        MusicEnabled = false
+        BoomUI:Destroy()
+    end)
+end
+
+-- 💾 COOLDOWN
 local function GetCooldownEnd()
     return tonumber(getsetting and getsetting("BlueMode_CooldownEnd")) or 0
 end
-
 local function SaveCooldownEnd(timestamp)
     pcall(function() if setsetting then setsetting("BlueMode_CooldownEnd", tostring(timestamp)) end end)
 end
 
--- ⏳ COOLDOWN LOCK GUI
 local function ShowCooldownScreen(EndTime)
     local CooldownUI = Instance.new("ScreenGui")
     CooldownUI.Name = "BLUE_MODE_COOLDOWN"
@@ -183,7 +279,6 @@ UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.DisplayOrder = 999
 UI.Parent = CoreGui
 
--- Startup Text
 local StartupText = Instance.new("TextLabel")
 StartupText.Size = UDim2.new(0, 300, 0, 50)
 StartupText.Position = UDim2.new(0.5, -150, 0.3, 0)
@@ -195,7 +290,6 @@ StartupText.TextScaled = true
 StartupText.Parent = UI
 task.delay(1.2, function() StartupText:Destroy() end)
 
--- Main Bar
 local MainBar = Instance.new("Frame")
 MainBar.Size = MAIN_SIZE
 MainBar.Position = MAIN_POS
@@ -206,7 +300,6 @@ MainBar.Active = true
 MainBar.ClipsDescendants = false
 MainBar.Parent = UI
 
--- Drag Handle
 local DragBar = Instance.new("Frame")
 DragBar.Size = UDim2.new(1, -25, 0, 22)
 DragBar.Position = UDim2.new(0, 0, 0, 0)
@@ -214,7 +307,6 @@ DragBar.BackgroundColor3 = Color3.fromRGB(60, 140, 220)
 DragBar.Active = true
 DragBar.Parent = MainBar
 
--- Title + Timer
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -110, 1, 0)
 Title.Position = UDim2.new(0, 0, 0, 0)
@@ -237,7 +329,7 @@ TimerLabel.TextScaled = true
 TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
 TimerLabel.Parent = DragBar
 
--- Resize Button
+-- ✅ MINIMIZE/X BUTTON - FULLY CLEAR
 local ResizeBtn = Instance.new("TextButton")
 ResizeBtn.Size = UDim2.new(0, 22, 1, 0)
 ResizeBtn.Position = UDim2.new(1, -22, 0, 0)
@@ -248,7 +340,7 @@ ResizeBtn.Font = Enum.Font.GothamBold
 ResizeBtn.TextScaled = true
 ResizeBtn.Parent = MainBar
 
--- ESP Button
+-- ✅ MAIN BUTTONS (NO OVERLAP)
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Size = UDim2.new(0, 90, 0, 30)
 ToggleBtn.Position = UDim2.new(0, 10, 0, 32)
@@ -259,7 +351,6 @@ ToggleBtn.Font = Enum.Font.GothamBold
 ToggleBtn.TextScaled = true
 ToggleBtn.Parent = MainBar
 
--- YouTube Button
 local YtBtn = Instance.new("TextButton")
 YtBtn.Size = UDim2.new(0, 100, 0, 30)
 YtBtn.Position = UDim2.new(0, 105, 0, 32)
@@ -270,7 +361,6 @@ YtBtn.Font = Enum.Font.GothamBold
 YtBtn.TextScaled = true
 YtBtn.Parent = MainBar
 
--- Delete Button
 local DeleteBtn = Instance.new("TextButton")
 DeleteBtn.Size = UDim2.new(0, 90, 0, 30)
 DeleteBtn.Position = UDim2.new(0, 210, 0, 32)
@@ -281,7 +371,6 @@ DeleteBtn.Font = Enum.Font.GothamBold
 DeleteBtn.TextScaled = true
 DeleteBtn.Parent = MainBar
 
--- Lock Slider
 local SliderBG = Instance.new("Frame")
 SliderBG.Size = UDim2.new(0, 70, 0, 26)
 SliderBG.Position = UDim2.new(0, 310, 0, 32)
@@ -298,6 +387,17 @@ SliderKnob.Font = Enum.Font.GothamBold
 SliderKnob.TextScaled = true
 SliderKnob.ZIndex = 100
 SliderKnob.Parent = SliderBG
+
+-- ✅ SINGLE CLEAN BOOMBOX BUTTON
+local BoomboxBtn = Instance.new("TextButton")
+BoomboxBtn.Size = UDim2.new(0, 90, 0, 30)
+BoomboxBtn.Position = UDim2.new(0, 390, 0, 32) -- Perfect spacing, far from X button
+BoomboxBtn.BackgroundColor3 = Color3.fromRGB(40, 80, 160)
+BoomboxBtn.Text = "🎵 BOOMBOX"
+BoomboxBtn.TextColor3 = Color3.new(1,1,1)
+BoomboxBtn.Font = Enum.Font.GothamBold
+BoomboxBtn.TextScaled = true
+BoomboxBtn.Parent = MainBar
 
 -- 🔒 LOCK / UNLOCK
 local function SetLockState(locked)
@@ -317,9 +417,8 @@ local function SetLockState(locked)
     end
 end
 
--- 🖱️ DRAG SYSTEM (WORKS MINIMIZED OR NOT!)
+-- 🖱️ DRAG SYSTEM
 local Drag = {Active = false, StartX = 0, StartY = 0, StartPosX = 0, StartPosY = 0}
-
 local function StartDrag(Input)
     if Buttons_Locked then return end
     local IsMouse = Input.UserInputType == Enum.UserInputType.MouseButton1
@@ -331,45 +430,33 @@ local function StartDrag(Input)
     Drag.StartPosX = MainBar.Position.X.Offset
     Drag.StartPosY = MainBar.Position.Y.Offset
 end
-
 DragBar.InputBegan:Connect(StartDrag)
 MainBar.InputBegan:Connect(function(Input) if IsSmall then StartDrag(Input) end end)
-
 UserInputService.InputEnded:Connect(function(Input)
-    local IsMouse = Input.UserInputType == Enum.UserInputType.MouseButton1
-    local IsTouch = Input.UserInputType == Enum.UserInputType.Touch
-    if IsMouse or IsTouch then Drag.Active = false end
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then Drag.Active = false end
 end)
-
 UserInputService.InputChanged:Connect(function(Input)
     if not Drag.Active or Buttons_Locked then return end
-    local IsMove = Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch
-    if not IsMove then return end
-    MainBar.Position = UDim2.new(0, Drag.StartPosX + (Input.Position.X - Drag.StartX), 0, Drag.StartPosY + (Input.Position.Y - Drag.StartY))
+    if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+        MainBar.Position = UDim2.new(0, Drag.StartPosX + (Input.Position.X - Drag.StartX), 0, Drag.StartPosY + (Input.Position.Y - Drag.StartY))
+    end
 end)
 
 -- Slider Control
 local SliderActive = false
 SliderKnob.InputBegan:Connect(function(Input)
-    local IsMouse = Input.UserInputType == Enum.UserInputType.MouseButton1
-    local IsTouch = Input.UserInputType == Enum.UserInputType.Touch
-    if IsMouse or IsTouch then SliderActive = true; Drag.Active = false end
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then SliderActive = true; Drag.Active = false end
 end)
-
 UserInputService.InputChanged:Connect(function(Input)
-    if not SliderActive then return end
-    local IsMove = Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch
-    if not IsMove then return end
-    SliderKnob.Position = UDim2.new(0, math.clamp(Input.Position.X - SliderBG.AbsolutePosition.X - 16, 0, 38), 0, 0)
+    if SliderActive and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
+        SliderKnob.Position = UDim2.new(0, math.clamp(Input.Position.X - SliderBG.AbsolutePosition.X - 16, 0, 38), 0, 0)
+    end
 end)
-
 UserInputService.InputEnded:Connect(function()
-    if not SliderActive then return end
-    SliderActive = false
-    SetLockState(SliderKnob.Position.X.Offset >= 20)
+    if SliderActive then SliderActive = false; SetLockState(SliderKnob.Position.X.Offset >= 20) end
 end)
 
--- 🟥 MINIMIZE / RESTORE
+-- 🟥 MINIMIZE
 ResizeBtn.MouseButton1Click:Connect(function()
     IsSmall = not IsSmall
     if IsSmall then
@@ -379,6 +466,7 @@ ResizeBtn.MouseButton1Click:Connect(function()
         YtBtn.Visible = false
         DeleteBtn.Visible = false
         SliderBG.Visible = false
+        BoomboxBtn.Visible = false
         ResizeBtn.Text = "➕"
     else
         MainBar.Size = MAIN_SIZE
@@ -387,38 +475,30 @@ ResizeBtn.MouseButton1Click:Connect(function()
         YtBtn.Visible = true
         DeleteBtn.Visible = true
         SliderBG.Visible = true
+        BoomboxBtn.Visible = true
         ResizeBtn.Text = "❌"
     end
 end)
 
--- ✅ ESP TOGGLE: FULL CLEANUP
+-- ✅ BUTTON ACTIONS
 ToggleBtn.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
     ToggleBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
     ToggleBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25, 110, 25) or Color3.fromRGB(40,40,40)
-    if not ESP_Enabled then
-        ClearAllESP()
-        task.wait(0.05)
-        ClearAllESP()
-    end
+    if not ESP_Enabled then ClearAllESP(); task.wait(0.05); ClearAllESP() end
 end)
 
 YtBtn.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard(YOUTUBE_LINK)
-        YtBtn.Text = "✅ COPIED!"
-        task.wait(1.5)
-        YtBtn.Text = "📺 YOUTUBE"
-    end
+    if setclipboard then setclipboard(YOUTUBE_LINK); YtBtn.Text = "✅ COPIED!"; task.wait(1.5); YtBtn.Text = "📺 YOUTUBE" end
 end)
 
--- ✅ DELETE BUTTON: CLEANS EVERYONE + FULL UNLOAD
+BoomboxBtn.MouseButton1Click:Connect(OpenBoomboxMenu)
+
 DeleteBtn.MouseButton1Click:Connect(function()
     ESP_Enabled = false
-    ClearAllESP() -- CLEAN ALL PLAYERS FIRST
-    task.wait(0.05)
-    ClearAllESP() -- DOUBLE CLEAN TO BE 100% SURE
-    UI:Destroy()
+    ClearAllESP()
+    pcall(function() if CurrentSound then CurrentSound:Stop() CurrentSound:Destroy() end end)
+    pcall(function() UI:Destroy() end)
     getgenv().BlueModeESP_Loaded = nil
 end)
 
@@ -441,33 +521,19 @@ end
 local Hue = 0
 RunService.RenderStepped:Connect(function(deltaTime)
     if not UI or not UI.Parent then return end
-
-    -- Timer
     UsedTime += deltaTime
     local h = math.floor(UsedTime/3600)
     local m = math.floor((UsedTime%3600)/60)
     local s = math.floor(UsedTime%60)
     TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00:00", h, m, s)
-
-    -- Timeout
-    if UsedTime >= USAGE_LIMIT then
-        SaveCooldownEnd(os.time() + COOLDOWN)
-        DeleteBtn:Fire()
-        return
-    end
-
-    -- Rainbow
+    if UsedTime >= USAGE_LIMIT then SaveCooldownEnd(os.time() + COOLDOWN); DeleteBtn:Fire(); return end
     Hue = (Hue + deltaTime * RAINBOW_SPEED) % 1
-    local RainbowColor = Color3.fromHSV(Hue, 1, 1)
-    MainBar.BorderColor3 = RainbowColor
-
-    -- ⚡ STOP ALL WORK WHEN ESP IS OFF
+    MainBar.BorderColor3 = Color3.fromHSV(Hue, 1, 1)
     if not ESP_Enabled then return end
 
     for _, Player in pairs(Players:GetPlayers()) do
         if Player == LocalPlayer then continue end
-        local Character = Player.Character
-        if not Character then continue end
+        local Character = Player.Character; if not Character then continue end
         local Humanoid = Character:FindFirstChildOfClass("Humanoid")
         if not Humanoid or Humanoid.Health <= 0 then
             SetOutline(Character, false)
@@ -475,28 +541,19 @@ RunService.RenderStepped:Connect(function(deltaTime)
             if Dot then Dot:Destroy() end
             continue
         end
-
-        -- Player Outline
         SetOutline(Character, true)
         local Outline = Character:FindFirstChild("BLUE_MODE_Outline")
-        if Outline then Outline.OutlineColor = RainbowColor end
+        if Outline then Outline.OutlineColor = Color3.fromHSV(Hue, 1, 1) end
 
-        -- Friend Rainbow Dot on Head
-        local IsFriend = false
-        pcall(function() IsFriend = LocalPlayer:IsFriendsWith(Player.UserId) end)
+        local IsFriend = false; pcall(function() IsFriend = LocalPlayer:IsFriendsWith(Player.UserId) end)
         local Head = Character:FindFirstChild("Head")
         if IsFriend and Head then
             local Dot = Head:FindFirstChild("FriendRainbowDot") or Instance.new("BillboardGui", Head)
-            Dot.Name = "FriendRainbowDot"
-            Dot.AlwaysOnTop = true
-            Dot.Size = UDim2.new(0, 18, 0, 18)
-            Dot.StudsOffset = Vector3.new(0, 1.8, 0)
-            Dot.Adornee = Head
-
+            Dot.Name = "FriendRainbowDot"; Dot.AlwaysOnTop = true
+            Dot.Size = UDim2.new(0, 18, 0, 18); Dot.StudsOffset = Vector3.new(0, 1.8, 0); Dot.Adornee = Head
             local DotCircle = Dot:FindFirstChild("DotCircle") or Instance.new("Frame", Dot)
-            DotCircle.Name = "DotCircle"
-            DotCircle.Size = UDim2.new(1,0,1,0)
-            DotCircle.BackgroundColor3 = RainbowColor
+            DotCircle.Name = "DotCircle"; DotCircle.Size = UDim2.new(1,0,1,0)
+            DotCircle.BackgroundColor3 = Color3.fromHSV(Hue, 1, 1)
             Instance.new("UICorner", DotCircle).CornerRadius = UDim.new(1,0)
         else
             local Dot = Character:FindFirstChild("FriendRainbowDot")
@@ -506,8 +563,6 @@ RunService.RenderStepped:Connect(function(deltaTime)
 end)
 
 Players.PlayerAdded:Connect(function(Player)
-    Player.CharacterAdded:Connect(function()
-        task.wait(0.1)
-        if ESP_Enabled and Player.Character then SetOutline(Player.Character, true) end
-    end)
+    Player.CharacterAdded:Connect(function() task.wait(0.1); if ESP_Enabled and Player.Character then SetOutline(Player.Character, true) end end)
 end)
+
