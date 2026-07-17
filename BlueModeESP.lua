@@ -1,7 +1,7 @@
 -- ==============================================
--- ✅ BLUE_MODE ESP | FINAL SECURED VERSION
+-- ✅ BLUE_MODE ESP | OWNER BADGE + PUBLIC LOG
 -- ✅ LOCK SURVIVES RESTARTS / RE-EXECUTES
--- ✅ OWNER UNLOCK 100% WORKS FOR DWAYNEKEAN015
+-- ✅ ONLY DWAYNEKEAN015 SHOWS AS 👑 OWNER
 -- ✅ COPYRIGHT © BLUE_MODE | ALL RIGHTS RESERVED
 -- ==============================================
 
@@ -13,8 +13,8 @@ getgenv().BlueMode_Loaded = true
 task.wait(1)
 
 -- 🛡️ SECURITY SETTINGS
-local ORIGINAL_UI_NAME = "BLUE_MODE_FINAL_v4"
-local OWNER_USERNAME = "Dwaynekean015" -- ONLY YOU
+local ORIGINAL_UI_NAME = "BLUE_MODE_OWNER_LOG_v6"
+local OWNER_USERNAME = "Dwaynekean015" -- ONLY YOU GET OWNER BADGE
 local OWNER_CODE = "Blue_Mode192823"
 local USE_LIMIT = 43200 -- 12 HOURS USE
 local LOCK_TIME = 43200 -- 12 HOURS LOCK
@@ -27,14 +27,14 @@ local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
--- 📌 PERMANENT SAVE SYSTEM (SURVIVES RESTARTS!)
+-- 📌 PERMANENT SAVE SYSTEM
 local function GetSavedData()
     local ok, data = pcall(function() return readfile and readfile("BlueMode_Data.json") end)
     if ok and data then
         local decodeOk, result = pcall(function() return HttpService:JSONDecode(data) end)
         if decodeOk then return result end
     end
-    return {UsedTime = 0, LockEnd = 0}
+    return {UsedTime = 0, LockEnd = 0, Executions = {}}
 end
 
 local function SaveData(data)
@@ -49,7 +49,21 @@ end
 local Saved = GetSavedData()
 local USED_TIME = Saved.UsedTime or 0
 local LOCK_END = Saved.LockEnd or 0
+local EXECUTION_LOG = Saved.Executions or {}
 local WRONG_COUNT = 0
+
+-- 📝 ADD CURRENT USER TO LOG WITH OWNER BADGE IF IT'S YOU
+local IsOwnerNow = LocalPlayer.Name == OWNER_USERNAME
+local CurrentEntry = {
+    Username = LocalPlayer.Name,
+    IsOwner = IsOwnerNow,
+    Time = os.date("%Y-%m-%d | %H:%M:%S"),
+    Timestamp = os.time()
+}
+table.insert(EXECUTION_LOG, 1, CurrentEntry) -- NEWEST FIRST
+-- KEEP ONLY LAST 50 ENTRIES
+if #EXECUTION_LOG > 50 then table.remove(EXECUTION_LOG) end
+SaveData({UsedTime = USED_TIME, LockEnd = LOCK_END, Executions = EXECUTION_LOG})
 
 -- REST OF SETTINGS
 local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
@@ -75,6 +89,76 @@ else
     pcall(function() UI.Parent = CoreGui end)
     if not UI.Parent then UI.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 end
+
+-- 📜 EXECUTION LOG WINDOW (VISIBLE TO ALL)
+local LogWindow = Instance.new("Frame")
+LogWindow.Size = UDim2.new(0,420,0,340)
+LogWindow.Position = UDim2.new(0.5,-210,0.5,-170)
+LogWindow.BackgroundColor3 = Color3.fromRGB(18,18,18)
+LogWindow.BorderSizePixel = 2
+LogWindow.Visible = false
+LogWindow.ZIndex = 15
+LogWindow.Parent = UI
+Instance.new("UICorner", LogWindow).CornerRadius = UDim.new(0,10)
+
+local LogTitle = Instance.new("TextLabel")
+LogTitle.Size = UDim2.new(1,0,0,35)
+LogTitle.Position = UDim2.new(0,0,0,5)
+LogTitle.BackgroundTransparency = 1
+LogTitle.Text = "📜 SCRIPT EXECUTION LOG"
+LogTitle.TextColor3 = Color3.new(1,1,1)
+LogTitle.Font = Enum.Font.GothamBold
+LogTitle.TextScaled = true
+LogTitle.Parent = LogWindow
+
+local LogClose = Instance.new("TextButton")
+LogClose.Size = UDim2.new(0,30,0,30)
+LogClose.Position = UDim2.new(1,-35,0,5)
+LogClose.BackgroundColor3 = Color3.fromRGB(160,30,30)
+LogClose.Text = "✕"
+LogClose.TextColor3 = Color3.new(1,1,1)
+LogClose.Font = Enum.Font.GothamBold
+LogClose.TextScaled = true
+LogClose.Parent = LogWindow
+
+local LogContainer = Instance.new("ScrollingFrame")
+LogContainer.Size = UDim2.new(1,-20,1,-50)
+LogContainer.Position = UDim2.new(0,10,0,40)
+LogContainer.BackgroundTransparency = 1
+LogContainer.ScrollBarThickness = 6
+LogContainer.Parent = LogWindow
+
+local LogList = Instance.new("UIListLayout")
+LogList.Padding = UDim.new(0,4)
+LogList.Parent = LogContainer
+
+-- FUNCTION TO REFRESH LOG — SHOWS 👑 OWNER FOR YOU
+local function RefreshLog()
+    LogContainer:ClearAllChildren()
+    LogList.Parent = LogContainer
+    for _,entry in pairs(EXECUTION_LOG) do
+        local EntryLabel = Instance.new("TextLabel")
+        EntryLabel.Size = UDim2.new(1,0,0,26)
+        EntryLabel.BackgroundColor3 = entry.IsOwner and Color3.fromRGB(35,25,0) or Color3.fromRGB(28,28,28)
+        EntryLabel.BackgroundTransparency = 0.2
+        -- SHOW OWNER BADGE ONLY FOR YOUR ACCOUNT
+        local DisplayName = entry.Username
+        if entry.IsOwner then
+            DisplayName = "👑 OWNER: "..DisplayName
+        else
+            DisplayName = "👤 "..DisplayName
+        end
+        EntryLabel.Text = DisplayName.." | 🕒 "..entry.Time
+        EntryLabel.TextColor3 = entry.IsOwner and Color3.fromRGB(255,215,0) or Color3.new(0.9,0.9,0.9)
+        EntryLabel.Font = Enum.Font.GothamBold
+        EntryLabel.TextScaled = true
+        EntryLabel.TextXAlignment = Enum.TextXAlignment.Left
+        EntryLabel.Parent = LogContainer
+    end
+end
+RefreshLog()
+
+LogClose.MouseButton1Click:Connect(function() LogWindow.Visible = false end)
 
 -- 🎵 MUSIC SYSTEM
 local Song = Instance.new("Sound")
@@ -191,10 +275,11 @@ WhatsNew.TextYAlignment = Enum.TextYAlignment.Top
 WhatsNew.Text = [[📋 FEATURES:
 • ✅ Music stays playing when closed
 • ✅ Lock survives restarts / re-executes
-• ✅ Only Dwaynekean015 can unlock
+• ✅ Only Dwaynekean015 can unlock early
 • ✅ Rainbow ESP through walls
-• ✅ 12h use → 12h lock system
-• ✅ Anti-bypass protection active]]
+• ✅ 📜 PUBLIC LOG: see all users & time
+• ✅ 👑 OWNER badge for your account
+• ✅ 12h use → 12h lock system]]
 WhatsNew.Parent = Welcome
 
 local WelcomeOK = Instance.new("TextButton")
@@ -272,7 +357,7 @@ UnlockBtn.Parent = LockScreen
 
 -- 🎯 MAIN MENU
 local MainMenu = Instance.new("Frame")
-MainMenu.Size = UDim2.new(0,480,0,110)
+MainMenu.Size = UDim2.new(0,560,0,110)
 MainMenu.Position = UDim2.new(0,20,0.5,-55)
 MainMenu.BackgroundColor3 = Color3.fromRGB(24,24,24)
 MainMenu.BorderSizePixel = 2
@@ -348,9 +433,19 @@ LinkBtn.Font = Enum.Font.GothamBold
 LinkBtn.TextScaled = true
 LinkBtn.Parent = MainMenu
 
+local LogBtn = Instance.new("TextButton")
+LogBtn.Size = UDim2.new(0,80,0,32)
+LogBtn.Position = UDim2.new(0,235,0,60)
+LogBtn.BackgroundColor3 = Color3.fromRGB(120,50,160)
+LogBtn.Text = "📜 LOG"
+LogBtn.TextColor3 = Color3.new(1,1,1)
+LogBtn.Font = Enum.Font.GothamBold
+LogBtn.TextScaled = true
+LogBtn.Parent = MainMenu
+
 local LockBtn = Instance.new("TextButton")
 LockBtn.Size = UDim2.new(0,85,0,32)
-LockBtn.Position = UDim2.new(0,235,0,60)
+LockBtn.Position = UDim2.new(0,325,0,60)
 LockBtn.BackgroundColor3 = Color3.fromRGB(70,70,70)
 LockBtn.Text = "🔒 LOCK MOVE"
 LockBtn.TextColor3 = Color3.new(1,1,1)
@@ -360,6 +455,11 @@ LockBtn.Parent = MainMenu
 
 -- 🖱️ BUTTON ACTIONS
 WelcomeOK.MouseButton1Click:Connect(function() Welcome.Visible = false; MainMenu.Visible = true end)
+
+LogBtn.MouseButton1Click:Connect(function()
+    RefreshLog()
+    LogWindow.Visible = true
+end)
 
 local Drag = {Active=false, StartX=0, StartY=0, StartPosX=0, StartPosY=0}
 DragBar.InputBegan:Connect(function(Input)
@@ -403,12 +503,12 @@ end)
 
 MinBtn.MouseButton1Click:Connect(function()
     MINIMIZED = not MINIMIZED
-    MainMenu.Size = MINIMIZED and UDim2.new(0,120,0,30) or UDim2.new(0,480,0,110)
-    for _,v in pairs({TimerText, ESPBtn, MusicBtn, LinkBtn, LockBtn}) do v.Visible = not MINIMIZED end
+    MainMenu.Size = MINIMIZED and UDim2.new(0,120,0,30) or UDim2.new(0,560,0,110)
+    for _,v in pairs({TimerText, ESPBtn, MusicBtn, LinkBtn, LogBtn, LockBtn}) do v.Visible = not MINIMIZED end
     MinBtn.Text = MINIMIZED and "+" or "−"
 end)
 
--- 🔒 PERFECTED OWNER UNLOCK (DETECTS YOUR ACCOUNT 100%)
+-- 🔒 OWNER UNLOCK
 UnlockBtn.MouseButton1Click:Connect(function()
     local attempts = 0
     local IsOwner = false
@@ -432,7 +532,7 @@ UnlockBtn.MouseButton1Click:Connect(function()
         WRONG_COUNT = 0
         LOCK_END = 0
         USED_TIME = 0
-        SaveData({UsedTime = 0, LockEnd = 0})
+        SaveData({UsedTime = 0, LockEnd = 0, Executions = EXECUTION_LOG})
         LockScreen.Visible = false
         MainMenu.Visible = true
         CodeStatus.Text = "✅ OWNER UNLOCKED!"
@@ -455,13 +555,14 @@ RunService.Heartbeat:Connect(function(dt)
     MainMenu.BorderColor3 = Rainbow
     LockScreen.BorderColor3 = Rainbow
     BoomboxGui.BorderColor3 = Rainbow
+    LogWindow.BorderColor3 = Rainbow
 
     -- PERMANENT LOCK CHECK
     if LOCK_END > 0 then
         local Remain = math.max(0, LOCK_END - os.time())
         if Remain <= 0 then
             LOCK_END = 0
-            SaveData({UsedTime = 0, LockEnd = 0})
+            SaveData({UsedTime = 0, LockEnd = 0, Executions = EXECUTION_LOG})
             LockScreen.Visible = false
             MainMenu.Visible = true
         else
@@ -474,14 +575,14 @@ RunService.Heartbeat:Connect(function(dt)
 
     -- COUNT & SAVE TIME
     USED_TIME += dt
-    SaveData({UsedTime = USED_TIME, LockEnd = LOCK_END})
+    SaveData({UsedTime = USED_TIME, LockEnd = LOCK_END, Executions = EXECUTION_LOG})
     TimerText.Text = string.format("%02d:%02d:%02d", USED_TIME/3600, (USED_TIME%3600)/60, USED_TIME%60).." / 12:00:00"
 
     -- AUTO LOCK WHEN TIME UP
     if USED_TIME >= USE_LIMIT then
         LOCK_END = os.time() + LOCK_TIME
         USED_TIME = 0
-        SaveData({UsedTime = 0, LockEnd = LOCK_END})
+        SaveData({UsedTime = 0, LockEnd = LOCK_END, Executions = EXECUTION_LOG})
         MUSIC_ON = false
         MusicBtn.Text = "🎵 OFF"
         BoomboxGui.Visible = false
@@ -507,7 +608,7 @@ RunService.Heartbeat:Connect(function(dt)
 end)
 
 print("\n✅ ==========================================")
-print("✅ BLUE_MODE ESP | FINAL VERSION")
-print("✅ LOCK SURVIVES ALL RESTARTS / RE-EXECUTES")
-print("✅ UNLOCK ONLY FOR DWAYNEKEAN015")
+print("✅ BLUE_MODE ESP | OWNER BADGE + PUBLIC LOG")
+print("✅ 👑 DWAYNEKEAN015 SHOWS AS OWNER IN LOG")
+print("✅ EVERYONE CAN SEE FULL USER LIST")
 print("✅ ==========================================\n")
