@@ -1,5 +1,5 @@
 -- ==============================================
--- ESP Script | FIXED VOLUME SLIDER
+-- ESP Script | FULL RAINBOW OUTLINES EVERYWHERE
 -- made by BLUE_MODE
 -- UNLOCK CODE: Blue_Mode192823
 -- ==============================================
@@ -56,18 +56,16 @@ end
 -- ⏳ LOAD SAVED SETTINGS
 local UsedTime = LoadData(SAVE_KEY_USED, 0)
 local LastCheck = os.time()
-local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5) -- Default 50%
+local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
 
--- 🎵 BOOMBOX + WORKING VOLUME SYSTEM
+-- 🎵 BOOMBOX + VOLUME SYSTEM
 local CurrentSound = nil
+local VolNumTextMain, VolFillMain
 
--- ✅ FIXED: UPDATES VOLUME EVERYWHERE INSTANTLY
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(newVol, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
-    -- Apply to playing sound
     if CurrentSound then CurrentSound.Volume = MusicVolume end
-    -- Update all UI displays
     if VolNumTextMain then VolNumTextMain.Text = math.floor(MusicVolume * 100).."%" end
     if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume, 0, 1, 0) end
 end
@@ -88,6 +86,7 @@ local function LoadBoombox(boomboxId)
     pcall(function() CurrentSound:Play() end)
 end
 
+local BoomFrame, VolFillMenu
 local function OpenBoomboxMenu()
     local BoomUI = Instance.new("ScreenGui")
     BoomUI.Name = "BLUE_BOOMBOX_MENU"
@@ -96,14 +95,14 @@ local function OpenBoomboxMenu()
     BoomUI.DisplayOrder = 10000
     BoomUI.Parent = CoreGui
 
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0, 300, 0, 220)
-    Frame.Position = UDim2.new(0.5, -150, 0.5, -110)
-    Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    Frame.BorderSizePixel = 2
-    Frame.BorderColor3 = Color3.fromRGB(0,180,255)
-    Frame.Parent = BoomUI
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,10)
+    BoomFrame = Instance.new("Frame")
+    BoomFrame.Size = UDim2.new(0, 300, 0, 220)
+    BoomFrame.Position = UDim2.new(0.5, -150, 0.5, -110)
+    BoomFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    BoomFrame.BorderSizePixel = 2
+    BoomFrame.BorderColor3 = Color3.fromRGB(0,180,255)
+    BoomFrame.Parent = BoomUI
+    Instance.new("UICorner", BoomFrame).CornerRadius = UDim.new(0,10)
 
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1,0,0,35)
@@ -113,7 +112,7 @@ local function OpenBoomboxMenu()
     Title.Font = Enum.Font.GothamBold
     Title.TextColor3 = Color3.new(1,1,1)
     Title.TextScaled = true
-    Title.Parent = Frame
+    Title.Parent = BoomFrame
 
     local Input = Instance.new("TextBox")
     Input.Size = UDim2.new(1,-30,0,40)
@@ -124,10 +123,10 @@ local function OpenBoomboxMenu()
     Input.Font = Enum.Font.Gotham
     Input.TextScaled = true
     Input.ClearTextOnFocus = true
-    Input.Parent = Frame
-    Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
+    Input.Parent = BoomFrame
+    local InputCorner = Instance.new("UICorner", Input)
+    InputCorner.CornerRadius = UDim.new(0,8)
 
-    -- MENU VOLUME SLIDER
     local VolLabel = Instance.new("TextLabel")
     VolLabel.Size = UDim2.new(0,100,0,25)
     VolLabel.Position = UDim2.new(0,15,0,95)
@@ -137,7 +136,7 @@ local function OpenBoomboxMenu()
     VolLabel.Font = Enum.Font.GothamBold
     VolLabel.TextScaled = true
     VolLabel.TextXAlignment = Enum.TextXAlignment.Left
-    VolLabel.Parent = Frame
+    VolLabel.Parent = BoomFrame
 
     local VolNum = Instance.new("TextLabel")
     VolNum.Size = UDim2.new(0,50,0,25)
@@ -148,40 +147,34 @@ local function OpenBoomboxMenu()
     VolNum.Font = Enum.Font.GothamBold
     VolNum.TextScaled = true
     VolNum.TextXAlignment = Enum.TextXAlignment.Right
-    VolNum.Parent = Frame
+    VolNum.Parent = BoomFrame
 
     local VolBG = Instance.new("Frame")
     VolBG.Size = UDim2.new(1,-30,0,20)
     VolBG.Position = UDim2.new(0,15,0,120)
     VolBG.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    VolBG.Parent = Frame
+    VolBG.Parent = BoomFrame
     Instance.new("UICorner", VolBG).CornerRadius = UDim.new(0,10)
 
-    local VolFill = Instance.new("Frame")
-    VolFill.Size = UDim2.new(MusicVolume,0,1,0)
-    VolFill.BackgroundColor3 = Color3.fromRGB(0,180,255)
-    VolFill.Parent = VolBG
-    Instance.new("UICorner", VolFill).CornerRadius = UDim.new(0,10)
+    VolFillMenu = Instance.new("Frame")
+    VolFillMenu.Size = UDim2.new(MusicVolume,0,1,0)
+    VolFillMenu.BackgroundColor3 = Color3.fromRGB(0,180,255)
+    VolFillMenu.Parent = VolBG
+    Instance.new("UICorner", VolFillMenu).CornerRadius = UDim.new(0,10)
 
-    -- ✅ FIXED SLIDER DETECTION
     local SliderActive = false
     VolBG.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-            SliderActive = true
-        end
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = true end
     end)
     UserInputService.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-            SliderActive = false
-        end
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = false end
     end)
     UserInputService.InputChanged:Connect(function(i)
         if SliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-            local relPos = (i.Position.X - VolBG.AbsolutePosition.X) / VolBG.AbsoluteSize.X
-            local newVol = math.clamp(relPos, 0, 1)
-            VolFill.Size = UDim2.new(newVol, 0, 1, 0)
-            VolNum.Text = math.floor(newVol * 100).."%"
-            UpdateVolume(newVol)
+            local relPos = math.clamp((i.Position.X - VolBG.AbsolutePosition.X) / VolBG.AbsoluteSize.X, 0, 1)
+            VolFillMenu.Size = UDim2.new(relPos, 0, 1, 0)
+            VolNum.Text = math.floor(relPos * 100).."%"
+            UpdateVolume(relPos)
         end
     end)
 
@@ -193,8 +186,9 @@ local function OpenBoomboxMenu()
     PlayBtn.TextColor3 = Color3.new(1,1,1)
     PlayBtn.Font = Enum.Font.GothamBold
     PlayBtn.TextScaled = true
-    PlayBtn.Parent = Frame
-    Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0,6)
+    PlayBtn.Parent = BoomFrame
+    local PlayCorner = Instance.new("UICorner", PlayBtn)
+    PlayCorner.CornerRadius = UDim.new(0,6)
 
     local StopBtn = Instance.new("TextButton")
     StopBtn.Size = UDim2.new(0,120,0,35)
@@ -204,8 +198,9 @@ local function OpenBoomboxMenu()
     StopBtn.TextColor3 = Color3.new(1,1,1)
     StopBtn.Font = Enum.Font.GothamBold
     StopBtn.TextScaled = true
-    StopBtn.Parent = Frame
-    Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0,6)
+    StopBtn.Parent = BoomFrame
+    local StopCorner = Instance.new("UICorner", StopBtn)
+    StopCorner.CornerRadius = UDim.new(0,6)
 
     PlayBtn.MouseButton1Click:Connect(function() if Input.Text ~= "" then LoadBoombox(Input.Text) end BoomUI:Destroy() end)
     StopBtn.MouseButton1Click:Connect(function() if CurrentSound then pcall(function() CurrentSound:Stop() CurrentSound:Destroy() end) end BoomUI:Destroy() end)
@@ -268,7 +263,7 @@ MinBtn.Font = Enum.Font.GothamBold
 MinBtn.TextScaled = true
 MinBtn.Parent = Main
 
--- BUTTONS ROW 1
+-- BUTTONS
 local ESPBtn = Instance.new("TextButton")
 ESPBtn.Size = UDim2.new(0, 85, 0, 30)
 ESPBtn.Position = UDim2.new(0, 10, 0, 30)
@@ -324,7 +319,7 @@ DelBtn.TextScaled = true
 DelBtn.Parent = Main
 Instance.new("UICorner", DelBtn).CornerRadius = UDim.new(0,6)
 
--- ✅ MAIN VOLUME SLIDER (NOW FULLY WORKING)
+-- VOLUME SLIDER
 local VolLabelMain = Instance.new("TextLabel")
 VolLabelMain.Size = UDim2.new(0,70,0,25)
 VolLabelMain.Position = UDim2.new(0,10,0,65)
@@ -336,7 +331,7 @@ VolLabelMain.TextScaled = true
 VolLabelMain.TextXAlignment = Enum.TextXAlignment.Left
 VolLabelMain.Parent = Main
 
-local VolNumTextMain = Instance.new("TextLabel")
+VolNumTextMain = Instance.new("TextLabel")
 VolNumTextMain.Size = UDim2.new(0,45,0,25)
 VolNumTextMain.Position = UDim2.new(0,85,0,65)
 VolNumTextMain.BackgroundTransparency = 1
@@ -354,30 +349,24 @@ VolBGMain.BackgroundColor3 = Color3.fromRGB(50,50,50)
 VolBGMain.Parent = Main
 Instance.new("UICorner", VolBGMain).CornerRadius = UDim.new(0,9)
 
-local VolFillMain = Instance.new("Frame")
+VolFillMain = Instance.new("Frame")
 VolFillMain.Size = UDim2.new(MusicVolume,0,1,0)
 VolFillMain.BackgroundColor3 = Color3.fromRGB(0,180,255)
 VolFillMain.Parent = VolBGMain
 Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0,9)
 
--- ✅ FIXED SLIDER DRAG LOGIC
 local VolSliderActive = false
 VolBGMain.InputBegan:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-        VolSliderActive = true
-    end
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then VolSliderActive = true end
 end)
 UserInputService.InputEnded:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-        VolSliderActive = false
-    end
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then VolSliderActive = false end
 end)
 UserInputService.InputChanged:Connect(function(i)
     if VolSliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-        local relPos = (i.Position.X - VolBGMain.AbsolutePosition.X) / VolBGMain.AbsoluteSize.X
-        local newVol = math.clamp(relPos, 0, 1)
-        VolFillMain.Size = UDim2.new(newVol, 0, 1, 0)
-        UpdateVolume(newVol)
+        local relPos = math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X) / VolBGMain.AbsoluteSize.X, 0, 1)
+        VolFillMain.Size = UDim2.new(relPos, 0, 1, 0)
+        UpdateVolume(relPos)
     end
 end)
 
@@ -387,7 +376,7 @@ local Buttons_Locked = false
 local Hue = 0
 local IsSmall = false
 
--- 🖱️ DRAG SYSTEM (WORKS WHEN MINIMIZED)
+-- 🖱️ DRAG SYSTEM
 local Drag = {Active=false, SX=0, SY=0, PX=0, PY=0}
 local function StartDrag(input)
     if Buttons_Locked then return end
@@ -402,9 +391,7 @@ end
 DragBar.InputBegan:Connect(StartDrag)
 Main.InputBegan:Connect(StartDrag)
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        Drag.Active = false
-    end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then Drag.Active = false end
 end)
 UserInputService.InputChanged:Connect(function(input)
     if not Drag.Active or Buttons_Locked then return end
@@ -472,7 +459,7 @@ DelBtn.MouseButton1Click:Connect(function()
     getgenv().BlueMode_Loaded = nil
 end)
 
--- 🚀 MAIN LOOP
+-- 🚀 MAIN LOOP | FULL RAINBOW EFFECT EVERYWHERE
 RunService.Heartbeat:Connect(function(delta)
     if not UI or not UI.Parent then return end
 
@@ -494,13 +481,23 @@ RunService.Heartbeat:Connect(function(delta)
         return
     end
 
-    -- RAINBOW EFFECT
-    Hue = (Hue + delta) % 1
-    Main.BorderColor3 = Color3.fromHSV(Hue, 1, 1)
+    -- 🌈 SYNC ALL RAINBOW COLORS
+    Hue = (Hue + delta * 0.6) % 1 -- Smooth speed
+    local RainbowColor = Color3.fromHSV(Hue, 1, 1)
+
+    -- Main GUI Border
+    Main.BorderColor3 = RainbowColor
+    -- Drag Bar
+    DragBar.BackgroundColor3 = RainbowColor
+    -- Volume Slider Fill
+    if VolFillMain then VolFillMain.BackgroundColor3 = RainbowColor end
+    -- Boombox Menu
+    if BoomFrame then BoomFrame.BorderColor3 = RainbowColor end
+    if VolFillMenu then VolFillMenu.BackgroundColor3 = RainbowColor end
 
     if not ESP_Enabled then return end
 
-    -- 👥 ESP + FRIEND DOTS
+    -- 👥 ESP + FRIEND DOTS (ALSO RAINBOW)
     for _, Plr in pairs(Players:GetPlayers()) do
         if Plr == LocalPlayer then continue end
         local Char = Plr.Character
@@ -512,7 +509,7 @@ RunService.Heartbeat:Connect(function(delta)
             continue
         end
 
-        -- OUTLINE
+        -- ESP Outline
         local Outline = Char:FindFirstChild("BLUE_Outline")
         if not Outline then
             Outline = Instance.new("Highlight")
@@ -523,9 +520,9 @@ RunService.Heartbeat:Connect(function(delta)
             Outline.Adornee = Char
             Outline.Parent = Char
         end
-        Outline.OutlineColor = Color3.fromHSV(Hue, 1, 1)
+        Outline.OutlineColor = RainbowColor
 
-        -- 🟢 FRIEND DOT
+        -- Friend Dot
         local IsFriend = false
         pcall(function() IsFriend = LocalPlayer:IsFriendsWith(Plr.UserId) end)
         local Head = Char:FindFirstChild("Head")
@@ -541,10 +538,12 @@ RunService.Heartbeat:Connect(function(delta)
                 Dot.Adornee = Head
                 local Circle = Instance.new("Frame")
                 Circle.Size = UDim2.new(1,0,1,0)
-                Circle.BackgroundColor3 = Color3.fromHSV(Hue, 1, 1)
+                Circle.BackgroundColor3 = RainbowColor
                 Instance.new("UICorner", Circle).CornerRadius = UDim.new(1,0)
                 Circle.Parent = Dot
                 Dot.Parent = Char
+            else
+                Dot.Frame.BackgroundColor3 = RainbowColor
             end
         elseif Dot then
             Dot:Destroy()
@@ -552,5 +551,4 @@ RunService.Heartbeat:Connect(function(delta)
     end
 end)
 
-print("✅ VOLUME SLIDER FULLY FIXED! DRAG TO ADJUST SOUND INSTANTLY!")
-
+print("✅ FULL RAINBOW EFFECT APPLIED TO ALL OUTLINES!")
