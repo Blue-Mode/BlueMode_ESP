@@ -1,61 +1,42 @@
 -- ==============================================
--- ✅ BLUE_MODE | ORIGINAL OLD STYLE
--- ✅ NO GLOBAL CHAT | FULL PLAYER LOG
--- ✅ ALL BUTTONS WORKING | DELTA + GITHUB
--- ✅ COPYRIGHT © BLUE_MODE
+-- BLUE_MODE | ORIGINAL OLD VERSION
+-- NO GLOBAL CHAT | NO PLAYER LIST
+-- 12H TIMER + UNLOCK + LOG
 -- ==============================================
 
 -- Prevent duplicate load
 if getgenv and getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
 
--- Services
+-- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
-local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
--- Settings
-local OWNER_USERNAME = "Dwaynekean015"
-local OWNER_CODE = "Blue_Mode192823"
-local MAX_LOGS = 50
+-- SETTINGS
+local UNLOCK_CODE = "Blue_Mode192823"
+local MAX_HOURS = 12
+local MAX_SECONDS = MAX_HOURS * 3600
 local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
+local MAX_LOGS = 50
 
--- Save System
-local function GetLogs()
-    local data = {Executions = {}}
-    pcall(function()
-        if readfile then
-            local ok, res = pcall(function() return HttpService:JSONDecode(readfile("BlueMode_Data.json")) end)
-            if ok and res then data = res end
-        end
-    end)
-    return data
-end
+-- DATA
+local Data = {
+    UsedTime = 0,
+    IsLocked = false,
+    Executions = {}
+}
 
-local function SaveLogs(data)
-    pcall(function()
-        if writefile then
-            writefile("BlueMode_Data.json", HttpService:JSONEncode(data))
-        end
-    end)
-end
-
--- Load & Add Current User
-local Saved = GetLogs()
-local IsOwnerNow = LocalPlayer.Name == OWNER_USERNAME
-
-table.insert(Saved.Executions, 1, {
+-- ADD CURRENT USER TO LOG
+table.insert(Data.Executions, 1, {
     Username = LocalPlayer.Name,
-    IsOwner = IsOwnerNow,
     Time = os.date("%Y-%m-%d | %H:%M:%S")
 })
-if #Saved.Executions > MAX_LOGS then table.remove(Saved.Executions) end
-SaveLogs(Saved)
+if #Data.Executions > MAX_LOGS then table.remove(Data.Executions) end
 
--- Safe UI Parent
+-- SAFE UI PARENT
 local UI = Instance.new("ScreenGui")
 UI.Name = "BLUE_MODE_OLD"
 UI.ResetOnSpawn = false
@@ -71,102 +52,102 @@ else
     end
 end
 
--- Notification
+-- NOTIFICATION
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "✅ BLUE_MODE",
-        Text = "Original Version Loaded!",
+        Title = "BLUE_MODE",
+        Text = "Old Version Loaded!",
         Duration = 3
     })
 end)
 
 -- ==============================================
--- 👤 USER PROFILE POPUP
+-- LOCK SCREEN
 -- ==============================================
-local CurrentTargetUser = ""
+local LockScreen = Instance.new("Frame")
+LockScreen.Size = UDim2.new(1,0,1,0)
+LockScreen.BackgroundColor3 = Color3.fromRGB(10,10,10)
+LockScreen.Visible = Data.IsLocked
+LockScreen.ZIndex = 9999
+LockScreen.Parent = UI
 
-local ProfileGui = Instance.new("Frame")
-ProfileGui.Size = UDim2.new(0,280,0,180)
-ProfileGui.Position = UDim2.new(0.5,-140,0.5,-90)
-ProfileGui.BackgroundColor3 = Color3.fromRGB(22,22,22)
-ProfileGui.BorderSizePixel = 2
-ProfileGui.Visible = false
-ProfileGui.ZIndex = 100
-ProfileGui.Parent = UI
-Instance.new("UICorner", ProfileGui).CornerRadius = UDim.new(0,10)
+local LockTitle = Instance.new("TextLabel")
+LockTitle.Size = UDim2.new(1,0,0,60)
+LockTitle.Position = UDim2.new(0,0,0.15,0)
+LockTitle.BackgroundTransparency = 1
+LockTitle.Text = "TIME LIMIT REACHED"
+LockTitle.TextColor3 = Color3.fromRGB(255,60,60)
+LockTitle.Font = Enum.Font.GothamBold
+LockTitle.TextScaled = true
+LockTitle.Parent = LockScreen
 
-local ProfileTitle = Instance.new("TextLabel")
-ProfileTitle.Size = UDim2.new(1,0,0,40)
-ProfileTitle.Position = UDim2.new(0,0,0,10)
-ProfileTitle.BackgroundTransparency = 1
-ProfileTitle.Text = "👤 USER PROFILE"
-ProfileTitle.TextColor3 = Color3.new(1,1,1)
-ProfileTitle.Font = Enum.Font.GothamBold
-ProfileTitle.TextScaled = true
-ProfileTitle.Parent = ProfileGui
+local LockSub = Instance.new("TextLabel")
+LockSub.Size = UDim2.new(0,350,0,40)
+LockSub.Position = UDim2.new(0.5,-175,0.25,0)
+LockSub.BackgroundTransparency = 1
+LockSub.Text = "12 Hour limit expired\nEnter code to unlock"
+LockSub.TextColor3 = Color3.new(0.8,0.8,0.8)
+LockSub.Font = Enum.Font.Gotham
+LockSub.TextScaled = true
+LockSub.TextAlign = Enum.TextXAlignment.Center
+LockSub.Parent = LockScreen
 
-local TargetNameLabel = Instance.new("TextLabel")
-TargetNameLabel.Size = UDim2.new(1,-20,0,35)
-TargetNameLabel.Position = UDim2.new(0,10,0,55)
-TargetNameLabel.BackgroundTransparency = 1
-TargetNameLabel.Text = "Username: ---"
-TargetNameLabel.TextColor3 = Color3.fromRGB(0,200,255)
-TargetNameLabel.Font = Enum.Font.GothamBold
-TargetNameLabel.TextScaled = true
-TargetNameLabel.Parent = ProfileGui
+local CodeBox = Instance.new("TextBox")
+CodeBox.Size = UDim2.new(0,280,0,45)
+CodeBox.Position = UDim2.new(0.5,-140,0.38,0)
+CodeBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
+CodeBox.Text = ""
+CodeBox.PlaceholderText = "Enter Unlock Code"
+CodeBox.TextColor3 = Color3.new(1,1,1)
+CodeBox.Font = Enum.Font.Gotham
+CodeBox.TextScaled = true
+CodeBox.ClearTextOnFocus = true
+CodeBox.Parent = LockScreen
+Instance.new("UICorner", CodeBox).CornerRadius = UDim.new(0,8)
 
-local CopyUserBtn = Instance.new("TextButton")
-CopyUserBtn.Size = UDim2.new(0,240,0,35)
-CopyUserBtn.Position = UDim2.new(0.5,-120,0,100)
-CopyUserBtn.BackgroundColor3 = Color3.fromRGB(20,110,180)
-CopyUserBtn.Text = "📋 COPY USERNAME"
-CopyUserBtn.TextColor3 = Color3.new(1,1,1)
-CopyUserBtn.Font = Enum.Font.GothamBold
-CopyUserBtn.TextScaled = true
-CopyUserBtn.Parent = ProfileGui
+local UnlockBtn = Instance.new("TextButton")
+UnlockBtn.Size = UDim2.new(0,200,0,45)
+UnlockBtn.Position = UDim2.new(0.5,-100,0.46,0)
+UnlockBtn.BackgroundColor3 = Color3.fromRGB(25,150,100)
+UnlockBtn.Text = "UNLOCK"
+UnlockBtn.TextColor3 = Color3.new(1,1,1)
+UnlockBtn.Font = Enum.Font.GothamBold
+UnlockBtn.TextScaled = true
+UnlockBtn.Parent = LockScreen
+Instance.new("UICorner", UnlockBtn).CornerRadius = UDim.new(0,8)
 
-local CopyLinkBtn = Instance.new("TextButton")
-CopyLinkBtn.Size = UDim2.new(0,240,0,35)
-CopyLinkBtn.Position = UDim2.new(0.5,-120,0,145)
-CopyLinkBtn.BackgroundColor3 = Color3.fromRGB(20,140,60)
-CopyLinkBtn.Text = "🔗 COPY PROFILE LINK"
-CopyLinkBtn.TextColor3 = Color3.new(1,1,1)
-CopyLinkBtn.Font = Enum.Font.GothamBold
-CopyLinkBtn.TextScaled = true
-CopyLinkBtn.Parent = ProfileGui
+local LockMsg = Instance.new("TextLabel")
+LockMsg.Size = UDim2.new(0,300,0,30)
+LockMsg.Position = UDim2.new(0.5,-150,0.55,0)
+LockMsg.BackgroundTransparency = 1
+LockMsg.Text = ""
+LockMsg.TextColor3 = Color3.fromRGB(255,80,80)
+LockMsg.Font = Enum.Font.Gotham
+LockMsg.TextScaled = true
+LockMsg.Parent = LockScreen
 
-local ProfileClose = Instance.new("TextButton")
-ProfileClose.Size = UDim2.new(0,30,0,30)
-ProfileClose.Position = UDim2.new(1,-35,0,5)
-ProfileClose.BackgroundColor3 = Color3.fromRGB(160,30,30)
-ProfileClose.Text = "✕"
-ProfileClose.TextColor3 = Color3.new(1,1,1)
-ProfileClose.Font = Enum.Font.GothamBold
-ProfileClose.TextScaled = true
-ProfileClose.Parent = ProfileGui
-
--- Profile Actions
-ProfileClose.MouseButton1Click:Connect(function() ProfileGui.Visible = false end)
-CopyUserBtn.MouseButton1Click:Connect(function()
-    if CurrentTargetUser == "" then return end
-    pcall(function() if setclipboard then setclipboard(CurrentTargetUser) end end)
-    CopyUserBtn.Text = "✅ COPIED!"
-    task.delay(1.5, function() CopyUserBtn.Text = "📋 COPY USERNAME" end)
-end)
-CopyLinkBtn.MouseButton1Click:Connect(function()
-    if CurrentTargetUser == "" then return end
-    local link = "https://www.roblox.com/users/profile?username="..CurrentTargetUser
-    pcall(function() if setclipboard then setclipboard(link) end end)
-    CopyLinkBtn.Text = "✅ LINK COPIED!"
-    task.delay(1.5, function() CopyLinkBtn.Text = "🔗 COPY PROFILE LINK" end)
+UnlockBtn.MouseButton1Click:Connect(function()
+    if CodeBox.Text == UNLOCK_CODE then
+        Data.IsLocked = false
+        Data.UsedTime = 0
+        LockScreen.Visible = false
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification",{
+                Title = "UNLOCKED", Text = "Timer reset!", Duration = 3
+            })
+        end)
+    else
+        LockMsg.Text = "WRONG CODE!"
+        task.delay(2, function() LockMsg.Text = "" end)
+    end
 end)
 
 -- ==============================================
--- 📜 PLAYER EXECUTION LOG WINDOW
+-- EXECUTION LOG WINDOW
 -- ==============================================
 local LogWindow = Instance.new("Frame")
-LogWindow.Size = UDim2.new(0,420,0,340)
-LogWindow.Position = UDim2.new(0.5,-210,0.5,-170)
+LogWindow.Size = UDim2.new(0,380,0,300)
+LogWindow.Position = UDim2.new(0.5,-190,0.5,-150)
 LogWindow.BackgroundColor3 = Color3.fromRGB(18,18,18)
 LogWindow.BorderSizePixel = 2
 LogWindow.Visible = false
@@ -177,7 +158,7 @@ local LogTitle = Instance.new("TextLabel")
 LogTitle.Size = UDim2.new(1,0,0,35)
 LogTitle.Position = UDim2.new(0,0,0,5)
 LogTitle.BackgroundTransparency = 1
-LogTitle.Text = "📜 SCRIPT EXECUTION LOG"
+LogTitle.Text = "📜 EXECUTION LOG"
 LogTitle.TextColor3 = Color3.new(1,1,1)
 LogTitle.Font = Enum.Font.GothamBold
 LogTitle.TextScaled = true
@@ -207,69 +188,60 @@ LogList.Parent = LogContainer
 local function RefreshLog()
     LogContainer:ClearAllChildren()
     LogList.Parent = LogContainer
-    for _,entry in ipairs(Saved.Executions) do
-        local EntryBtn = Instance.new("TextButton")
-        EntryBtn.Size = UDim2.new(1,0,0,28)
-        EntryBtn.BackgroundColor3 = entry.IsOwner and Color3.fromRGB(35,25,0) or Color3.fromRGB(28,28,28)
-        EntryBtn.BackgroundTransparency = 0.2
-        local Display = entry.IsOwner and "👑 OWNER: "..entry.Username or "👤 "..entry.Username
-        EntryBtn.Text = Display.." | 🕒 "..entry.Time
-        EntryBtn.TextColor3 = entry.IsOwner and Color3.fromRGB(255,215,0) or Color3.new(0.9,0.9,0.9)
-        EntryBtn.Font = Enum.Font.GothamBold
-        EntryBtn.TextScaled = true
-        EntryBtn.TextXAlignment = Enum.TextXAlignment.Left
-        EntryBtn.AutoButtonColor = true
-        EntryBtn.Parent = LogContainer
-
-        -- CLICK LOG NAME → OPEN PROFILE
-        EntryBtn.MouseButton1Click:Connect(function()
-            CurrentTargetUser = entry.Username
-            TargetNameLabel.Text = "Username: "..CurrentTargetUser
-            ProfileGui.Visible = true
-        end)
+    for _,entry in ipairs(Data.Executions) do
+        local Entry = Instance.new("TextLabel")
+        Entry.Size = UDim2.new(1,0,0,26)
+        Entry.BackgroundTransparency = 1
+        Entry.Text = "👤 "..entry.Username.." | 🕒 "..entry.Time
+        Entry.TextColor3 = Color3.new(0.9,0.9,0.9)
+        Entry.Font = Enum.Font.Gotham
+        Entry.TextScaled = true
+        Entry.TextXAlignment = Enum.TextXAlignment.Left
+        Entry.Parent = LogContainer
     end
 end
 RefreshLog()
 LogClose.MouseButton1Click:Connect(function() LogWindow.Visible = false end)
 
 -- ==============================================
--- 👋 WELCOME SCREEN
+-- WELCOME SCREEN
 -- ==============================================
 local Welcome = Instance.new("Frame")
-Welcome.Size = UDim2.new(0,400,0,320)
-Welcome.Position = UDim2.new(0.5,-200,0.5,-160)
+Welcome.Size = UDim2.new(0,380,0,280)
+Welcome.Position = UDim2.new(0.5,-190,0.5,-140)
 Welcome.BackgroundColor3 = Color3.fromRGB(20,20,20)
 Welcome.BorderSizePixel = 3
 Welcome.BorderColor3 = Color3.fromRGB(0,200,200)
+Welcome.Visible = not Data.IsLocked
 Welcome.Parent = UI
 Instance.new("UICorner", Welcome).CornerRadius = UDim.new(0,10)
 
-local MadeBy = Instance.new("TextLabel")
-MadeBy.Size = UDim2.new(1,0,0,40)
-MadeBy.Position = UDim2.new(0,0,0,10)
-MadeBy.BackgroundTransparency = 1
-MadeBy.Text = "✨ MADE BY BLUE_MODE ✨"
-MadeBy.TextColor3 = Color3.new(0,1,1)
-MadeBy.Font = Enum.Font.GothamBold
-MadeBy.TextScaled = true
-MadeBy.Parent = Welcome
+local WelcomeTitle = Instance.new("TextLabel")
+WelcomeTitle.Size = UDim2.new(1,0,0,50)
+WelcomeTitle.Position = UDim2.new(0,0,0,20)
+WelcomeTitle.BackgroundTransparency = 1
+WelcomeTitle.Text = "BLUE_MODE"
+WelcomeTitle.TextColor3 = Color3.new(0,1,1)
+WelcomeTitle.Font = Enum.Font.GothamBold
+WelcomeTitle.TextScaled = true
+WelcomeTitle.Parent = Welcome
 
 local WelcomeOK = Instance.new("TextButton")
 WelcomeOK.Size = UDim2.new(0,160,0,40)
-WelcomeOK.Position = UDim2.new(0.5,-80,0,260)
+WelcomeOK.Position = UDim2.new(0.5,-80,0,200)
 WelcomeOK.BackgroundColor3 = Color3.fromRGB(0,150,120)
-WelcomeOK.Text = "✅ START"
+WelcomeOK.Text = "START"
 WelcomeOK.TextColor3 = Color3.new(1,1,1)
 WelcomeOK.Font = Enum.Font.GothamBold
 WelcomeOK.TextScaled = true
 WelcomeOK.Parent = Welcome
 
 -- ==============================================
--- 🎯 FULL ORIGINAL MAIN MENU + ALL BUTTONS
+-- MAIN MENU
 -- ==============================================
 local MainMenu = Instance.new("Frame")
-MainMenu.Size = UDim2.new(0,640,0,110)
-MainMenu.Position = UDim2.new(0,20,0.5,-55)
+MainMenu.Size = UDim2.new(0,520,0,100)
+MainMenu.Position = UDim2.new(0,20,0.5,-50)
 MainMenu.BackgroundColor3 = Color3.fromRGB(24,24,24)
 MainMenu.BorderSizePixel = 2
 MainMenu.Active = true
@@ -306,15 +278,15 @@ local TimerText = Instance.new("TextLabel")
 TimerText.Size = UDim2.new(1,-20,0,25)
 TimerText.Position = UDim2.new(0,10,0,30)
 TimerText.BackgroundTransparency = 1
-TimerText.Text = "00:00:00"
+TimerText.Text = "00:00:00 / 12:00:00"
 TimerText.TextColor3 = Color3.new(0,1,1)
 TimerText.Font = Enum.Font.GothamBold
 TimerText.TextScaled = true
 TimerText.Parent = MainMenu
 
--- 🎮 ALL ORIGINAL WORKING BUTTONS
+-- BUTTONS
 local ESPBtn = Instance.new("TextButton")
-ESPBtn.Size = UDim2.new(0,70,0,32)
+ESPBtn.Size = UDim2.new(0,65,0,30)
 ESPBtn.Position = UDim2.new(0,10,0,60)
 ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
 ESPBtn.Text = "ESP OFF"
@@ -324,8 +296,8 @@ ESPBtn.TextScaled = true
 ESPBtn.Parent = MainMenu
 
 local MusicBtn = Instance.new("TextButton")
-MusicBtn.Size = UDim2.new(0,70,0,32)
-MusicBtn.Position = UDim2.new(0,85,0,60)
+MusicBtn.Size = UDim2.new(0,65,0,30)
+MusicBtn.Position = UDim2.new(0,80,0,60)
 MusicBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
 MusicBtn.Text = "🎵 OFF"
 MusicBtn.TextColor3 = Color3.new(1,1,1)
@@ -334,8 +306,8 @@ MusicBtn.TextScaled = true
 MusicBtn.Parent = MainMenu
 
 local LinkBtn = Instance.new("TextButton")
-LinkBtn.Size = UDim2.new(0,70,0,32)
-LinkBtn.Position = UDim2.new(0,160,0,60)
+LinkBtn.Size = UDim2.new(0,65,0,30)
+LinkBtn.Position = UDim2.new(0,150,0,60)
 LinkBtn.BackgroundColor3 = Color3.fromRGB(20,110,180)
 LinkBtn.Text = "📺 YT"
 LinkBtn.TextColor3 = Color3.new(1,1,1)
@@ -344,8 +316,8 @@ LinkBtn.TextScaled = true
 LinkBtn.Parent = MainMenu
 
 local LogBtn = Instance.new("TextButton")
-LogBtn.Size = UDim2.new(0,70,0,32)
-LogBtn.Position = UDim2.new(0,235,0,60)
+LogBtn.Size = UDim2.new(0,65,0,30)
+LogBtn.Position = UDim2.new(0,220,0,60)
 LogBtn.BackgroundColor3 = Color3.fromRGB(120,50,160)
 LogBtn.Text = "📜 LOG"
 LogBtn.TextColor3 = Color3.new(1,1,1)
@@ -354,8 +326,8 @@ LogBtn.TextScaled = true
 LogBtn.Parent = MainMenu
 
 local LockBtn = Instance.new("TextButton")
-LockBtn.Size = UDim2.new(0,85,0,32)
-LockBtn.Position = UDim2.new(0,310,0,60)
+LockBtn.Size = UDim2.new(0,80,0,30)
+LockBtn.Position = UDim2.new(0,290,0,60)
 LockBtn.BackgroundColor3 = Color3.fromRGB(70,70,70)
 LockBtn.Text = "🔒 LOCK"
 LockBtn.TextColor3 = Color3.new(1,1,1)
@@ -363,17 +335,16 @@ LockBtn.Font = Enum.Font.GothamBold
 LockBtn.TextScaled = true
 LockBtn.Parent = MainMenu
 
--- Flags
+-- FLAGS
 local ESP_ON = false
 local MUSIC_ON = false
 local MOVE_LOCKED = false
 local MINIMIZED = false
-local USED_TIME = 0
 
--- Welcome Button
+-- WELCOME BUTTON
 WelcomeOK.MouseButton1Click:Connect(function() Welcome.Visible = false; MainMenu.Visible = true end)
 
--- Drag Menu
+-- DRAG MENU
 local Drag = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
 DragBar.InputBegan:Connect(function(Input)
     if MOVE_LOCKED then return end
@@ -391,7 +362,7 @@ UIS.InputChanged:Connect(function(Input)
 end)
 UIS.InputEnded:Connect(function() Drag.Active = false end)
 
--- Button Actions
+-- BUTTON ACTIONS
 ESPBtn.MouseButton1Click:Connect(function()
     ESP_ON = not ESP_ON
     ESPBtn.Text = ESP_ON and "ESP ON" or "ESP OFF"
@@ -407,24 +378,42 @@ LogBtn.MouseButton1Click:Connect(function() RefreshLog(); LogWindow.Visible = tr
 LockBtn.MouseButton1Click:Connect(function() MOVE_LOCKED = not MOVE_LOCKED; LockBtn.Text = MOVE_LOCKED and "🔓 UNLOCK" or "🔒 LOCK" end)
 MinBtn.MouseButton1Click:Connect(function()
     MINIMIZED = not MINIMIZED
-    MainMenu.Size = MINIMIZED and UDim2.new(0,120,0,30) or UDim2.new(0,640,0,110)
+    MainMenu.Size = MINIMIZED and UDim2.new(0,100,0,30) or UDim2.new(0,520,0,100)
     for _,v in ipairs({TimerText, ESPBtn, MusicBtn, LinkBtn, LogBtn, LockBtn}) do v.Visible = not MINIMIZED end
     MinBtn.Text = MINIMIZED and "+" or "−"
 end)
 
 -- ==============================================
--- ⚡ MAIN LOOP + ESP
+-- MAIN LOOP
 -- ==============================================
 RunService.Heartbeat:Connect(function(dt)
-    USED_TIME = USED_TIME + dt
-    TimerText.Text = string.format("%02d:%02d:%02d", USED_TIME/3600, (USED_TIME%3600)/60, USED_TIME%60)
+    if Data.IsLocked then return end
 
+    -- UPDATE TIMER
+    Data.UsedTime = Data.UsedTime + dt
+    TimerText.Text = string.format("%02d:%02d:%02d / 12:00:00", math.floor(Data.UsedTime/3600), math.floor((Data.UsedTime%3600)/60), math.floor(Data.UsedTime%60))
+
+    -- AUTO LOCK AFTER 12H
+    if Data.UsedTime >= MAX_SECONDS then
+        Data.IsLocked = true
+        MainMenu.Visible = false
+        Welcome.Visible = false
+        LockScreen.Visible = true
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification",{
+                Title = "TIME UP", Text = "12 Hours reached!", Duration = 5
+            })
+        end)
+        return
+    end
+
+    -- RAINBOW BORDERS
     local Rainbow = Color3.fromHSV((os.clock()*0.7)%1,1,1)
     Welcome.BorderColor3 = Rainbow
     MainMenu.BorderColor3 = Rainbow
     LogWindow.BorderColor3 = Rainbow
-    ProfileGui.BorderColor3 = Rainbow
 
+    -- ESP
     if not ESP_ON then return end
     for _,p in ipairs(Players:GetPlayers()) do
         if p == LocalPlayer then continue end
@@ -440,6 +429,3 @@ RunService.Heartbeat:Connect(function(dt)
         end
     end
 end)
-
-print("✅ BLUE_MODE | OLD VERSION LOADED!")
-print("✅ No Global Chat | Player Log + All Buttons Working!")
