@@ -1,104 +1,132 @@
 -- ==============================================
--- BLUE_MODE | ORIGINAL OLD STYLE — PERFECT COPY
--- ✅ Minimize to small "+" bar only
--- ✅ Exact buttons: ESP / MUSIC / YT / LOCK / DEL
--- ✅ Same look, same layout, same behavior
--- ✅ Runs on all mobile executors
+-- BLUE_MODE | FIXED STUCK OUTLINES + ALL FEATURES
+-- ✅ ESP OFF = ALL OUTLINES REMOVED INSTANTLY
+-- ✅ NO DUPLICATES / NO STUCK RAINBOW
+-- ✅ Delete clears everything fully
+-- ✅ Green=ON/Red=OFF, Minimize stays, draggable rule
 -- ==============================================
 
-if getgenv and getgenv().BlueMode_Loaded then return end
-getgenv().BlueMode_Loaded = true
+if BlueModeLoaded then return end
+BlueModeLoaded = true
 
--- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 30)
-if not PlayerGui then return end
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- SETTINGS
 local MAX_SECONDS = 12 * 3600
 local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
 local UsedTime = 0
+local MusicOn = false
+local MusicSound = nil
+local MOVE_LOCKED = false
+local ESP_ON = false
 
 -- ==============================================
--- GUI BASE
+-- BASE GUI
 -- ==============================================
 local UI = Instance.new("ScreenGui")
 UI.Name = "BLUE_MODE"
 UI.ResetOnSpawn = false
-UI.DisplayOrder = 99999
-UI.Enabled = true
+UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.Parent = PlayerGui
+
+-- ==============================================
+-- DELETE CONFIRM
+-- ==============================================
+local ConfirmFrame = Instance.new("Frame")
+ConfirmFrame.Size = UDim2.new(0,300,0,150)
+ConfirmFrame.Position = UDim2.new(0.5,-150,0.5,-75)
+ConfirmFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+ConfirmFrame.Visible = false
+ConfirmFrame.Parent = UI
+Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0,8)
+
+local ConfirmText = Instance.new("TextLabel")
+ConfirmText.Size = UDim2.new(1,-20,0,50)
+ConfirmText.Position = UDim2.new(0,10,0,10)
+ConfirmText.BackgroundTransparency = 1
+ConfirmText.Text = "Are you sure?"
+ConfirmText.Font = Enum.Font.GothamBold
+ConfirmText.TextScaled = true
+ConfirmText.TextColor3 = Color3.new(1,1,1)
+ConfirmText.Parent = ConfirmFrame
+
+local YesBtn = Instance.new("TextButton")
+YesBtn.Size = UDim2.new(0,120,0,40)
+YesBtn.Position = UDim2.new(0,15,0,90)
+YesBtn.BackgroundColor3 = Color3.fromRGB(40,150,60)
+YesBtn.Text = "YES"
+YesBtn.TextColor3 = Color3.new(1,1,1)
+YesBtn.Font = Enum.Font.GothamBold
+YesBtn.TextScaled = true
+YesBtn.Parent = ConfirmFrame
+Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0,6)
+
+local NoBtn = Instance.new("TextButton")
+NoBtn.Size = UDim2.new(0,120,0,40)
+NoBtn.Position = UDim2.new(1,-135,0,90)
+NoBtn.BackgroundColor3 = Color3.fromRGB(170,40,40)
+NoBtn.Text = "NO"
+NoBtn.TextColor3 = Color3.new(1,1,1)
+NoBtn.Font = Enum.Font.GothamBold
+NoBtn.TextScaled = true
+NoBtn.Parent = ConfirmFrame
+Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0,6)
 
 -- ==============================================
 -- WELCOME SCREEN
 -- ==============================================
 local Welcome = Instance.new("Frame")
-Welcome.Size = UDim2.new(0,400,0,320)
-Welcome.Position = UDim2.new(0.5,-200,0.5,-160)
-Welcome.BackgroundColor3 = Color3.fromRGB(20,20,20)
-Welcome.BorderSizePixel = 2
+Welcome.Size = UDim2.new(0,380,0,300)
+Welcome.Position = UDim2.new(0.5,-190,0.5,-150)
+Welcome.BackgroundColor3 = Color3.fromRGB(22,22,22)
 Welcome.Visible = true
 Welcome.Parent = UI
 Instance.new("UICorner", Welcome).CornerRadius = UDim.new(0,10)
 
 local MadeBy = Instance.new("TextLabel")
-MadeBy.Size = UDim2.new(1,0,0,50)
+MadeBy.Size = UDim2.new(1,0,0,45)
 MadeBy.Position = UDim2.new(0,0,0,15)
 MadeBy.BackgroundTransparency = 1
 MadeBy.Text = "✨ MADE BY BLUE_MODE ✨"
 MadeBy.Font = Enum.Font.GothamBold
 MadeBy.TextScaled = true
+MadeBy.TextColor3 = Color3.new(0,0.6,1)
 MadeBy.Parent = Welcome
 
-local Features = Instance.new("TextLabel")
-Features.Size = UDim2.new(1,-30,0,150)
-Features.Position = UDim2.new(0,15,0,70)
-Features.BackgroundTransparency = 1
-Features.Text = "📋 FEATURES:\n• Player ESP Highlight\n• 12 Hour Timer\n• Draggable Menu\n• Minimize / Restore\n• Copy YouTube Link\n• Rainbow Colors"
-Features.Font = Enum.Font.Gotham
-Features.TextScaled = true
-Features.TextColor3 = Color3.new(0.9,0.9,0.9)
-Features.TextXAlignment = Enum.TextXAlignment.Left
-Features.LineHeight = 1.5
-Features.Parent = Welcome
-
 local StartBtn = Instance.new("TextButton")
-StartBtn.Size = UDim2.new(0,260,0,55)
-StartBtn.Position = UDim2.new(0.5,-130,0,240)
-StartBtn.BackgroundColor3 = Color3.fromRGB(0,120,200)
-StartBtn.Text = "✅ START USING"
+StartBtn.Size = UDim2.new(0,240,0,50)
+StartBtn.Position = UDim2.new(0.5,-120,0,220)
+StartBtn.BackgroundColor3 = Color3.fromRGB(0,110,200)
+StartBtn.Text = "START USING"
 StartBtn.TextColor3 = Color3.new(1,1,1)
 StartBtn.Font = Enum.Font.GothamBold
 StartBtn.TextScaled = true
-StartBtn.Active = true
 StartBtn.Parent = Welcome
 Instance.new("UICorner", StartBtn).CornerRadius = UDim.new(0,10)
 
 -- ==============================================
--- MAIN MENU — EXACT OLD LAYOUT
+-- MAIN MENU
 -- ==============================================
 local MainMenu = Instance.new("Frame")
-MainMenu.Size = UDim2.new(0,510,0,90)
-MainMenu.Position = UDim2.new(0,15,0.05,0)
-MainMenu.BackgroundColor3 = Color3.fromRGB(22,22,22)
-MainMenu.BorderSizePixel = 2
+MainMenu.Size = UDim2.new(0,480,0,85)
+MainMenu.Position = UDim2.new(0,10,0.05,0)
+MainMenu.BackgroundColor3 = Color3.fromRGB(20,20,20)
 MainMenu.Active = true
 MainMenu.Draggable = true
 MainMenu.Visible = false
 MainMenu.Parent = UI
 Instance.new("UICorner", MainMenu).CornerRadius = UDim.new(0,6)
 
--- TITLE BAR
 local TitleBar = Instance.new("Frame")
-TitleBar.Size = UDim2.new(1,0,0,30)
+TitleBar.Size = UDim2.new(1,0,0,28)
 TitleBar.BackgroundColor3 = Color3.fromRGB(30,110,190)
 TitleBar.Parent = MainMenu
 
 local MenuTitle = Instance.new("TextLabel")
-MenuTitle.Size = UDim2.new(1,-60,1,0)
-MenuTitle.Position = UDim2.new(0,10,0,0)
+MenuTitle.Size = UDim2.new(1,-55,1,0)
+MenuTitle.Position = UDim2.new(0,8,0,0)
 MenuTitle.BackgroundTransparency = 1
 MenuTitle.Text = "BLUE_MODE ESP"
 MenuTitle.Font = Enum.Font.GothamBold
@@ -106,58 +134,55 @@ MenuTitle.TextColor3 = Color3.new(1,1,1)
 MenuTitle.TextScaled = true
 MenuTitle.Parent = TitleBar
 
--- MINIMIZE BUTTON — OLD STYLE
 local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0,25,0,25)
-MinBtn.Position = UDim2.new(1,-50,0,2)
+MinBtn.Size = UDim2.new(0,22,0,22)
+MinBtn.Position = UDim2.new(1,-47,0,3)
 MinBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
 MinBtn.Text = "−"
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.TextScaled = true
 MinBtn.Parent = TitleBar
 
--- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0,25,0,25)
-CloseBtn.Position = UDim2.new(1,-25,0,2)
+CloseBtn.Size = UDim2.new(0,22,0,22)
+CloseBtn.Position = UDim2.new(1,-25,0,3)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(180,30,30)
 CloseBtn.Text = "✕"
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextScaled = true
 CloseBtn.Parent = TitleBar
 
--- TIMER
 local TimerText = Instance.new("TextLabel")
-TimerText.Size = UDim2.new(1,-20,0,25)
-TimerText.Position = UDim2.new(0,10,0,32)
+TimerText.Size = UDim2.new(1,-15,0,22)
+TimerText.Position = UDim2.new(0,8,0,30)
 TimerText.BackgroundTransparency = 1
 TimerText.Font = Enum.Font.GothamBold
 TimerText.TextColor3 = Color3.new(1,1,1)
 TimerText.TextScaled = true
 TimerText.Parent = MainMenu
 
--- BUTTONS — EXACT OLD ORDER & STYLE
+-- BUTTONS
 local ESPBtn = Instance.new("TextButton")
-ESPBtn.Size = UDim2.new(0,70,0,28)
-ESPBtn.Position = UDim2.new(0,10,0,60)
-ESPBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+ESPBtn.Size = UDim2.new(0,65,0,26)
+ESPBtn.Position = UDim2.new(0,8,0,58)
+ESPBtn.BackgroundColor3 = Color3.fromRGB(170,40,40) -- RED = OFF
 ESPBtn.Text = "ESP OFF"
 ESPBtn.Font = Enum.Font.GothamBold
 ESPBtn.TextScaled = true
 ESPBtn.Parent = MainMenu
 
 local MusicBtn = Instance.new("TextButton")
-MusicBtn.Size = UDim2.new(0,55,0,28)
-MusicBtn.Position = UDim2.new(0,85,0,60)
-MusicBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+MusicBtn.Size = UDim2.new(0,50,0,26)
+MusicBtn.Position = UDim2.new(0,80,0,58)
+MusicBtn.BackgroundColor3 = Color3.fromRGB(170,40,40) -- RED = OFF
 MusicBtn.Text = "🎵 OFF"
 MusicBtn.Font = Enum.Font.GothamBold
 MusicBtn.TextScaled = true
 MusicBtn.Parent = MainMenu
 
 local YTBtn = Instance.new("TextButton")
-YTBtn.Size = UDim2.new(0,55,0,28)
-YTBtn.Position = UDim2.new(0,145,0,60)
+YTBtn.Size = UDim2.new(0,50,0,26)
+YTBtn.Position = UDim2.new(0,135,0,58)
 YTBtn.BackgroundColor3 = Color3.fromRGB(20,110,180)
 YTBtn.Text = "📺 YT"
 YTBtn.Font = Enum.Font.GothamBold
@@ -165,17 +190,17 @@ YTBtn.TextScaled = true
 YTBtn.Parent = MainMenu
 
 local LockBtn = Instance.new("TextButton")
-LockBtn.Size = UDim2.new(0,70,0,28)
-LockBtn.Position = UDim2.new(0,205,0,60)
-LockBtn.BackgroundColor3 = Color3.fromRGB(70,70,70)
-LockBtn.Text = "LOCK MOVE"
+LockBtn.Size = UDim2.new(0,65,0,26)
+LockBtn.Position = UDim2.new(0,190,0,58)
+LockBtn.BackgroundColor3 = Color3.fromRGB(40,150,60) -- GREEN = UNLOCKED
+LockBtn.Text = "UNLOCK"
 LockBtn.Font = Enum.Font.GothamBold
 LockBtn.TextScaled = true
 LockBtn.Parent = MainMenu
 
 local DelBtn = Instance.new("TextButton")
-DelBtn.Size = UDim2.new(0,55,0,28)
-DelBtn.Position = UDim2.new(0,280,0,60)
+DelBtn.Size = UDim2.new(0,50,0,26)
+DelBtn.Position = UDim2.new(0,260,0,58)
 DelBtn.BackgroundColor3 = Color3.fromRGB(180,30,30)
 DelBtn.Text = "🗑 DEL"
 DelBtn.Font = Enum.Font.GothamBold
@@ -183,33 +208,57 @@ DelBtn.TextScaled = true
 DelBtn.Parent = MainMenu
 
 -- ==============================================
--- MINIMIZE BAR — OLD STYLE (ONLY "+" BUTTON)
+-- MINIMIZE BAR
 -- ==============================================
-local MinimizeBar = Instance.new("Frame")
-MinimizeBar.Size = UDim2.new(0,120,0,30)
-MinimizeBar.Position = MainMenu.Position
-MinimizeBar.BackgroundColor3 = Color3.fromRGB(30,110,190)
-MinimizeBar.Visible = false
-MinimizeBar.Parent = UI
-Instance.new("UICorner", MinimizeBar).CornerRadius = UDim.new(0,6)
+local MinBar = Instance.new("Frame")
+MinBar.Size = UDim2.new(0,170,0,28)
+MinBar.Position = MainMenu.Position
+MinBar.BackgroundColor3 = Color3.fromRGB(30,110,190)
+MinBar.Active = true
+MinBar.Draggable = true
+MinBar.Visible = false
+MinBar.Parent = UI
+Instance.new("UICorner", MinBar).CornerRadius = UDim.new(0,6)
+
+local BarTimer = Instance.new("TextLabel")
+BarTimer.Size = UDim2.new(1,-32,1,0)
+BarTimer.Position = UDim2.new(0,5,0,0)
+BarTimer.BackgroundTransparency = 1
+BarTimer.Font = Enum.Font.GothamBold
+BarTimer.TextColor3 = Color3.new(1,1,1)
+BarTimer.TextScaled = true
+BarTimer.TextXAlignment = Enum.TextXAlignment.Left
+BarTimer.Parent = MinBar
 
 local RestoreBtn = Instance.new("TextButton")
-RestoreBtn.Size = UDim2.new(1,0,1,0)
+RestoreBtn.Size = UDim2.new(0,28,0,24)
+RestoreBtn.Position = UDim2.new(1,-30,0,2)
 RestoreBtn.BackgroundTransparency = 1
 RestoreBtn.Text = "+"
 RestoreBtn.Font = Enum.Font.GothamBold
 RestoreBtn.TextColor3 = Color3.new(1,1,1)
 RestoreBtn.TextScaled = true
-RestoreBtn.Parent = MinimizeBar
+RestoreBtn.Parent = MinBar
 
 -- ==============================================
--- FUNCTIONS — EXACT OLD BEHAVIOR
+-- ✅ FULL CLEANUP: REMOVE ALL OUTLINES
 -- ==============================================
-local ESP_ON = false
-local MUSIC_ON = false
-local MOVE_LOCKED = false
+local function RemoveAllESP()
+    for _, Player in pairs(Players:GetPlayers()) do
+        if Player.Character then
+            -- Destroy EVERY Highlight, not just named one (fixes stuck duplicates)
+            for _, Desc in pairs(Player.Character:GetDescendants()) do
+                if Desc:IsA("Highlight") then
+                    Desc:Destroy()
+                end
+            end
+        end
+    end
+end
 
--- OPEN MENU
+-- ==============================================
+-- BUTTON FUNCTIONS
+-- ==============================================
 StartBtn.MouseButton1Click:Connect(function()
     Welcome.Visible = false
     MainMenu.Visible = true
@@ -219,77 +268,134 @@ StartBtn.TouchTap:Connect(function()
     MainMenu.Visible = true
 end)
 
--- MINIMIZE / RESTORE — FIXED!
 MinBtn.MouseButton1Click:Connect(function()
     MainMenu.Visible = false
-    MinimizeBar.Visible = true
-    MinimizeBar.Position = MainMenu.Position
+    MinBar.Visible = true
+    MinBar.Position = MainMenu.Position
 end)
 RestoreBtn.MouseButton1Click:Connect(function()
-    MinimizeBar.Visible = false
+    MinBar.Visible = false
     MainMenu.Visible = true
 end)
 
--- BUTTON ACTIONS
 ESPBtn.MouseButton1Click:Connect(function()
     ESP_ON = not ESP_ON
-    ESPBtn.Text = ESP_ON and "ESP ON" or "ESP OFF"
+    if ESP_ON then
+        ESPBtn.BackgroundColor3 = Color3.fromRGB(40,150,60) -- GREEN = ON
+        ESPBtn.Text = "ESP ON"
+    else
+        ESPBtn.BackgroundColor3 = Color3.fromRGB(170,40,40) -- RED = OFF
+        ESPBtn.Text = "ESP OFF"
+        RemoveAllESP() -- ✅ WIPES ALL OUTLINES INSTANTLY
+    end
 end)
+
 MusicBtn.MouseButton1Click:Connect(function()
-    MUSIC_ON = not MUSIC_ON
-    MusicBtn.Text = MUSIC_ON and "🎵 ON" or "🎵 OFF"
+    MusicOn = not MusicOn
+    if MusicOn then
+        MusicBtn.BackgroundColor3 = Color3.fromRGB(40,150,60) -- GREEN = ON
+        MusicBtn.Text = "🎵 ON"
+        if not MusicSound then
+            MusicSound = Instance.new("Sound")
+            MusicSound.SoundId = "rbxassetid://9112854440"
+            MusicSound.Looped = true
+            MusicSound.Volume = 0.25
+            MusicSound.Parent = UI
+        end
+        MusicSound:Play()
+    else
+        MusicBtn.BackgroundColor3 = Color3.fromRGB(170,40,40) -- RED = OFF
+        MusicBtn.Text = "🎵 OFF"
+        if MusicSound then MusicSound:Stop() end
+    end
 end)
+
+LockBtn.MouseButton1Click:Connect(function()
+    MOVE_LOCKED = not MOVE_LOCKED
+    if MOVE_LOCKED then
+        LockBtn.BackgroundColor3 = Color3.fromRGB(170,40,40) -- RED = LOCKED
+        LockBtn.Text = "LOCKED"
+        MainMenu.Draggable = false
+        MinBar.Draggable = false
+    else
+        LockBtn.BackgroundColor3 = Color3.fromRGB(40,150,60) -- GREEN = UNLOCKED
+        LockBtn.Text = "UNLOCK"
+        MainMenu.Draggable = true
+        MinBar.Draggable = true
+    end
+end)
+
+DelBtn.MouseButton1Click:Connect(function()
+    ConfirmFrame.Visible = true
+end)
+NoBtn.MouseButton1Click:Connect(function()
+    ConfirmFrame.Visible = false
+end)
+YesBtn.MouseButton1Click:Connect(function()
+    ConfirmFrame.Visible = false
+    RemoveAllESP() -- ✅ DELETE = WIPES ALL OUTLINES FIRST
+    if MusicSound then MusicSound:Destroy() end
+    UI:Destroy()
+end)
+
 YTBtn.MouseButton1Click:Connect(function()
     pcall(function() if setclipboard then setclipboard(YT_LINK) end end)
 end)
-LockBtn.MouseButton1Click:Connect(function()
-    MOVE_LOCKED = not MOVE_LOCKED
-    MainMenu.Draggable = not MOVE_LOCKED
-    LockBtn.Text = MOVE_LOCKED and "UNLOCK MOVE" or "LOCK MOVE"
-end)
-DelBtn.MouseButton1Click:Connect(function()
-    UI:Destroy()
-end)
+
 CloseBtn.MouseButton1Click:Connect(function()
     MainMenu.Visible = false
 end)
 
 -- ==============================================
--- MAIN LOOP + RAINBOW + ESP
+-- MAIN LOOP
 -- ==============================================
 RunService.Heartbeat:Connect(function(dt)
-    -- TIMER
+    -- Timer
     UsedTime = UsedTime + dt
+    local h = math.floor(UsedTime/3600)
+    local m = math.floor((UsedTime%3600)/60)
+    local s = math.floor(UsedTime%60)
+    local TimeStr = string.format("%02d:%02d:%02d",h,m,s)
+    TimerText.Text = TimeStr.." / 12:00:00"
+    BarTimer.Text = TimeStr
+
+    -- Time up = full cleanup
     if UsedTime >= MAX_SECONDS then
         MainMenu.Visible = false
+        MinBar.Visible = false
         Welcome.Visible = false
-        MinimizeBar.Visible = false
+        ConfirmFrame.Visible = false
+        RemoveAllESP()
+        if MusicSound then MusicSound:Stop() end
         return
     end
-    TimerText.Text = string.format("%02d:%02d:%02d / 12:00:00",
-        math.floor(UsedTime/3600),
-        math.floor(UsedTime/60)%60,
-        math.floor(UsedTime%60))
 
-    -- RAINBOW
+    -- Rainbow colors
     local Hue = (os.clock() * 0.3) % 1
-    local Rainbow = Color3.fromHSV(Hue,1,1)
-    TitleBar.BackgroundColor3 = Rainbow
-    MinimizeBar.BackgroundColor3 = Rainbow
-    MadeBy.TextColor3 = Rainbow
-    MenuTitle.TextColor3 = Rainbow
+    local Col = Color3.fromHSV(Hue,1,1)
+    TitleBar.BackgroundColor3 = Col
+    MinBar.BackgroundColor3 = Col
+    MadeBy.TextColor3 = Col
+    MenuTitle.TextColor3 = Col
 
-    -- ESP
+    -- ✅ ONLY CREATE OUTLINES WHEN ESP IS EXPLICITLY ON
     if ESP_ON then
-        for _,v in ipairs(Players:GetPlayers()) do
+        for _,v in pairs(Players:GetPlayers()) do
             if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("Humanoid") then
-                local Highlight = v.Character:FindFirstChild("BlueESP") or Instance.new("Highlight")
-                Highlight.Name = "BlueESP"
-                Highlight.FillTransparency = 1
-                Highlight.OutlineTransparency = 0
-                Highlight.OutlineColor = Rainbow
-                Highlight.Adornee = v.Character
-                Highlight.Parent = v.Character
+                -- Only add if NO existing highlight exists
+                if not v.Character:FindFirstChildOfClass("Highlight") then
+                    local H = Instance.new("Highlight")
+                    H.Name = "BlueESP"
+                    H.FillTransparency = 1
+                    H.OutlineTransparency = 0
+                    H.OutlineColor = Col
+                    H.Adornee = v.Character
+                    H.Parent = v.Character
+                else
+                    -- Update color only if it exists
+                    local Exists = v.Character:FindFirstChildOfClass("Highlight")
+                    Exists.OutlineColor = Col
+                end
             end
         end
     end
