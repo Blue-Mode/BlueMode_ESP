@@ -1,21 +1,24 @@
 -- ==============================================
--- BLUE_MODE | ALL ERRORS FIXED | FULLY WORKING
--- MADE BY + FEATURES + START BUTTON VISIBLE
--- TIME SAVE + FULL RAINBOW + NO COPYRIGHT
+-- BLUE_MODE | FULL VERSION
+-- ✅ Start Button Fixed
+-- ✅ Time Save System
+-- ✅ Full Rainbow Theme
+-- ✅ Made By + Features Visible
+-- ✅ No Copyright / No Chat / No Extra List
 -- ==============================================
 
--- Prevent duplicate load
+-- Prevent Duplicate Load
 if getgenv and getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
 
--- SERVICES
+-- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- SETTINGS
+-- Settings
 local UNLOCK_CODE = "Blue_Mode192823"
 local MAX_HOURS = 12
 local MAX_SECONDS = MAX_HOURS * 3600
@@ -23,14 +26,14 @@ local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
 local MAX_LOGS = 50
 local SAVE_KEY = "BlueMode_SavedTime"
 
--- DATA
+-- Data Storage
 local Data = {
     UsedTime = 0,
     IsLocked = false,
     Executions = {}
 }
 
--- ✅ LOAD SAVED TIME (FIXED FOR ALL EXECUTORS)
+-- Load Saved Time
 pcall(function()
     if syn and syn.get_raw then
         Data.UsedTime = tonumber(syn.get_raw(SAVE_KEY)) or 0
@@ -44,7 +47,7 @@ pcall(function()
     Data.IsLocked = Data.UsedTime >= MAX_SECONDS
 end)
 
--- ✅ SAVE TIME FUNCTION (RELIABLE)
+-- Save Time Function
 local function SaveTime()
     pcall(function()
         if syn and syn.set_raw then
@@ -57,16 +60,16 @@ local function SaveTime()
     end)
 end
 
--- ADD LOG
+-- Add Execution Log
 table.insert(Data.Executions, 1, {
     Username = LocalPlayer.Name,
     Time = os.date("%Y-%m-%d | %H:%M:%S")
 })
 if #Data.Executions > MAX_LOGS then table.remove(Data.Executions) end
 
--- ✅ SAFE UI PARENT (NO MISSING GUI)
+-- Create UI Base
 local UI = Instance.new("ScreenGui")
-UI.Name = "BLUE_MODE_FIXED_COMPLETE"
+UI.Name = "BLUE_MODE"
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.DisplayOrder = 99999
@@ -80,10 +83,12 @@ else
     end
 end
 
--- NOTIFICATION
+-- Load Notification
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "BLUE_MODE", Text = "All Errors Fixed ✅ Ready to Use!", Duration = 3
+        Title = "BLUE_MODE",
+        Text = "Loaded Successfully ✅ Ready to Use!",
+        Duration = 3
     })
 end)
 
@@ -159,7 +164,9 @@ UnlockBtn.MouseButton1Click:Connect(function()
         LockScreen.Visible = false
         Welcome.Visible = true
         pcall(function()
-            game:GetService("StarterGui"):SetCore("SendNotification",{Title = "✅ UNLOCKED", Text = "Timer Reset!", Duration = 3})
+            game:GetService("StarterGui"):SetCore("SendNotification",{
+                Title = "✅ UNLOCKED", Text = "Timer Reset!", Duration = 3
+            })
         end)
     else
         LockMsg.Text = "❌ WRONG CODE!"
@@ -168,7 +175,7 @@ UnlockBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==============================================
--- 🎯 MAIN MENU (CREATED FIRST TO AVOID ERRORS)
+-- 🎯 MAIN MENU
 -- ==============================================
 local MainMenu = Instance.new("Frame")
 MainMenu.Size = UDim2.new(0,520,0,100)
@@ -212,7 +219,7 @@ TimerText.Font = Enum.Font.GothamBold
 TimerText.TextScaled = true
 TimerText.Parent = MainMenu
 
--- BUTTONS
+-- Menu Buttons
 local ESPBtn = Instance.new("TextButton")
 ESPBtn.Size = UDim2.new(0,65,0,30)
 ESPBtn.Position = UDim2.new(0,10,0,60)
@@ -259,7 +266,7 @@ LockBtn.TextScaled = true
 LockBtn.Parent = MainMenu
 
 -- ==============================================
--- 👋 WELCOME SCREEN | 100% VISIBLE + BUTTON WORKS
+-- 👋 WELCOME SCREEN | MADE BY + FEATURES + START BUTTON
 -- ==============================================
 local Welcome = Instance.new("Frame")
 Welcome.Size = UDim2.new(0,420,0,340)
@@ -271,7 +278,7 @@ Welcome.ZIndex = 9500
 Welcome.Parent = UI
 Instance.new("UICorner", Welcome).CornerRadius = UDim.new(0,10)
 
--- ✅ MADE BY TEXT (CLEAR & ON TOP)
+-- Made By Text
 local MadeBy = Instance.new("TextLabel")
 MadeBy.Size = UDim2.new(1,0,0,55)
 MadeBy.Position = UDim2.new(0,0,0,15)
@@ -279,10 +286,10 @@ MadeBy.BackgroundTransparency = 1
 MadeBy.Text = "✨ MADE BY BLUE_MODE ✨"
 MadeBy.Font = Enum.Font.GothamBold
 MadeBy.TextScaled = true
-MadeBy.ZIndex = 5 -- HIGHEST PRIORITY
+MadeBy.ZIndex = 5
 MadeBy.Parent = Welcome
 
--- ✅ FEATURE LIST (FULLY VISIBLE)
+-- Feature List
 local Features = Instance.new("TextLabel")
 Features.Size = UDim2.new(1,-40,0,165)
 Features.Position = UDim2.new(0,20,0,75)
@@ -296,7 +303,7 @@ Features.LineHeight = 1.5
 Features.ZIndex = 5
 Features.Parent = Welcome
 
--- ✅ START BUTTON (CLICKABLE, NOT BLOCKED)
+-- Start Button
 local WelcomeOK = Instance.new("TextButton")
 WelcomeOK.Size = UDim2.new(0,280,0,60)
 WelcomeOK.Position = UDim2.new(0.5,-140,0,250)
@@ -306,16 +313,18 @@ WelcomeOK.TextColor3 = Color3.new(1,1,1)
 WelcomeOK.Font = Enum.Font.GothamBold
 WelcomeOK.TextScaled = true
 WelcomeOK.Active = true
-WelcomeOK.ZIndex = 3 -- TEXT SHOWS, BUTTON STILL CLICKS
+WelcomeOK.ZIndex = 3
 WelcomeOK.Parent = Welcome
 Instance.new("UICorner", WelcomeOK).CornerRadius = UDim.new(0,10)
 
--- ✅ START BUTTON ACTION (FIXED CONNECTION)
+-- Start Button Action
 local function OpenMenu()
     Welcome.Visible = false
     MainMenu.Visible = true
     pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification",{Title = "✅ SUCCESS", Text = "Menu Opened!", Duration = 2})
+        game:GetService("StarterGui"):SetCore("SendNotification",{
+            Title = "✅ SUCCESS", Text = "Menu Opened!", Duration = 2
+        })
     end)
 end
 WelcomeOK.MouseButton1Click:Connect(OpenMenu)
@@ -381,14 +390,14 @@ RefreshLog()
 LogClose.MouseButton1Click:Connect(function() LogWindow.Visible = false end)
 
 -- ==============================================
--- ⚙️ SETUP & BUTTONS
+-- ⚙️ MENU FUNCTIONS
 -- ==============================================
 local ESP_ON = false
 local MUSIC_ON = false
 local MOVE_LOCKED = false
 local MINIMIZED = false
 
--- DRAG MENU
+-- Drag Menu
 local Drag = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
 DragBar.InputBegan:Connect(function(Input)
     if MOVE_LOCKED then return end
@@ -406,7 +415,7 @@ UIS.InputChanged:Connect(function(Input)
 end)
 UIS.InputEnded:Connect(function() Drag.Active = false end)
 
--- BUTTON ACTIONS
+-- Button Actions
 ESPBtn.MouseButton1Click:Connect(function()
     ESP_ON = not ESP_ON
     ESPBtn.Text = ESP_ON and "ESP ON" or "ESP OFF"
@@ -415,7 +424,9 @@ MusicBtn.MouseButton1Click:Connect(function()
     MUSIC_ON = not MUSIC_ON
     MusicBtn.Text = MUSIC_ON and "🎵 ON" or "🎵 OFF"
 end)
-LinkBtn.MouseButton1Click:Connect(function() pcall(function() if setclipboard then setclipboard(YT_LINK) end end) end)
+LinkBtn.MouseButton1Click:Connect(function()
+    pcall(function() if setclipboard then setclipboard(YT_LINK) end end)
+end)
 LogBtn.MouseButton1Click:Connect(function() RefreshLog(); LogWindow.Visible = true end)
 LockBtn.MouseButton1Click:Connect(function()
     MOVE_LOCKED = not MOVE_LOCKED
@@ -424,17 +435,19 @@ end)
 MinBtn.MouseButton1Click:Connect(function()
     MINIMIZED = not MINIMIZED
     MainMenu.Size = MINIMIZED and UDim2.new(0,100,0,30) or UDim2.new(0,520,0,100)
-    for _,v in ipairs({TimerText, ESPBtn, MusicBtn, LinkBtn, LogBtn, LockBtn}) do v.Visible = not MINIMIZED end
+    for _,v in ipairs({TimerText, ESPBtn, MusicBtn, LinkBtn, LogBtn, LockBtn}) do
+        v.Visible = not MINIMIZED
+    end
     MinBtn.Text = MINIMIZED and "+" or "−"
 end)
 
 -- ==============================================
--- 🔄 MAIN LOOP + FULL RAINBOW (STABLE)
+-- 🔄 MAIN LOOP + RAINBOW EFFECT
 -- ==============================================
 RunService.Heartbeat:Connect(function(dt)
     if Data.IsLocked then return end
 
-    -- UPDATE & SAVE TIME
+    -- Update & Save Time
     Data.UsedTime += dt
     if Data.UsedTime % 5 < dt then SaveTime() end
     TimerText.Text = string.format("%02d:%02d:%02d / 12:00:00",
@@ -442,39 +455,40 @@ RunService.Heartbeat:Connect(function(dt)
         math.floor(Data.UsedTime/60)%60,
         math.floor(Data.UsedTime%60))
 
-    -- AUTO LOCK
+    -- Auto Lock
     if Data.UsedTime >= MAX_SECONDS then
         Data.IsLocked = true
         SaveTime()
         MainMenu.Visible = false
         Welcome.Visible = false
         LockScreen.Visible = true
-        pcall(function() game:GetService("StarterGui"):SetCore("SendNotification",{Title = "⏰ TIME UP", Text = "12 Hours reached!", Duration = 5}) end)
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification",{
+                Title = "⏰ TIME UP", Text = "12 Hours Reached!", Duration = 5
+            })
+        end)
         return
     end
 
-    -- ✅ FULL RAINBOW EFFECT (NO FLICKER)
+    -- Rainbow Colors
     local Hue = (os.clock() * 0.4) % 1
     local Rainbow = Color3.fromHSV(Hue, 1, 1)
     local Rainbow2 = Color3.fromHSV((Hue + 0.33) % 1, 1, 1)
     local Rainbow3 = Color3.fromHSV((Hue + 0.66) % 1, 1, 1)
 
-    -- BORDERS
+    -- Apply Rainbow
     Welcome.BorderColor3 = Rainbow
     MainMenu.BorderColor3 = Rainbow
     LogWindow.BorderColor3 = Rainbow
 
-    -- ALL TEXT
     MadeBy.TextColor3 = Rainbow
     Features.TextColor3 = Rainbow2
-    WelcomeOK.TextColor3 = Color3.new(1,1,1)
     MTitle.TextColor3 = Rainbow
     TimerText.TextColor3 = Rainbow
     LogTitle.TextColor3 = Rainbow
     UnlockBtn.TextColor3 = Rainbow
     LogClose.TextColor3 = Rainbow
 
-    -- BUTTON TEXT
     ESPBtn.TextColor3 = Rainbow
     MusicBtn.TextColor3 = Rainbow2
     LinkBtn.TextColor3 = Rainbow3
@@ -482,7 +496,7 @@ RunService.Heartbeat:Connect(function(dt)
     LockBtn.TextColor3 = Rainbow3
     MinBtn.TextColor3 = Rainbow
 
-    -- ESP RAINBOW
+    -- Rainbow ESP
     if ESP_ON then
         for _,p in ipairs(Players:GetPlayers()) do
             if p == LocalPlayer then continue end
