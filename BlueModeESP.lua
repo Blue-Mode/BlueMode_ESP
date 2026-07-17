@@ -1,5 +1,5 @@
 -- ==============================================
--- ESP Script | PERMANENT SAVE TIMER + ALL FIXES
+-- ESP Script | ADDED MUSIC VOLUME CONTROL
 -- made by BLUE_MODE
 -- UNLOCK CODE: Blue_Mode192823
 -- ==============================================
@@ -23,7 +23,7 @@ local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
 local SAVE_KEY_USED = "BlueMode_UsedTime_v2"
 local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v2"
 
--- 🛡️ PERMANENT SAVE SYSTEM (SAVES BOTH TIME & COOLDOWN)
+-- 🛡️ PERMANENT SAVE SYSTEM
 local function SaveData(key, value)
     pcall(function() writefile(key..".txt", tostring(value)) end)
 end
@@ -34,7 +34,7 @@ local function LoadData(key, default)
     return tonumber(val) or default
 end
 
--- 🧹 CLEAR ONLY ESP (SAFE)
+-- 🧹 CLEAR ONLY ESP
 local function ClearESP()
     for _, Plr in pairs(Players:GetPlayers()) do
         if Plr and Plr.Character then
@@ -52,12 +52,21 @@ if NowTime < CooldownEnd then
     return
 end
 
--- ⏳ LOAD SAVED USAGE TIME
+-- ⏳ LOAD SAVED TIME
 local UsedTime = LoadData(SAVE_KEY_USED, 0)
 local LastCheck = os.time()
 
--- 🎵 FULL BOOMBOX SYSTEM
+-- 🎵 BOOMBOX + VOLUME SYSTEM
 local CurrentSound = nil
+local MusicVolume = LoadData("BlueMode_Volume", 0.5) -- Load saved volume, default 50%
+
+local function UpdateVolume(newVol)
+    MusicVolume = math.clamp(newVol, 0, 1)
+    SaveData("BlueMode_Volume", MusicVolume)
+    if CurrentSound then CurrentSound.Volume = MusicVolume end
+    VolNumText.Text = math.floor(MusicVolume * 100).."%"
+end
+
 local function FormatSoundId(input)
     local num = tostring(input):gsub("[^%d]", "")
     return "rbxassetid://"..num
@@ -68,7 +77,7 @@ local function LoadBoombox(boomboxId)
     CurrentSound = Instance.new("Sound")
     CurrentSound.Name = "BLUE_BOOMBOX"
     CurrentSound.SoundId = FormatSoundId(boomboxId)
-    CurrentSound.Volume = 0.5
+    CurrentSound.Volume = MusicVolume
     CurrentSound.Looped = true
     CurrentSound.Parent = SoundService
     pcall(function() CurrentSound:Play() end)
@@ -83,8 +92,8 @@ local function OpenBoomboxMenu()
     BoomUI.Parent = CoreGui
 
     local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0, 300, 0, 170)
-    Frame.Position = UDim2.new(0.5, -150, 0.5, -85)
+    Frame.Size = UDim2.new(0, 300, 0, 220)
+    Frame.Position = UDim2.new(0.5, -150, 0.5, -110)
     Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
     Frame.BorderSizePixel = 2
     Frame.BorderColor3 = Color3.fromRGB(0,180,255)
@@ -92,10 +101,10 @@ local function OpenBoomboxMenu()
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,10)
 
     local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,0,0,40)
+    Title.Size = UDim2.new(1,0,0,35)
     Title.Position = UDim2.new(0,0,0,5)
     Title.BackgroundTransparency = 1
-    Title.Text = "🎵 BOOMBOX"
+    Title.Text = "🎵 BOOMBOX & VOLUME"
     Title.Font = Enum.Font.GothamBold
     Title.TextColor3 = Color3.new(1,1,1)
     Title.TextScaled = true
@@ -103,7 +112,7 @@ local function OpenBoomboxMenu()
 
     local Input = Instance.new("TextBox")
     Input.Size = UDim2.new(1,-30,0,40)
-    Input.Position = UDim2.new(0,15,0,50)
+    Input.Position = UDim2.new(0,15,0,45)
     Input.BackgroundColor3 = Color3.fromRGB(40,40,40)
     Input.PlaceholderText = "Paste Sound ID here..."
     Input.TextColor3 = Color3.new(1,1,1)
@@ -113,9 +122,57 @@ local function OpenBoomboxMenu()
     Input.Parent = Frame
     Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
 
+    -- VOLUME SLIDER IN MENU
+    local VolLabel = Instance.new("TextLabel")
+    VolLabel.Size = UDim2.new(0,100,0,25)
+    VolLabel.Position = UDim2.new(0,15,0,95)
+    VolLabel.BackgroundTransparency = 1
+    VolLabel.Text = "🔊 VOLUME:"
+    VolLabel.TextColor3 = Color3.new(1,1,1)
+    VolLabel.Font = Enum.Font.GothamBold
+    VolLabel.TextScaled = true
+    VolLabel.TextXAlignment = Enum.TextXAlignment.Left
+    VolLabel.Parent = Frame
+
+    local VolNum = Instance.new("TextLabel")
+    VolNum.Size = UDim2.new(0,50,0,25)
+    VolNum.Position = UDim2.new(1,-65,0,95)
+    VolNum.BackgroundTransparency = 1
+    VolNum.Text = math.floor(MusicVolume*100).."%"
+    VolNum.TextColor3 = Color3.new(1,1,1)
+    VolNum.Font = Enum.Font.GothamBold
+    VolNum.TextScaled = true
+    VolNum.TextXAlignment = Enum.TextXAlignment.Right
+    VolNum.Parent = Frame
+
+    local VolBG = Instance.new("Frame")
+    VolBG.Size = UDim2.new(1,-30,0,20)
+    VolBG.Position = UDim2.new(0,15,0,120)
+    VolBG.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    VolBG.Parent = Frame
+    Instance.new("UICorner", VolBG).CornerRadius = UDim.new(0,10)
+
+    local VolFill = Instance.new("Frame")
+    VolFill.Size = UDim2.new(MusicVolume,0,1,0)
+    VolFill.BackgroundColor3 = Color3.fromRGB(0,180,255)
+    VolFill.Parent = VolBG
+    Instance.new("UICorner", VolFill).CornerRadius = UDim.new(0,10)
+
+    local SliderActive = false
+    VolBG.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then SliderActive = true end end)
+    UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then SliderActive = false end end)
+    UserInputService.InputChanged:Connect(function(i)
+        if SliderActive and i.UserInputType == Enum.UserInputType.MouseMovement then
+            local pos = math.clamp((i.Position.X - VolBG.AbsolutePosition.X) / VolBG.AbsoluteSize.X, 0, 1)
+            VolFill.Size = UDim2.new(pos,0,1,0)
+            VolNum.Text = math.floor(pos*100).."%"
+            UpdateVolume(pos)
+        end
+    end)
+
     local PlayBtn = Instance.new("TextButton")
     PlayBtn.Size = UDim2.new(0,120,0,35)
-    PlayBtn.Position = UDim2.new(0,15,0,105)
+    PlayBtn.Position = UDim2.new(0,15,0,160)
     PlayBtn.BackgroundColor3 = Color3.fromRGB(30,130,220)
     PlayBtn.Text = "▶ PLAY"
     PlayBtn.TextColor3 = Color3.new(1,1,1)
@@ -126,7 +183,7 @@ local function OpenBoomboxMenu()
 
     local StopBtn = Instance.new("TextButton")
     StopBtn.Size = UDim2.new(0,120,0,35)
-    StopBtn.Position = UDim2.new(0,165,0,105)
+    StopBtn.Position = UDim2.new(0,165,0,160)
     StopBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
     StopBtn.Text = "⏹ STOP"
     StopBtn.TextColor3 = Color3.new(1,1,1)
@@ -135,14 +192,8 @@ local function OpenBoomboxMenu()
     StopBtn.Parent = Frame
     Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0,6)
 
-    PlayBtn.MouseButton1Click:Connect(function()
-        if Input.Text ~= "" then LoadBoombox(Input.Text) end
-        BoomUI:Destroy()
-    end)
-    StopBtn.MouseButton1Click:Connect(function()
-        if CurrentSound then pcall(function() CurrentSound:Stop() CurrentSound:Destroy() end) end
-        BoomUI:Destroy()
-    end)
+    PlayBtn.MouseButton1Click:Connect(function() if Input.Text ~= "" then LoadBoombox(Input.Text) end BoomUI:Destroy() end)
+    StopBtn.MouseButton1Click:Connect(function() if CurrentSound then pcall(function() CurrentSound:Stop() CurrentSound:Destroy() end) end BoomUI:Destroy() end)
 end
 
 -- 🎮 MAIN UI
@@ -152,11 +203,11 @@ UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.Parent = CoreGui
 
-local MAIN_SIZE = UDim2.new(0, 520, 0, 75)
+local MAIN_SIZE = UDim2.new(0, 570, 0, 105)
 local MIN_SIZE = UDim2.new(0, 50, 0, 50)
 local Main = Instance.new("Frame")
 Main.Size = MAIN_SIZE
-Main.Position = UDim2.new(0, 20, 0.5, -37)
+Main.Position = UDim2.new(0, 20, 0.5, -52)
 Main.BackgroundColor3 = Color3.fromRGB(25,25,25)
 Main.BorderSizePixel = 2
 Main.BorderColor3 = Color3.fromRGB(0,180,255)
@@ -202,7 +253,7 @@ MinBtn.Font = Enum.Font.GothamBold
 MinBtn.TextScaled = true
 MinBtn.Parent = Main
 
--- BUTTONS
+-- BUTTONS ROW 1
 local ESPBtn = Instance.new("TextButton")
 ESPBtn.Size = UDim2.new(0, 85, 0, 30)
 ESPBtn.Position = UDim2.new(0, 10, 0, 30)
@@ -257,6 +308,54 @@ DelBtn.Font = Enum.Font.GothamBold
 DelBtn.TextScaled = true
 DelBtn.Parent = Main
 Instance.new("UICorner", DelBtn).CornerRadius = UDim.new(0,6)
+
+-- MAIN VOLUME SLIDER (ON MAIN GUI)
+local VolLabelMain = Instance.new("TextLabel")
+VolLabelMain.Size = UDim2.new(0,70,0,25)
+VolLabelMain.Position = UDim2.new(0,10,0,65)
+VolLabelMain.BackgroundTransparency = 1
+VolLabelMain.Text = "🔊 VOLUME:"
+VolLabelMain.TextColor3 = Color3.new(1,1,1)
+VolLabelMain.Font = Enum.Font.Gotham
+VolLabelMain.TextScaled = true
+VolLabelMain.TextXAlignment = Enum.TextXAlignment.Left
+VolLabelMain.Parent = Main
+
+local VolNumText = Instance.new("TextLabel")
+VolNumText.Size = UDim2.new(0,45,0,25)
+VolNumText.Position = UDim2.new(0,85,0,65)
+VolNumText.BackgroundTransparency = 1
+VolNumText.Text = math.floor(MusicVolume*100).."%"
+VolNumText.TextColor3 = Color3.new(1,1,1)
+VolNumText.Font = Enum.Font.Gotham
+VolNumText.TextScaled = true
+VolNumText.TextXAlignment = Enum.TextXAlignment.Right
+VolNumText.Parent = Main
+
+local VolBGMain = Instance.new("Frame")
+VolBGMain.Size = UDim2.new(0,150,0,18)
+VolBGMain.Position = UDim2.new(0,135,0,67)
+VolBGMain.BackgroundColor3 = Color3.fromRGB(50,50,50)
+VolBGMain.Parent = Main
+Instance.new("UICorner", VolBGMain).CornerRadius = UDim.new(0,9)
+
+local VolFillMain = Instance.new("Frame")
+VolFillMain.Size = UDim2.new(MusicVolume,0,1,0)
+VolFillMain.BackgroundColor3 = Color3.fromRGB(0,180,255)
+VolFillMain.Parent = VolBGMain
+Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0,9)
+
+-- VOLUME SLIDER DRAG
+local VolSliderActive = false
+VolBGMain.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then VolSliderActive = true end end)
+UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then VolSliderActive = false end end)
+UserInputService.InputChanged:Connect(function(i)
+    if VolSliderActive and i.UserInputType == Enum.UserInputType.MouseMovement then
+        local pos = math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X) / VolBGMain.AbsoluteSize.X, 0, 1)
+        VolFillMain.Size = UDim2.new(pos,0,1,0)
+        UpdateVolume(pos)
+    end
+end)
 
 -- VARIABLES
 local ESP_Enabled = false
@@ -323,6 +422,9 @@ MinBtn.MouseButton1Click:Connect(function()
         BoomBtn.Visible = false
         LockBtn.Visible = false
         DelBtn.Visible = false
+        VolLabelMain.Visible = false
+        VolNumText.Visible = false
+        VolBGMain.Visible = false
         MinBtn.Text = "➕"
     else
         Main.Size = MAIN_SIZE
@@ -332,6 +434,9 @@ MinBtn.MouseButton1Click:Connect(function()
         BoomBtn.Visible = true
         LockBtn.Visible = true
         DelBtn.Visible = true
+        VolLabelMain.Visible = true
+        VolNumText.Visible = true
+        VolBGMain.Visible = true
         MinBtn.Text = "❌"
     end
 end)
@@ -343,25 +448,24 @@ DelBtn.MouseButton1Click:Connect(function()
     getgenv().BlueMode_Loaded = nil
 end)
 
--- 🚀 MAIN LOOP (AUTO-SAVES TIME EVERY SECOND)
+-- 🚀 MAIN LOOP
 RunService.Heartbeat:Connect(function(delta)
     if not UI or not UI.Parent then return end
 
-    -- ⏳ AUTO-SAVE & LOAD PERMANENT TIMER
+    -- ⏳ PERMANENT TIMER
     local Now = os.time()
     UsedTime = UsedTime + math.max(0, Now - LastCheck)
     LastCheck = Now
-    SaveData(SAVE_KEY_USED, UsedTime) -- SAVE AUTOMATICALLY
+    SaveData(SAVE_KEY_USED, UsedTime)
 
     local h = math.floor(UsedTime/3600)
     local m = math.floor((UsedTime%3600)/60)
     local s = math.floor(UsedTime%60)
     TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00:00", h, m, s)
 
-    -- AUTO COOLDOWN WHEN TIME UP
     if UsedTime >= USAGE_LIMIT then
         SaveData(SAVE_KEY_COOLDOWN, os.time() + COOLDOWN)
-        pcall(function() delfile(SAVE_KEY_USED..".txt") end) -- RESET TIME AFTER COOLDOWN
+        pcall(function() delfile(SAVE_KEY_USED..".txt") end)
         DelBtn:Fire()
         return
     end
@@ -424,5 +528,4 @@ RunService.Heartbeat:Connect(function(delta)
     end
 end)
 
-print("✅ PERMANENT SAVE TIMER ACTIVE! TIME WON'T RESET ANYMORE!")
-
+print("✅ VOLUME CONTROL ADDED! ADJUST ANYTIME!")
