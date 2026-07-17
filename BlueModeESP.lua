@@ -1,5 +1,5 @@
 -- ==============================================
--- ESP Script | FULL RAINBOW OUTLINES EVERYWHERE
+-- ESP Script | FULL RAINBOW GLOW AURA OUTLINES
 -- made by BLUE_MODE
 -- UNLOCK CODE: Blue_Mode192823
 -- ==============================================
@@ -61,13 +61,28 @@ local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
 -- 🎵 BOOMBOX + VOLUME SYSTEM
 local CurrentSound = nil
 local VolNumTextMain, VolFillMain
+local BoomFrame, VolFillMenu, VolNumMenu
+local GuiElements = {} -- Store all elements for rainbow glow
+
+local function AddRainbowGlow(target, thickness)
+    local Outline = Instance.new("UIStroke")
+    Outline.Name = "RainbowAura"
+    Outline.Thickness = thickness or 3
+    Outline.Transparency = 0
+    Outline.Parent = target
+    table.insert(GuiElements, Outline)
+    return Outline
+end
 
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(newVol, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
     if CurrentSound then CurrentSound.Volume = MusicVolume end
-    if VolNumTextMain then VolNumTextMain.Text = math.floor(MusicVolume * 100).."%" end
+    local percent = math.floor(MusicVolume * 100).."%"
+    if VolNumTextMain then VolNumTextMain.Text = percent end
     if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume, 0, 1, 0) end
+    if VolNumMenu then VolNumMenu.Text = percent end
+    if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume, 0, 1, 0) end
 end
 
 local function FormatSoundId(input)
@@ -86,7 +101,6 @@ local function LoadBoombox(boomboxId)
     pcall(function() CurrentSound:Play() end)
 end
 
-local BoomFrame, VolFillMenu
 local function OpenBoomboxMenu()
     local BoomUI = Instance.new("ScreenGui")
     BoomUI.Name = "BLUE_BOOMBOX_MENU"
@@ -96,17 +110,16 @@ local function OpenBoomboxMenu()
     BoomUI.Parent = CoreGui
 
     BoomFrame = Instance.new("Frame")
-    BoomFrame.Size = UDim2.new(0, 300, 0, 220)
-    BoomFrame.Position = UDim2.new(0.5, -150, 0.5, -110)
-    BoomFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    BoomFrame.BorderSizePixel = 2
-    BoomFrame.BorderColor3 = Color3.fromRGB(0,180,255)
+    BoomFrame.Size = UDim2.new(0, 320, 0, 250)
+    BoomFrame.Position = UDim2.new(0.5, -160, 0.5, -125)
+    BoomFrame.BackgroundColor3 = Color3.fromRGB(22,22,22)
     BoomFrame.Parent = BoomUI
-    Instance.new("UICorner", BoomFrame).CornerRadius = UDim.new(0,10)
+    Instance.new("UICorner", BoomFrame).CornerRadius = UDim.new(0,12)
+    AddRainbowGlow(BoomFrame, 4) -- Glow border
 
     local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,0,0,35)
-    Title.Position = UDim2.new(0,0,0,5)
+    Title.Size = UDim2.new(1,0,0,40)
+    Title.Position = UDim2.new(0,0,0,8)
     Title.BackgroundTransparency = 1
     Title.Text = "🎵 BOOMBOX & VOLUME"
     Title.Font = Enum.Font.GothamBold
@@ -115,52 +128,53 @@ local function OpenBoomboxMenu()
     Title.Parent = BoomFrame
 
     local Input = Instance.new("TextBox")
-    Input.Size = UDim2.new(1,-30,0,40)
-    Input.Position = UDim2.new(0,15,0,45)
-    Input.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    Input.Size = UDim2.new(1,-40,0,45)
+    Input.Position = UDim2.new(0,20,0,55)
+    Input.BackgroundColor3 = Color3.fromRGB(35,35,35)
     Input.PlaceholderText = "Paste Sound ID here..."
     Input.TextColor3 = Color3.new(1,1,1)
     Input.Font = Enum.Font.Gotham
     Input.TextScaled = true
     Input.ClearTextOnFocus = true
     Input.Parent = BoomFrame
-    local InputCorner = Instance.new("UICorner", Input)
-    InputCorner.CornerRadius = UDim.new(0,8)
+    Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(Input, 2)
 
     local VolLabel = Instance.new("TextLabel")
-    VolLabel.Size = UDim2.new(0,100,0,25)
-    VolLabel.Position = UDim2.new(0,15,0,95)
+    VolLabel.Size = UDim2.new(0,120,0,30)
+    VolLabel.Position = UDim2.new(0,20,0,110)
     VolLabel.BackgroundTransparency = 1
-    VolLabel.Text = "🔊 VOLUME:"
+    VolLabel.Text = "🔊 VOLUME LEVEL:"
     VolLabel.TextColor3 = Color3.new(1,1,1)
     VolLabel.Font = Enum.Font.GothamBold
     VolLabel.TextScaled = true
     VolLabel.TextXAlignment = Enum.TextXAlignment.Left
     VolLabel.Parent = BoomFrame
 
-    local VolNum = Instance.new("TextLabel")
-    VolNum.Size = UDim2.new(0,50,0,25)
-    VolNum.Position = UDim2.new(1,-65,0,95)
-    VolNum.BackgroundTransparency = 1
-    VolNum.Text = math.floor(MusicVolume*100).."%"
-    VolNum.TextColor3 = Color3.new(1,1,1)
-    VolNum.Font = Enum.Font.GothamBold
-    VolNum.TextScaled = true
-    VolNum.TextXAlignment = Enum.TextXAlignment.Right
-    VolNum.Parent = BoomFrame
+    VolNumMenu = Instance.new("TextLabel")
+    VolNumMenu.Size = UDim2.new(0,80,0,30)
+    VolNumMenu.Position = UDim2.new(1,-100,0,110)
+    VolNumMenu.BackgroundTransparency = 1
+    VolNumMenu.Text = math.floor(MusicVolume*100).."%"
+    VolNumMenu.TextColor3 = Color3.new(1,1,1)
+    VolNumMenu.Font = Enum.Font.GothamBold
+    VolNumMenu.TextScaled = true
+    VolNumMenu.TextXAlignment = Enum.TextXAlignment.Right
+    VolNumMenu.Parent = BoomFrame
 
     local VolBG = Instance.new("Frame")
-    VolBG.Size = UDim2.new(1,-30,0,20)
-    VolBG.Position = UDim2.new(0,15,0,120)
+    VolBG.Size = UDim2.new(1,-40,0,24)
+    VolBG.Position = UDim2.new(0,20,0,145)
     VolBG.BackgroundColor3 = Color3.fromRGB(50,50,50)
     VolBG.Parent = BoomFrame
-    Instance.new("UICorner", VolBG).CornerRadius = UDim.new(0,10)
+    Instance.new("UICorner", VolBG).CornerRadius = UDim.new(0,12)
+    AddRainbowGlow(VolBG, 2)
 
     VolFillMenu = Instance.new("Frame")
     VolFillMenu.Size = UDim2.new(MusicVolume,0,1,0)
-    VolFillMenu.BackgroundColor3 = Color3.fromRGB(0,180,255)
+    VolFillMenu.BackgroundColor3 = Color3.fromRGB(100,100,100)
     VolFillMenu.Parent = VolBG
-    Instance.new("UICorner", VolFillMenu).CornerRadius = UDim.new(0,10)
+    Instance.new("UICorner", VolFillMenu).CornerRadius = UDim.new(0,12)
 
     local SliderActive = false
     VolBG.InputBegan:Connect(function(i)
@@ -172,35 +186,33 @@ local function OpenBoomboxMenu()
     UserInputService.InputChanged:Connect(function(i)
         if SliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
             local relPos = math.clamp((i.Position.X - VolBG.AbsolutePosition.X) / VolBG.AbsoluteSize.X, 0, 1)
-            VolFillMenu.Size = UDim2.new(relPos, 0, 1, 0)
-            VolNum.Text = math.floor(relPos * 100).."%"
             UpdateVolume(relPos)
         end
     end)
 
     local PlayBtn = Instance.new("TextButton")
-    PlayBtn.Size = UDim2.new(0,120,0,35)
-    PlayBtn.Position = UDim2.new(0,15,0,160)
-    PlayBtn.BackgroundColor3 = Color3.fromRGB(30,130,220)
-    PlayBtn.Text = "▶ PLAY"
+    PlayBtn.Size = UDim2.new(0,130,0,40)
+    PlayBtn.Position = UDim2.new(0,20,0,190)
+    PlayBtn.BackgroundColor3 = Color3.fromRGB(25,140,255)
+    PlayBtn.Text = "▶ PLAY SOUND"
     PlayBtn.TextColor3 = Color3.new(1,1,1)
     PlayBtn.Font = Enum.Font.GothamBold
     PlayBtn.TextScaled = true
     PlayBtn.Parent = BoomFrame
-    local PlayCorner = Instance.new("UICorner", PlayBtn)
-    PlayCorner.CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(PlayBtn, 2)
 
     local StopBtn = Instance.new("TextButton")
-    StopBtn.Size = UDim2.new(0,120,0,35)
-    StopBtn.Position = UDim2.new(0,165,0,160)
-    StopBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
-    StopBtn.Text = "⏹ STOP"
+    StopBtn.Size = UDim2.new(0,130,0,40)
+    StopBtn.Position = UDim2.new(0,170,0,190)
+    StopBtn.BackgroundColor3 = Color3.fromRGB(200,30,30)
+    StopBtn.Text = "⏹ STOP SOUND"
     StopBtn.TextColor3 = Color3.new(1,1,1)
     StopBtn.Font = Enum.Font.GothamBold
     StopBtn.TextScaled = true
     StopBtn.Parent = BoomFrame
-    local StopCorner = Instance.new("UICorner", StopBtn)
-    StopCorner.CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(StopBtn, 2)
 
     PlayBtn.MouseButton1Click:Connect(function() if Input.Text ~= "" then LoadBoombox(Input.Text) end BoomUI:Destroy() end)
     StopBtn.MouseButton1Click:Connect(function() if CurrentSound then pcall(function() CurrentSound:Stop() CurrentSound:Destroy() end) end BoomUI:Destroy() end)
@@ -219,18 +231,18 @@ local Main = Instance.new("Frame")
 Main.Size = MAIN_SIZE
 Main.Position = UDim2.new(0, 20, 0.5, -52)
 Main.BackgroundColor3 = Color3.fromRGB(25,25,25)
-Main.BorderSizePixel = 2
-Main.BorderColor3 = Color3.fromRGB(0,180,255)
 Main.Active = true
 Main.ClipsDescendants = false
 Main.Parent = UI
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,8)
+AddRainbowGlow(Main, 5) -- Main thick aura
 
 local DragBar = Instance.new("Frame")
 DragBar.Size = UDim2.new(1, -25, 0, 22)
 DragBar.BackgroundColor3 = Color3.fromRGB(60,140,220)
 DragBar.Active = true
 DragBar.Parent = Main
+AddRainbowGlow(DragBar, 2)
 
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -110, 1, 0)
@@ -262,6 +274,7 @@ MinBtn.TextColor3 = Color3.new(1,1,1)
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.TextScaled = true
 MinBtn.Parent = Main
+AddRainbowGlow(MinBtn, 2)
 
 -- BUTTONS
 local ESPBtn = Instance.new("TextButton")
@@ -274,6 +287,7 @@ ESPBtn.Font = Enum.Font.GothamBold
 ESPBtn.TextScaled = true
 ESPBtn.Parent = Main
 Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
+AddRainbowGlow(ESPBtn, 2)
 
 local YtBtn = Instance.new("TextButton")
 YtBtn.Size = UDim2.new(0, 95, 0, 30)
@@ -285,6 +299,7 @@ YtBtn.Font = Enum.Font.GothamBold
 YtBtn.TextScaled = true
 YtBtn.Parent = Main
 Instance.new("UICorner", YtBtn).CornerRadius = UDim.new(0,6)
+AddRainbowGlow(YtBtn, 2)
 
 local BoomBtn = Instance.new("TextButton")
 BoomBtn.Size = UDim2.new(0, 90, 0, 30)
@@ -296,6 +311,7 @@ BoomBtn.Font = Enum.Font.GothamBold
 BoomBtn.TextScaled = true
 BoomBtn.Parent = Main
 Instance.new("UICorner", BoomBtn).CornerRadius = UDim.new(0,6)
+AddRainbowGlow(BoomBtn, 2)
 
 local LockBtn = Instance.new("TextButton")
 LockBtn.Size = UDim2.new(0, 90, 0, 30)
@@ -307,6 +323,7 @@ LockBtn.Font = Enum.Font.GothamBold
 LockBtn.TextScaled = true
 LockBtn.Parent = Main
 Instance.new("UICorner", LockBtn).CornerRadius = UDim.new(0,6)
+AddRainbowGlow(LockBtn, 2)
 
 local DelBtn = Instance.new("TextButton")
 DelBtn.Size = UDim2.new(0, 90, 0, 30)
@@ -318,6 +335,7 @@ DelBtn.Font = Enum.Font.GothamBold
 DelBtn.TextScaled = true
 DelBtn.Parent = Main
 Instance.new("UICorner", DelBtn).CornerRadius = UDim.new(0,6)
+AddRainbowGlow(DelBtn, 2)
 
 -- VOLUME SLIDER
 local VolLabelMain = Instance.new("TextLabel")
@@ -348,10 +366,11 @@ VolBGMain.Position = UDim2.new(0,135,0,67)
 VolBGMain.BackgroundColor3 = Color3.fromRGB(50,50,50)
 VolBGMain.Parent = Main
 Instance.new("UICorner", VolBGMain).CornerRadius = UDim.new(0,9)
+AddRainbowGlow(VolBGMain, 2)
 
 VolFillMain = Instance.new("Frame")
 VolFillMain.Size = UDim2.new(MusicVolume,0,1,0)
-VolFillMain.BackgroundColor3 = Color3.fromRGB(0,180,255)
+VolFillMain.BackgroundColor3 = Color3.fromRGB(100,100,100)
 VolFillMain.Parent = VolBGMain
 Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0,9)
 
@@ -459,7 +478,7 @@ DelBtn.MouseButton1Click:Connect(function()
     getgenv().BlueMode_Loaded = nil
 end)
 
--- 🚀 MAIN LOOP | FULL RAINBOW EFFECT EVERYWHERE
+-- 🚀 MAIN LOOP | SYNC ALL RAINBOW AURA
 RunService.Heartbeat:Connect(function(delta)
     if not UI or not UI.Parent then return end
 
@@ -481,23 +500,21 @@ RunService.Heartbeat:Connect(function(delta)
         return
     end
 
-    -- 🌈 SYNC ALL RAINBOW COLORS
-    Hue = (Hue + delta * 0.6) % 1 -- Smooth speed
-    local RainbowColor = Color3.fromHSV(Hue, 1, 1)
+    -- 🌈 RAINBOW AURA UPDATE
+    Hue = (Hue + delta * 0.5) % 1
+    local GlowColor = Color3.fromHSV(Hue, 1, 1)
+    for _, stroke in pairs(GuiElements) do
+        stroke.Color = GlowColor
+    end
 
-    -- Main GUI Border
-    Main.BorderColor3 = RainbowColor
-    -- Drag Bar
-    DragBar.BackgroundColor3 = RainbowColor
-    -- Volume Slider Fill
-    if VolFillMain then VolFillMain.BackgroundColor3 = RainbowColor end
-    -- Boombox Menu
-    if BoomFrame then BoomFrame.BorderColor3 = RainbowColor end
-    if VolFillMenu then VolFillMenu.BackgroundColor3 = RainbowColor end
+    -- Update other rainbow elements
+    if VolFillMain then VolFillMain.BackgroundColor3 = GlowColor end
+    if VolFillMenu then VolFillMenu.BackgroundColor3 = GlowColor end
+    if BoomFrame then BoomFrame.BorderColor3 = GlowColor end
 
     if not ESP_Enabled then return end
 
-    -- 👥 ESP + FRIEND DOTS (ALSO RAINBOW)
+    -- 👥 ESP + FRIEND DOTS
     for _, Plr in pairs(Players:GetPlayers()) do
         if Plr == LocalPlayer then continue end
         local Char = Plr.Character
@@ -509,7 +526,6 @@ RunService.Heartbeat:Connect(function(delta)
             continue
         end
 
-        -- ESP Outline
         local Outline = Char:FindFirstChild("BLUE_Outline")
         if not Outline then
             Outline = Instance.new("Highlight")
@@ -520,9 +536,8 @@ RunService.Heartbeat:Connect(function(delta)
             Outline.Adornee = Char
             Outline.Parent = Char
         end
-        Outline.OutlineColor = RainbowColor
+        Outline.OutlineColor = GlowColor
 
-        -- Friend Dot
         local IsFriend = false
         pcall(function() IsFriend = LocalPlayer:IsFriendsWith(Plr.UserId) end)
         local Head = Char:FindFirstChild("Head")
@@ -538,12 +553,12 @@ RunService.Heartbeat:Connect(function(delta)
                 Dot.Adornee = Head
                 local Circle = Instance.new("Frame")
                 Circle.Size = UDim2.new(1,0,1,0)
-                Circle.BackgroundColor3 = RainbowColor
+                Circle.BackgroundColor3 = GlowColor
                 Instance.new("UICorner", Circle).CornerRadius = UDim.new(1,0)
                 Circle.Parent = Dot
                 Dot.Parent = Char
             else
-                Dot.Frame.BackgroundColor3 = RainbowColor
+                Dot.Frame.BackgroundColor3 = GlowColor
             end
         elseif Dot then
             Dot:Destroy()
@@ -551,4 +566,4 @@ RunService.Heartbeat:Connect(function(delta)
     end
 end)
 
-print("✅ FULL RAINBOW EFFECT APPLIED TO ALL OUTLINES!")
+print("✅ RAINBOW AURA OUTLINES APPLIED TO ALL GUI EDGES!")
