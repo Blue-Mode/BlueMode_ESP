@@ -1,7 +1,8 @@
 -- ==============================================
--- ✅ BLUE_MODE ESP | FULLY WORKING VERSION
+-- ✅ BLUE_MODE ESP | SECURED VERSION
 -- ✅ COPYRIGHT © BLUE_MODE | ALL RIGHTS RESERVED
 -- ✅ UNAUTHORIZED REBRANDING OR MODIFICATION IS PROHIBITED
+-- ✅ OWNER UNLOCK ONLY FOR DWAYNEKEAN015
 -- ==============================================
 
 -- Prevent duplicate loading
@@ -26,6 +27,9 @@ local OWNER_CODE = "Blue_Mode192823"
 local YT_LINK = "https://youtube.com/@blue_mode?si=_NTd2gfDzVW9sIPM"
 local DEFAULT_SOUND_ID = "rbxassetid://6001487560"
 local VOLUME = 0.7
+-- 👇 YOUR OWNER INFO — ONLY YOU CAN UNLOCK 👇
+local OWNER_USERNAME = "Dwaynekean015"
+local OWNER_USER_ID = 0 -- << REPLACE 0 WITH YOUR REAL ROBLOX USER ID!
 
 -- 📊 VARIABLES
 local USED_TIME = 0
@@ -74,7 +78,7 @@ Song.Looped = true
 Song.Volume = VOLUME
 Song.Parent = UI
 
--- 🎵 FULLY FIXED BOOMBOX (PLAYS PERFECTLY, MUSIC STAYS ON CLOSE)
+-- 🎵 FULLY FIXED BOOMBOX
 local BoomboxGui = Instance.new("Frame")
 BoomboxGui.Size = UDim2.new(0,240,0,160)
 BoomboxGui.Position = UDim2.new(0.5,-120,0.1,0)
@@ -137,11 +141,11 @@ BClose.Font = Enum.Font.GothamBold
 BClose.TextScaled = true
 BClose.Parent = BoomboxGui
 
--- 🎵 PLAY/STOP LOGIC (PERFECTED!)
+-- 🎵 PLAY/STOP LOGIC
 ApplyBtn.MouseButton1Click:Connect(function()
     local input = IDInput.Text
     if input == "" then return end
-    local songId = input:gsub("%D", "") -- Keep only numbers
+    local songId = input:gsub("%D", "")
     if songId == "" then return end
     local fullId = "rbxassetid://"..songId
     Song.SoundId = fullId
@@ -157,10 +161,10 @@ StopBtn.MouseButton1Click:Connect(function()
 end)
 
 BClose.MouseButton1Click:Connect(function()
-    BoomboxGui.Visible = false -- MUSIC KEEPS PLAYING!
+    BoomboxGui.Visible = false
 end)
 
--- 👋 WELCOME SCREEN
+-- 👋 WELCOME SCREEN (CODE REMOVED FOR SECURITY!)
 local Welcome = Instance.new("Frame")
 Welcome.Size = UDim2.new(0,400,0,320)
 Welcome.Position = UDim2.new(0.5,-200,0.5,-160)
@@ -196,7 +200,7 @@ WhatsNew.Text = [[📋 FEATURES:
 • ✅ Fixed YouTube copy + console link
 • ✅ Drag lock, minimize, delete confirm
 • ✅ 12h use → 12h lock system
-• ✅ Owner unlock: Blue_Mode192823
+• ✅ Owner unlock restricted
 • ✅ Rainbow ESP & Friend Dot
 • ✅ Anti-rebrand protection active]]
 WhatsNew.Parent = Welcome
@@ -529,21 +533,34 @@ DelBtn.MouseButton1Click:Connect(function() DeletePopup.Visible = true end)
 DelNo.MouseButton1Click:Connect(function() DeletePopup.Visible = false end)
 DelYes.MouseButton1Click:Connect(function() DeletePopup.Visible = false; FullDelete() end)
 
+-- 🔒 SECURED OWNER UNLOCK (ONLY DWAYNEKEAN015 CAN USE!)
 UnlockBtn.MouseButton1Click:Connect(function()
+    -- Check if it's really you
+    local IsOwner = (LocalPlayer.Name == OWNER_USERNAME) or (OWNER_USER_ID > 0 and LocalPlayer.UserId == OWNER_USER_ID)
+    if not IsOwner then
+        CodeStatus.Text = "❌ ONLY OWNER CAN UNLOCK!"
+        CodeStatus.TextColor3 = Color3.new(1,.2,.2)
+        return
+    end
+
+    -- Only runs for you
     if CodeBox.Text == OWNER_CODE then
         WRONG_COUNT = 0
         LOCK_END = 0
         LockScreen.Visible = false
         MainMenu.Visible = true
-        CodeStatus.Text = "✅ UNLOCKED!"
+        CodeStatus.Text = "✅ OWNER UNLOCKED!"
         task.delay(1.5, function() CodeStatus.Text = "" end)
     else
         WRONG_COUNT += 1
-        CodeStatus.Text = "❌ WRONG! "..WRONG_COUNT.."/2"
+        CodeStatus.Text = "❌ WRONG CODE! "..WRONG_COUNT.."/2"
         CodeStatus.TextColor3 = Color3.new(1,.2,.2)
         if WRONG_COUNT >= 2 then
             CodeStatus.Text = "⚠️ HIDING FOR LOCK TIME"
-            task.delay(2, function() LockScreen.Visible = false; SCRIPT_HIDDEN = true end)
+            task.delay(2, function()
+                LockScreen.Visible = false
+                SCRIPT_HIDDEN = true
+            end)
         end
     end
 end)
@@ -631,6 +648,7 @@ table.insert(CONNECTIONS, RunService.Heartbeat:Connect(function(dt)
 end))
 
 print("\n✅ ==========================================")
-print("✅ BLUE_MODE ESP | FULLY FIXED VERSION")
+print("✅ BLUE_MODE ESP | SECURED VERSION")
 print("✅ COPYRIGHT © BLUE_MODE | ALL RIGHTS RESERVED")
+print("✅ OWNER UNLOCK ONLY FOR DWAYNEKEAN015")
 print("✅ ==========================================\n")
