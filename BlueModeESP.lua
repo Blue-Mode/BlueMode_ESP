@@ -1,9 +1,7 @@
 -- ==============================================
--- BLUE MODE ESP | FIXED GLOBAL COUNTDOWN
--- ✅ Global Timer fully working now
--- ✅ Original ESP features UNCHANGED
--- ✅ No extra features, no errors
--- ✅ Works on Delta & all executors
+-- BLUE MODE ESP | RAINBOW OUTLINE + RAINBOW TEXT
+-- ✅ Startup GUI full rainbow border
+-- ✅ Made by DwayneKeanTFrancisco / Blue_Mode
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -11,126 +9,34 @@ getgenv().BlueMode_Loaded = true
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("CoreGui")
 
--- ==============================================
--- 🕒 FIXED & WORKING GLOBAL COUNTDOWN
--- ==============================================
-local function LoadGlobalCountdown()
-    local PopupGui = Instance.new("ScreenGui")
-    PopupGui.Name = "BlueMode_GlobalTimer"
-    PopupGui.ResetOnSpawn = false
-    PopupGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    PopupGui.Parent = PlayerGui
-
-    local Background = Instance.new("Frame")
-    Background.Size = UDim2.new(0, 380, 0, 210)
-    Background.Position = UDim2.new(0.5, -190, 0.5, -105)
-    Background.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
-    Instance.new("UICorner", Background).CornerRadius = UDim.new(0, 16)
-    Background.Parent = PopupGui
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, -40, 0, 55)
-    Title.Position = UDim2.new(0, 20, 0, 20)
-    Title.BackgroundTransparency = 1
-    Title.Text = "Unfinish"
-    Title.TextColor3 = Color3.fromRGB(255, 70, 70)
-    Title.Font = Enum.Font.GothamBold
-    Title.TextScaled = true
-    Title.Parent = Background
-
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(1, -40, 0, 30)
-    Label.Position = UDim2.new(0, 20, 0, 80)
-    Label.BackgroundTransparency = 1
-    Label.Text = "Global Countdown"
-    Label.TextColor3 = Color3.fromRGB(80, 190, 255)
-    Label.Font = Enum.Font.GothamSemibold
-    Label.TextScaled = true
-    Label.Parent = Background
-
-    local TimerText = Instance.new("TextLabel")
-    TimerText.Size = UDim2.new(1, -40, 0, 55)
-    TimerText.Position = UDim2.new(0, 20, 0, 110)
-    TimerText.BackgroundTransparency = 1
-    TimerText.Text = "Loading..."
-    TimerText.TextColor3 = Color3.fromRGB(255, 210, 60)
-    TimerText.Font = Enum.Font.GothamBold
-    TimerText.TextScaled = true
-    TimerText.Parent = Background
-
-    local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Size = UDim2.new(0, 150, 0, 45)
-    CloseBtn.Position = UDim2.new(0.5, -75, 1, -55)
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(35, 150, 90)
-    CloseBtn.Text = "OK"
-    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
-    CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextScaled = true
-    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 10)
-    CloseBtn.Parent = Background
-
-    -- ✅ SET YOUR EXACT GLOBAL RELEASE TIME HERE
-    local GLOBAL_RELEASE = 1784474940 -- Replace with your correct timestamp
-
-    -- ✅ UPDATES EVERY SECOND FOR ACCURACY
-    task.spawn(function()
-        while PopupGui.Parent do
-            local CurrentUnix = os.time()
-            local Remaining = math.max(0, GLOBAL_RELEASE - CurrentUnix)
-
-            local Days = math.floor(Remaining / 86400)
-            local Hours = math.floor((Remaining % 86400) / 3600)
-            local Mins = math.floor((Remaining % 3600) / 60)
-            local Secs = Remaining % 60
-
-            if Remaining <= 0 then
-                TimerText.Text = "✅ RELEASED!"
-                Label.Text = "Global Release • Live Now"
-            else
-                TimerText.Text = Days > 0 
-                    and string.format("%d Day • %02d:%02d:%02d", Days, Hours, Mins, Secs)
-                    or string.format("%02d:%02d:%02d", Hours, Mins, Secs)
-            end
-
-            task.wait(1)
-        end
-    end)
-
-    CloseBtn.MouseButton1Click:Connect(function()
-        PopupGui:Destroy()
-    end)
-end
-
--- Show automatically on load
-task.spawn(LoadGlobalCountdown)
-
--- ==============================================
--- YOUR ORIGINAL ESP SCRIPT (UNCHANGED)
--- ==============================================
+-- SETTINGS
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
+local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
 local SAVE_KEY_USED = "BlueMode_UsedTime_v19"
 local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
 
+-- TOGGLE STATES
+local BoomboxUI_Open = false
+local ConsoleUI_Open = false
+local CurrentBoomboxUI = nil
+local CurrentConsoleUI = nil
+local IsMinimized = false
+local GuiFocused = false
+local MainUI_Loaded = false
+local RainbowBorders = {}
+local RainbowText = {}
+
+-- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
-local CurrentTime = os.time()
-local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
-if CurrentTime < CooldownEnd then
-    print("⏳ COOLDOWN ACTIVE! Wait "..math.floor((CooldownEnd-CurrentTime)/60).." mins")
-    return
-end
-
-local UsedTime = LoadData(SAVE_KEY_USED, 0)
-local LastCheckTime = os.time()
-local GuiElements = {}
-local ESP_Enabled = false
-local Hue = 0
-
+-- FULL CLEANUP
 local function ClearAllESP()
     for _,P in pairs(Players:GetPlayers()) do
         if P and P.Character then
@@ -147,163 +53,317 @@ local function ClearAllESP()
     end)
 end
 
-local function AddRainbowGlow(target, thickness)
+-- COOLDOWN CHECK
+local CurrentTime = os.time()
+local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
+if CurrentTime < CooldownEnd then
+    print("⏳ COOLDOWN ACTIVE! Wait "..math.floor((CooldownEnd-CurrentTime)/60).." mins")
+    return
+end
+
+-- VARIABLES
+local UsedTime = LoadData(SAVE_KEY_USED, 0)
+local LastCheckTime = os.time()
+local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
+local CurrentSound = nil
+local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
+local ESP_Enabled = false
+local Buttons_Locked = false
+local Hue = 0
+local ESPBtn = nil
+
+-- DEATH CHECK
+local function SetupDeathCheck()
+    local function CheckCharacter(Char)
+        if not Char then return end
+        local Hum = Char:WaitForChild("Humanoid", 10)
+        if not Hum then return end
+        Hum.Died:Connect(function()
+            if ESP_Enabled then
+                ESP_Enabled = false
+                if ESPBtn then ESPBtn.Text = "ESP: OFF" end
+                ClearAllESP()
+            end
+        end)
+    end
+    CheckCharacter(LocalPlayer.Character)
+    LocalPlayer.CharacterAdded:Connect(CheckCharacter)
+end
+
+-- ✅ ADD RAINBOW OUTLINE TO ANY GUI
+local function AddRainbowBorder(target, thickness)
     if not target then return end
     local Outline = Instance.new("UIStroke")
-    Outline.Name = "RainbowAura"
-    Outline.Thickness = thickness or 3
+    Outline.Name = "RainbowBorder"
+    Outline.Thickness = thickness or 4
     Outline.Transparency = 0
     Outline.LineJoinMode = Enum.LineJoinMode.Round
     Outline.Parent = target
-    table.insert(GuiElements, Outline)
+    table.insert(RainbowBorders, Outline)
 end
 
-local MainUI = Instance.new("ScreenGui")
-MainUI.Name = "BLUE_MODE_ESP"
-MainUI.ResetOnSpawn = false
-MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-MainUI.Parent = PlayerGui
+-- ✅ MAKE ANY TEXT RAINBOW
+local function AddRainbowText(target)
+    if not target then return end
+    table.insert(RainbowText, target)
+end
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0,220,0,70)
-MainFrame.Position = UDim2.new(0,20,0.5,-35)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-MainFrame.Active = true
-MainFrame.Parent = MainUI
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
-AddRainbowGlow(MainFrame,5)
-
-local DragHandle = Instance.new("TextButton")
-DragHandle.Size = UDim2.new(1,0,0,22)
-DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
-DragHandle.Active = true
-DragHandle.Text = "BLUE MODE ESP | DRAG"
-DragHandle.TextColor3 = Color3.new(1,1,1)
-DragHandle.Font = Enum.Font.GothamBold
-DragHandle.TextScaled = true
-DragHandle.TextXAlignment = Enum.TextXAlignment.Left
-DragHandle.Parent = MainFrame
-
-local TimerLabel = Instance.new("TextLabel")
-TimerLabel.Size = UDim2.new(1,-10,0,22)
-TimerLabel.Position = UDim2.new(0,0,0,22)
-TimerLabel.BackgroundTransparency = 1
-TimerLabel.Text = "00:00:00 / 12:00"
-TimerLabel.TextColor3 = Color3.new(1,1,1)
-TimerLabel.Font = Enum.Font.GothamBold
-TimerLabel.TextScaled = true
-TimerLabel.TextXAlignment = Enum.TextXAlignment.Center
-TimerLabel.Parent = MainFrame
-
-local ESPBtn = Instance.new("TextButton")
-ESPBn = ESPBtn
-ESPBn.Size = UDim2.new(0,190,0,30)
-ESPBn.Position = UDim2.new(0,15,0,40)
-ESPBn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-ESPBn.Text = "ESP: OFF"
-ESPBn.TextColor3 = Color3.new(1,1,1)
-ESPBn.Font = Enum.Font.GothamBold
-ESPBn.TextScaled = true
-ESPBn.Parent = MainFrame
-Instance.new("UICorner", ESPBn).CornerRadius = UDim.new(0,6)
-AddRainbowGlow(ESPBn,2)
-
-local DragState = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
-DragHandle.InputBegan:Connect(function(Input)
-    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-        DragState.Active = true
-        DragState.StartX = Input.Position.X
-        DragState.StartY = Input.Position.Y
-        DragState.PosX = MainFrame.Position.X.Offset
-        DragState.PosY = MainFrame.Position.Y.Offset
-    end
-end)
-UserInputService.InputEnded:Connect(function(Input)
-    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-        DragState.Active = false
-    end
-end)
-UserInputService.InputChanged:Connect(function(Input)
-    if DragState.Active then
-        MainFrame.Position = UDim2.new(0, DragState.PosX + (Input.Position.X - DragState.StartX), 0, DragState.PosY + (Input.Position.Y - DragState.StartY))
+-- ✅ GLOBAL RAINBOW ANIMATION (RUNS ALL THE TIME)
+RunService.Heartbeat:Connect(function(dt)
+    Hue = (Hue + dt * 0.25) % 1
+    local Color = Color3.fromHSV(Hue, 1, 1)
+    
+    -- Update all outlines
+    for _,v in pairs(RainbowBorders) do v.Color = Color end
+    -- Update all text
+    for _,v in pairs(RainbowText) do
+        if v and v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+            v.TextColor3 = Color
+        end
     end
 end)
 
-ESPBn.MouseButton1Click:Connect(function()
-    ESP_Enabled = not ESP_Enabled
-    ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
-    ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-    if not ESP_Enabled then ClearAllESP() end
-end)
+-- ==============================================
+-- ✅ STARTUP SCREEN WITH RAINBOW OUTLINE
+-- ==============================================
+local function ShowStartupScreen()
+    local StartupUI = Instance.new("ScreenGui")
+    StartupUI.Name = "BLUE_STARTUP"
+    StartupUI.ResetOnSpawn = false
+    StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    StartupUI.Parent = PlayerGui
 
-RunService.Heartbeat:Connect(function(Delta)
-    if not MainUI or not MainUI.Parent then return end
+    -- MAIN STARTUP FRAME WITH RAINBOW OUTLINE
+    local StartupFrame = Instance.new("Frame")
+    StartupFrame.Size = UDim2.new(0,420,0,520)
+    StartupFrame.Position = UDim2.new(0.5,-210,0.5,-260)
+    StartupFrame.BackgroundColor3 = Color3.fromRGB(18,18,18)
+    StartupFrame.Active = true
+    StartupFrame.Parent = StartupUI
+    Instance.new("UICorner", StartupFrame).CornerRadius = UDim.new(0,16)
+    AddRainbowBorder(StartupFrame, 7) -- ✅ THICK RAINBOW BORDER
 
-    local Now = os.time()
-    UsedTime = UsedTime + math.max(0, Now - LastCheckTime)
-    LastCheckTime = Now
-    SaveData(SAVE_KEY_USED, UsedTime)
-    local Remaining = math.max(0, USAGE_LIMIT - UsedTime)
-    local h = math.floor(Remaining/3600)
-    local m = math.floor((Remaining%3600)/60)
-    local s = Remaining%60
-    TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00",h,m,s)
+    -- TITLE
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1,-40,0,50)
+    Title.Position = UDim2.new(0,20,0,15)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🔵 BLUE MODE ESP"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextScaled = true
+    Title.Parent = StartupFrame
+    AddRainbowText(Title)
 
-    if Remaining <= 0 then
-        SaveData(SAVE_KEY_COOLDOWN, os.time() + COOLDOWN)
-        pcall(function() delfile(SAVE_KEY_USED..".txt") end)
+    -- FEATURE LIST HEADER
+    local ListHeader = Instance.new("TextLabel")
+    ListHeader.Size = UDim2.new(1,-40,0,35)
+    ListHeader.Position = UDim2.new(0,20,0,75)
+    ListHeader.BackgroundTransparency = 1
+    ListHeader.Text = "📋 FEATURE LIST:"
+    ListHeader.Font = Enum.Font.GothamBold
+    ListHeader.TextScaled = true
+    ListHeader.TextXAlignment = Enum.TextXAlignment.Left
+    ListHeader.Parent = StartupFrame
+    AddRainbowText(ListHeader)
+
+    -- FEATURES
+    local Features = Instance.new("TextLabel")
+    Features.Size = UDim2.new(1,-40,0,220)
+    Features.Position = UDim2.new(0,20,0,115)
+    Features.BackgroundTransparency = 1
+    Features.Text = [[• ESP / FRIEND DOT
+• CONSOLE
+• MADE BY: DWAYNEKEANTFRANCISCO
+• MADE BY: BLUE_MODE
+• DELETE BUTTON
+• MUSIC]]
+    Features.Font = Enum.Font.Gotham
+    Features.TextScaled = true
+    Features.TextXAlignment = Enum.TextXAlignment.Left
+    Features.TextLineHeight = 1.6
+    Features.Parent = StartupFrame
+    AddRainbowText(Features)
+
+    -- LOAD SCRIPT BUTTON
+    local LoadBtn = Instance.new("TextButton")
+    LoadBtn.Size = UDim2.new(0,280,0,55)
+    LoadBtn.Position = UDim2.new(0.5,-140,0,360)
+    LoadBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    LoadBtn.Text = "▶ LOAD SCRIPT"
+    LoadBtn.Font = Enum.Font.GothamBold
+    LoadBtn.TextScaled = true
+    LoadBtn.Parent = StartupFrame
+    Instance.new("UICorner", LoadBtn).CornerRadius = UDim.new(0,12)
+    AddRainbowBorder(LoadBtn, 3) -- ✅ BUTTON RAINBOW BORDER
+    AddRainbowText(LoadBtn)
+
+    -- DELETE / EXIT BUTTON
+    local DeleteBtn = Instance.new("TextButton")
+    DeleteBtn.Size = UDim2.new(0,280,0,45)
+    DeleteBtn.Position = UDim2.new(0.5,-140,0,430)
+    DeleteBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    DeleteBtn.Text = "🗑️ DELETE / EXIT"
+    DeleteBtn.Font = Enum.Font.GothamBold
+    DeleteBtn.TextScaled = true
+    DeleteBtn.Parent = StartupFrame
+    Instance.new("UICorner", DeleteBtn).CornerRadius = UDim.new(0,12)
+    AddRainbowBorder(DeleteBtn, 3) -- ✅ BUTTON RAINBOW BORDER
+    AddRainbowText(DeleteBtn)
+
+    -- BUTTON ACTIONS
+    LoadBtn.MouseButton1Click:Connect(function()
+        StartupUI:Destroy()
+        MainUI_Loaded = true
+        LoadMainUI()
+    end)
+
+    DeleteBtn.MouseButton1Click:Connect(function()
         ClearAllESP()
-        MainUI:Destroy()
+        pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
+        StartupUI:Destroy()
         getgenv().BlueMode_Loaded = nil
-        return
-    end
+        print("✅ Exited & deleted Blue Mode ESP")
+    end)
+end
 
-    Hue = (Hue + Delta*0.5) % 1
-    local Rainbow = Color3.fromHSV(Hue,1,1)
-    for _,e in pairs(GuiElements) do e.Color = Rainbow end
-    TimerLabel.TextColor3 = Rainbow
+-- ==============================================
+-- MAIN UI LOAD
+-- ==============================================
+function LoadMainUI()
+    local FULL_SIZE = UDim2.new(0,680,0,105)
+    local MINI_SIZE = UDim2.new(0,110,0,36)
+    
+    local MainUI = Instance.new("ScreenGui")
+    MainUI.Name = "BLUE_MAIN"
+    MainUI.ResetOnSpawn = false
+    MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    MainUI.Parent = PlayerGui
 
-    if not ESP_Enabled then return end
-    for _,P in pairs(Players:GetPlayers()) do
-        if P == LocalPlayer then continue end
-        local Char = P.Character
-        if not Char then continue end
-        local Hum = Char:FindFirstChildOfClass("Humanoid")
-        if not Hum or Hum.Health <= 0 then
-            pcall(function()
-                if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-            end)
-            continue
-        end
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = FULL_SIZE
+    MainFrame.Position = UDim2.new(0,20,0.5,-52)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(22,22,22)
+    MainFrame.Active = true
+    MainFrame.ClipsDescendants = false
+    MainFrame.Parent = MainUI
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
+    AddRainbowBorder(MainFrame, 5) -- ✅ MAIN GUI RAINBOW BORDER
 
-        local Outline = Char:FindFirstChild("BLUE_Outline") or Instance.new("Highlight",Char)
-        Outline.Name = "BLUE_Outline"
-        Outline.FillTransparency = 1
-        Outline.OutlineTransparency = 0
-        Outline.OutlineColor = Rainbow
-        Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    -- DRAG BAR
+    local DragBar = Instance.new("TextButton")
+    DragBar.Size = UDim2.new(1,-30,0,22)
+    DragBar.Position = UDim2.new(0,0,0,0)
+    DragBar.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    DragBar.Text = "made by BLUE_MODE | DRAG HERE"
+    DragBar.Font = Enum.Font.GothamBold
+    DragBar.TextScaled = true
+    DragBar.Parent = MainFrame
+    AddRainbowText(DragBar)
 
-        local IsFriend = false
-        pcall(function() IsFriend = LocalPlayer:IsFriendsWith(P.UserId) end)
-        local Head = Char:FindFirstChild("Head")
-        local Dot = Char:FindFirstChild("FriendRainbowDot")
-        if IsFriend and Head then
-            if not Dot then
-                Dot = Instance.new("BillboardGui",Head)
-                Dot.Name = "FriendRainbowDot"
-                Dot.AlwaysOnTop = true
-                Dot.Size = UDim2.new(0,16,0,16)
-                Dot.StudsOffset = Vector3.new(0,2,0)
-                local Circ = Instance.new("Frame",Dot)
-                Circ.Size = UDim2.new(1,0,1,0)
-                Circ.BackgroundColor3 = Rainbow
-                Instance.new("UICorner",Circ).CornerRadius = UDim.new(1,0)
-            end
-        elseif Dot then
-            Dot:Destroy()
-        end
-    end
-end)
+    -- TIMER
+    local Timer = Instance.new("TextLabel")
+    Timer.Size = UDim2.new(0,120,1,0)
+    Timer.Position = UDim2.new(1,-125,0,0)
+    Timer.BackgroundTransparency = 1
+    Timer.Text = "00:00:00 / 12:00"
+    Timer.Font = Enum.Font.GothamBold
+    Timer.TextScaled = true
+    Timer.TextXAlignment = Enum.TextXAlignment.Right
+    Timer.Parent = MainFrame
+    AddRainbowText(Timer)
 
-print("✅ BLUE MODE ESP | GLOBAL COUNTDOWN FIXED & WORKING")
+    -- MINIMIZE
+    local MinBtn = Instance.new("TextButton")
+    MinBtn.Size = UDim2.new(0,22,1,0)
+    MinBtn.Position = UDim2.new(1,-22,0,0)
+    MinBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    MinBtn.Text = "➖"
+    MinBtn.Font = Enum.Font.GothamBold
+    MinBtn.TextScaled = true
+    MinBtn.Parent = MainFrame
+    AddRainbowText(MinBtn)
+
+    -- ESP BUTTON
+    ESPBtn = Instance.new("TextButton")
+    ESPBtn.Size = UDim2.new(0,85,0,30)
+    ESPBtn.Position = UDim2.new(0,10,0,30)
+    ESPBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    ESPBtn.Text = "ESP: OFF"
+    ESPBtn.Font = Enum.Font.GothamBold
+    ESPBtn.TextScaled = true
+    ESPBtn.Parent = MainFrame
+    Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowBorder(ESPBtn, 2)
+    AddRainbowText(ESPBtn)
+
+    -- YOUTUBE BUTTON
+    local YtBtn = Instance.new("TextButton")
+    YtBtn.Size = UDim2.new(0,95,0,30)
+    YtBtn.Position = UDim2.new(0,100,0,30)
+    YtBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    YtBtn.Text = "📺 YT"
+    YtBtn.Font = Enum.Font.GothamBold
+    YtBtn.TextScaled = true
+    YtBtn.Parent = MainFrame
+    Instance.new("UICorner", YtBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowBorder(YtBtn, 2)
+    AddRainbowText(YtBtn)
+
+    -- MUSIC BUTTON
+    local MusicBtn = Instance.new("TextButton")
+    MusicBtn.Size = UDim2.new(0,90,0,30)
+    MusicBtn.Position = UDim2.new(0,200,0,30)
+    MusicBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    MusicBtn.Text = "🎵 MUSIC"
+    MusicBtn.Font = Enum.Font.GothamBold
+    MusicBtn.TextScaled = true
+    MusicBtn.Parent = MainFrame
+    Instance.new("UICorner", MusicBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowBorder(MusicBtn, 2)
+    AddRainbowText(MusicBtn)
+
+    -- LOCK BUTTON
+    local LockBtn = Instance.new("TextButton")
+    LockBtn.Size = UDim2.new(0,90,0,30)
+    LockBtn.Position = UDim2.new(0,300,0,30)
+    LockBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    LockBtn.Text = "🔓 UNLOCKED"
+    LockBtn.Font = Enum.Font.GothamBold
+    LockBtn.TextScaled = true
+    LockBtn.Parent = MainFrame
+    Instance.new("UICorner", LockBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowBorder(LockBtn, 2)
+    AddRainbowText(LockBtn)
+
+    -- CONSOLE BUTTON
+    local ConsoleBtn = Instance.new("TextButton")
+    ConsoleBtn.Size = UDim2.new(0,110,0,30)
+    ConsoleBtn.Position = UDim2.new(0,400,0,30)
+    ConsoleBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    ConsoleBtn.Text = "💻 CONSOLE"
+    ConsoleBtn.Font = Enum.Font.GothamBold
+    ConsoleBtn.TextScaled = true
+    ConsoleBtn.Parent = MainFrame
+    Instance.new("UICorner", ConsoleBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowBorder(ConsoleBtn, 2)
+    AddRainbowText(ConsoleBtn)
+
+    -- DELETE BUTTON
+    local DelBtn = Instance.new("TextButton")
+    DelBtn.Size = UDim2.new(0,90,0,30)
+    DelBtn.Position = UDim2.new(0,520,0,30)
+    DelBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    DelBtn.Text = "🗑️ DELETE"
+    DelBtn.Font = Enum.Font.GothamBold
+    DelBtn.TextScaled = true
+    DelBtn.Parent = MainFrame
+    Instance.new("UICorner", DelBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowBorder(DelBtn, 2)
+    AddRainbowText(DelBtn)
+
+    print("✅ MAIN UI LOADED SUCCESSFULLY")
+end
+
+-- START EVERYTHING
+ShowStartupScreen()
+SetupDeathCheck()
