@@ -1,8 +1,6 @@
 -- ==============================================
--- 🔵 BLUE MODE ESP | NO MORE BLOCKING ROBLOX MENUS
--- ✅ AUTO-HIDE WHEN ROBLOX MENU IS OPEN
--- ✅ PERFECT LAYER ORDER
--- ✅ ALL FEATURES UNCHANGED
+-- 🔵 BLUE MODE ESP | FULLY FIXED VERSION
+-- ✅ AUTO-HIDE | NO ERRORS | ALL FEATURES WORK
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -14,7 +12,7 @@ local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- ✅ CRITICAL: Roblox Default UI = 999, WE USE 100 (SAFE!)
+-- SAFE LAYER ORDER
 local GuiContainer = Instance.new("Folder")
 GuiContainer.Name = "BLUE_MODE_GUI_ROOT"
 GuiContainer.Parent = CoreGui
@@ -35,21 +33,23 @@ local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
 local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
 local VOLUME_MAX = 1000
 
--- TOGGLE STATES
+-- GLOBAL STATES
 local BoomboxUI_Open = false
 local ConsoleUI_Open = false
-local CurrentBoomboxUI = nil
-local CurrentConsoleUI = nil
+local CurrentBoomboxUI, CurrentConsoleUI
 local IsMinimized = false
 local GuiFocused = false
-local StartupUI, MainUI
+local ESP_Enabled = false
+local Buttons_Locked = false
+local StartupUI, MainUI, ESPBtn
+local UsedTime = 0
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
 -- ==============================================
--- ✅ AUTO-HIDE: HIDE GUI WHEN ROBLOX MENU OPENS
+-- ✅ AUTO-HIDE ROBLOX MENUS
 -- ==============================================
 UserInputService.MenuOpened:Connect(function()
     if StartupUI then StartupUI.Visible = false end
@@ -119,6 +119,7 @@ UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
 UpdateList.Text = [[• ✅ AUTO-HIDE WHEN ESC/SETTINGS IS OPEN
 • ✅ NEVER BLOCKS ROBLOX MENUS AGAIN
+• ✅ ALL SYNTAX ERRORS FIXED
 • VOLUME: 0 → 1000
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
@@ -146,7 +147,7 @@ OkBtn.Parent = StartupBox
 Instance.new("UICorner", OkBtn).CornerRadius = UDim.new(0, 16)
 
 local StartupHue = 0
-local UsedTime = LoadData(SAVE_KEY_USED, 0)
+UsedTime = LoadData(SAVE_KEY_USED, 0)
 RunService.Heartbeat:Connect(function(dt)
     StartupHue = (StartupHue + dt * 0.3) % 1
     local Col = Color3.fromHSV(StartupHue, 1, 1)
@@ -167,7 +168,7 @@ end)
 print("✅ STARTUP READY")
 
 -- ==============================================
--- ✅ MAIN HUB & ALL MENUS
+-- ✅ MAIN HUB
 -- ==============================================
 function LoadMainHub()
     local CurrentTime = os.time()
@@ -182,8 +183,6 @@ function LoadMainHub()
     local CurrentSound = nil
     local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
     local GuiElements = {}
-    local ESP_Enabled = false
-    local Buttons_Locked = false
     local Hue = 0
 
     local function ClearAllESP()
@@ -506,8 +505,8 @@ function LoadMainHub()
         ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
     end
 
-    -- MAIN UI
-    local FULL_SIZE = UDim2.new(0,680,0,105)
+    -- MAIN UI LAYOUT
+    local FULL_SIZE = UDim2.new(0,790,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
     MainUI = Instance.new("ScreenGui")
     MainUI.Name = "BLUE_MODE_ESP"
@@ -561,7 +560,7 @@ function LoadMainHub()
     MinBtn.Parent = MainFrame
     AddRainbowGlow(MinBtn,2)
 
-    local ESPBtn = Instance.new("TextButton")
+    ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,85,0,30)
     ESPBtn.Position = UDim2.new(0,10,0,30)
     ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
@@ -571,7 +570,7 @@ function LoadMainHub()
     ESPBtn.TextScaled = true
     ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBt,2)
+    AddRainbowGlow(ESPBtn,2)
 
     local YouTubeBtn = Instance.new("TextButton")
     YouTubeBtn.Size = UDim2.new(0,95,0,30)
@@ -682,6 +681,7 @@ function LoadMainHub()
         end
     end)
 
+    -- DRAG SYSTEM
     local DragState = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
     DragHandle.InputBegan:Connect(function(Input)
         GuiFocused = true
@@ -703,13 +703,6 @@ function LoadMainHub()
     UserInputService.InputChanged:Connect(function(Input)
         if DragState.Active and not Buttons_Locked then
             MainFrame.Position = UDim2.new(0, DragState.PosX + (Input.Position.X - DragState.StartX), 0, DragState.PosY + (Input.Position.Y - DragState.StartY))
-        end
-    end)
-
-    UserInputService.InputBegan:Connect(function(Input, GameProcessed)
-        if GameProcessed then return end
-        if GuiFocused and Input.UserInputType == Enum.UserInputType.Touch then
-            return Enum.ContextActionResult.Sink
         end
     end)
 
@@ -788,6 +781,7 @@ function LoadMainHub()
 
     SetupDeathCheck()
 
+    -- MAIN LOOP
     RunService.Heartbeat:Connect(function(Delta)
         if not MainUI or not MainUI.Parent then return end
 
@@ -819,13 +813,7 @@ function LoadMainHub()
         for _,P in pairs(Players:GetPlayers()) do
             if P == LocalPlayer then continue end
             local Char = P.Character
-            if not Char then
-                pcall(function()
-                    if Char and Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                    if Char and Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-                end)
-                continue
-            end
+            if not Char then continue end
             local Hum = Char:FindFirstChildOfClass("Humanoid")
             if not Hum or Hum.Health <= 0 then
                 pcall(function()
