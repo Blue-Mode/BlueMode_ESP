@@ -1,5 +1,5 @@
 -- ==============================================
--- BLUE MODE ESP | DRAG WHEN UNLOCKED + MINIMIZED SUPPORT
+-- BLUE MODE ESP | DRAG ONLY ON DRAG BAR + FRIEND DOT FIX + VOLUME 1-100
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -23,7 +23,7 @@ local SAVE_KEY_VOLUME = "BlueMode_Volume_v9"
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
--- CLEANUP OLD ESP
+-- ✅ FULL CLEANUP: REMOVE OUTLINES + FRIEND DOTS
 local function ClearESP()
     for _,P in pairs(Players:GetPlayers()) do
         if P and P.Character then
@@ -121,12 +121,12 @@ local function ShowErrorPopup(Message)
     CloseBtn.MouseButton1Click:Connect(function() Popup:Destroy() end)
 end
 
--- VOLUME
+-- ✅ VOLUME FIXED: SHOWS 1-100% CORRECTLY
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(newVol, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
     if CurrentSound then CurrentSound.Volume = MusicVolume end
-    local Pct = math.floor(MusicVolume*100).."%"
+    local Pct = math.floor(MusicVolume * 100 + 0.5).."%" -- Proper rounding 1-100
     if VolNumTextMain then VolNumTextMain.Text = Pct end
     if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume,0,1,0) end
     if VolNumMenu then VolNumMenu.Text = Pct end
@@ -208,7 +208,7 @@ local function OpenBoomboxMenu()
     VolNumMenu.Size = UDim2.new(0,80,0,30)
     VolNumMenu.Position = UDim2.new(1,-100,0,110)
     VolNumMenu.BackgroundTransparency = 1
-    VolNumMenu.Text = math.floor(MusicVolume*100).."%"
+    VolNumMenu.Text = math.floor(MusicVolume*100+0.5).."%"
     VolNumMenu.TextColor3 = Color3.new(1,1,1)
     VolNumMenu.Font = Enum.Font.GothamBold
     VolNumMenu.TextScaled = true
@@ -229,7 +229,7 @@ local function OpenBoomboxMenu()
     Instance.new("UICorner", VolFillMenu).CornerRadius = UDim.new(0,12)
 
     local SliderActive = false
-    VolBG.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then SliderActive = true end end)
+    VolBG.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = true end end)
     UserInputService.InputEnded:Connect(function() SliderActive = false end)
     UserInputService.InputChanged:Connect(function(i)
         if SliderActive then
@@ -394,8 +394,9 @@ MainUI.ResetOnSpawn = false
 MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 MainUI.Parent = PlayerGui
 
+-- ✅ MINIMIZE FIXED: KEEP WIDTH, ONLY REDUCE HEIGHT SO BUTTONS STAY
 local FULL_SIZE = UDim2.new(0,680,0,105)
-local MIN_SIZE = UDim2.new(0,50,0,50)
+local MIN_SIZE = UDim2.new(0,680,0,55) -- Still tall enough for drag bar
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = FULL_SIZE
 MainFrame.Position = UDim2.new(0,20,0.5,-52)
@@ -406,8 +407,10 @@ MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
+-- ✅ DRAG HANDLE: DRAG ONLY WORKS HERE
 local DragHandle = Instance.new("TextButton")
 DragHandle.Size = UDim2.new(1,-25,0,22)
+DragHandle.Position = UDim2.new(0,0,0,0)
 DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
 DragHandle.Active = true
 DragHandle.Text = "made by BLUE_MODE | DRAG HERE"
@@ -433,7 +436,7 @@ local MinimizeBtn = Instance.new("TextButton")
 MinimizeBtn.Size = UDim2.new(0,22,1,0)
 MinimizeBtn.Position = UDim2.new(1,-22,0,0)
 MinimizeBtn.BackgroundColor3 = Color3.fromRGB(160,40,40)
-MinimizeBtn.Text = "❌"
+MinimizeBtn.Text = "➖"
 MinimizeBtn.TextColor3 = Color3.new(1,1,1)
 MinimizeBtn.Font = Enum.Font.GothamBold
 MinimizeBtn.TextScaled = true
@@ -528,7 +531,7 @@ VolNumTextMain = Instance.new("TextLabel")
 VolNumTextMain.Size = UDim2.new(0,45,0,25)
 VolNumTextMain.Position = UDim2.new(0,85,0,65)
 VolNumTextMain.BackgroundTransparency = 1
-VolNumTextMain.Text = math.floor(MusicVolume*100).."%"
+VolNumTextMain.Text = math.floor(MusicVolume*100+0.5).."%"
 VolNumTextMain.TextColor3 = Color3.new(1,1,1)
 VolNumTextMain.Font = Enum.Font.GothamBold
 VolNumTextMain.TextScaled = true
@@ -549,7 +552,7 @@ VolFillMain.Parent = VolBGMain
 Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0,9)
 
 local SliderActiveMain = false
-VolBGMain.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then SliderActiveMain = true end end)
+VolBGMain.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActiveMain = true end end)
 UserInputService.InputEnded:Connect(function() SliderActiveMain = false end)
 UserInputService.InputChanged:Connect(function(i)
     if SliderActiveMain then
@@ -559,13 +562,12 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 
--- ✅ DRAG SYSTEM: ONLY WORKS WHEN UNLOCKED (FULL & MINIMIZED)
+-- ✅ DRAG SYSTEM: ONLY WORKS ON "DRAG HERE" BAR WHEN UNLOCKED
 local DragState = {Active = false, StartX = 0, StartY = 0, StartPosX = 0, StartPosY = 0}
 
-MainFrame.InputBegan:Connect(function(Input)
-    -- ❌ BLOCK DRAG IF LOCKED
-    if Buttons_Locked then return end
-    -- ✅ ALLOW DRAG WHEN UNLOCKED (WORKS ON FULL OR SHRUNK GUI)
+-- ❌ REMOVED WHOLE-FRAME DRAG | ONLY DRAG HANDLE WORKS
+DragHandle.InputBegan:Connect(function(Input)
+    if Buttons_Locked then return end -- Block if locked
     if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
         DragState.Active = true
         DragState.StartX = Input.Position.X
@@ -582,7 +584,6 @@ UserInputService.InputEnded:Connect(function(Input)
 end)
 
 UserInputService.InputChanged:Connect(function(Input)
-    -- ✅ ONLY UPDATE POSITION IF UNLOCKED
     if DragState.Active and not Buttons_Locked then
         local DeltaX = Input.Position.X - DragState.StartX
         local DeltaY = Input.Position.Y - DragState.StartY
@@ -590,7 +591,7 @@ UserInputService.InputChanged:Connect(function(Input)
     end
 end)
 
--- ✅ LOCK/UNLOCK TOGGLE
+-- LOCK/UNLOCK
 LockBtn.MouseButton1Click:Connect(function()
     Buttons_Locked = not Buttons_Locked
     if Buttons_Locked then
@@ -602,39 +603,19 @@ LockBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ✅ MINIMIZE/SHRINK: DRAG STILL WORKS WHEN UNLOCKED
+-- ✅ MINIMIZE: ONLY SHRINKS HEIGHT — BUTTONS STAY VISIBLE
 MinimizeBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
     if IsMinimized then
         MainFrame.Size = MIN_SIZE
-        DragHandle.Visible = false
-        ESPBtn.Visible = false
-        YouTubeBtn.Visible = false
-        MusicBtn.Visible = false
-        LockBtn.Visible = false
-        ConsoleBtn.Visible = false
-        ExitBtn.Visible = false
-        VolLabelMain.Visible = false
-        VolNumTextMain.Visible = false
-        VolBGMain.Visible = false
         MinimizeBtn.Text = "➕"
     else
         MainFrame.Size = FULL_SIZE
-        DragHandle.Visible = true
-        ESPBtn.Visible = true
-        YouTubeBtn.Visible = true
-        MusicBtn.Visible = true
-        LockBtn.Visible = true
-        ConsoleBtn.Visible = true
-        ExitBtn.Visible = true
-        VolLabelMain.Visible = true
-        VolNumTextMain.Visible = true
-        VolBGMain.Visible = true
-        MinimizeBtn.Text = "❌"
+        MinimizeBtn.Text = "➖"
     end
 end)
 
--- OTHER BUTTONS
+-- ✅ ESP TOGGLE: CLEARS FRIEND DOTS
 ESPBtn.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
     ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
@@ -652,6 +633,7 @@ end)
 MusicBtn.MouseButton1Click:Connect(OpenBoomboxMenu)
 ConsoleBtn.MouseButton1Click:Connect(OpenConsole)
 
+-- ✅ EXIT BUTTON: CLEARS FRIEND DOTS + FULL CLEANUP
 ExitBtn.MouseButton1Click:Connect(function()
     ClearESP()
     pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
@@ -732,4 +714,4 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ DRAG WORKS WHEN UNLOCKED — FULL & SHRUNK/MINIMIZED MODE!")
+print("✅ BLUE MODE ESP | DRAG ONLY ON DRAG BAR | FRIEND DOTS CLEAR | VOLUME 1-100%")
