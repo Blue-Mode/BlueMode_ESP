@@ -1,6 +1,7 @@
 -- ==============================================
--- BLUE MODE ESP | RAINBOW OUTLINE + RAINBOW TEXT
--- ✅ Startup GUI full rainbow border
+-- BLUE MODE ESP | FINAL VERSION
+-- ✅ Startup Screen + Feature List + Load Button + Main GUI
+-- ✅ Full Rainbow Outline + Rainbow Text
 -- ✅ Made by DwayneKeanTFrancisco / Blue_Mode
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -21,7 +22,7 @@ local SAVE_KEY_USED = "BlueMode_UsedTime_v19"
 local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
 local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
 
--- TOGGLE STATES
+-- STATES
 local BoomboxUI_Open = false
 local ConsoleUI_Open = false
 local CurrentBoomboxUI = nil
@@ -90,41 +91,36 @@ local function SetupDeathCheck()
     LocalPlayer.CharacterAdded:Connect(CheckCharacter)
 end
 
--- ✅ ADD RAINBOW OUTLINE TO ANY GUI
+-- ✅ RAINBOW SYSTEM
 local function AddRainbowBorder(target, thickness)
     if not target then return end
     local Outline = Instance.new("UIStroke")
     Outline.Name = "RainbowBorder"
-    Outline.Thickness = thickness or 4
+    Outline.Thickness = thickness or 5
     Outline.Transparency = 0
     Outline.LineJoinMode = Enum.LineJoinMode.Round
     Outline.Parent = target
     table.insert(RainbowBorders, Outline)
 end
-
--- ✅ MAKE ANY TEXT RAINBOW
 local function AddRainbowText(target)
     if not target then return end
     table.insert(RainbowText, target)
 end
 
--- ✅ GLOBAL RAINBOW ANIMATION (RUNS ALL THE TIME)
+-- GLOBAL RAINBOW ANIMATION
 RunService.Heartbeat:Connect(function(dt)
     Hue = (Hue + dt * 0.25) % 1
     local Color = Color3.fromHSV(Hue, 1, 1)
-    
-    -- Update all outlines
     for _,v in pairs(RainbowBorders) do v.Color = Color end
-    -- Update all text
     for _,v in pairs(RainbowText) do
-        if v and v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+        if v and (v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox")) then
             v.TextColor3 = Color
         end
     end
 end)
 
 -- ==============================================
--- ✅ STARTUP SCREEN WITH RAINBOW OUTLINE
+-- ✅ STARTUP SCREEN (EXACTLY AS YOU WANTED)
 -- ==============================================
 local function ShowStartupScreen()
     local StartupUI = Instance.new("ScreenGui")
@@ -133,31 +129,40 @@ local function ShowStartupScreen()
     StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     StartupUI.Parent = PlayerGui
 
-    -- MAIN STARTUP FRAME WITH RAINBOW OUTLINE
+    -- MAIN FRAME
     local StartupFrame = Instance.new("Frame")
-    StartupFrame.Size = UDim2.new(0,420,0,520)
-    StartupFrame.Position = UDim2.new(0.5,-210,0.5,-260)
-    StartupFrame.BackgroundColor3 = Color3.fromRGB(18,18,18)
+    StartupFrame.Size = UDim2.new(0,520,0,620)
+    StartupFrame.Position = UDim2.new(0.5,-260,0.5,-310)
+    StartupFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
     StartupFrame.Active = true
     StartupFrame.Parent = StartupUI
-    Instance.new("UICorner", StartupFrame).CornerRadius = UDim.new(0,16)
-    AddRainbowBorder(StartupFrame, 7) -- ✅ THICK RAINBOW BORDER
+    Instance.new("UICorner", StartupFrame).CornerRadius = UDim.new(0,18)
+    AddRainbowBorder(StartupFrame, 7) -- ✅ THICK RAINBOW OUTLINE
+
+    -- YOUR BLUE MODE LOGO
+    local Logo = Instance.new("ImageLabel")
+    Logo.Size = UDim2.new(0,60,0,60)
+    Logo.Position = UDim2.new(0.5,-30,0,10)
+    Logo.BackgroundTransparency = 1
+    Logo.Image = "file:///storage/emulated/0/Delta/Internals/Assets/logo.png" -- ✅ YOUR CUSTOM LOGO
+    Logo.Parent = StartupFrame
 
     -- TITLE
     local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,-40,0,50)
-    Title.Position = UDim2.new(0,20,0,15)
+    Title.Size = UDim2.new(1,-40,0,55)
+    Title.Position = UDim2.new(0,20,0,75)
     Title.BackgroundTransparency = 1
     Title.Text = "🔵 BLUE MODE ESP"
     Title.Font = Enum.Font.GothamBold
     Title.TextScaled = true
+    Title.TextXAlignment = Enum.TextXAlignment.Center
     Title.Parent = StartupFrame
     AddRainbowText(Title)
 
     -- FEATURE LIST HEADER
     local ListHeader = Instance.new("TextLabel")
-    ListHeader.Size = UDim2.new(1,-40,0,35)
-    ListHeader.Position = UDim2.new(0,20,0,75)
+    ListHeader.Size = UDim2.new(1,-40,0,40)
+    ListHeader.Position = UDim2.new(0,20,0,140)
     ListHeader.BackgroundTransparency = 1
     ListHeader.Text = "📋 FEATURE LIST:"
     ListHeader.Font = Enum.Font.GothamBold
@@ -166,10 +171,10 @@ local function ShowStartupScreen()
     ListHeader.Parent = StartupFrame
     AddRainbowText(ListHeader)
 
-    -- FEATURES
+    -- ✅ EXACT FEATURE LIST YOU REQUESTED
     local Features = Instance.new("TextLabel")
-    Features.Size = UDim2.new(1,-40,0,220)
-    Features.Position = UDim2.new(0,20,0,115)
+    Features.Size = UDim2.new(1,-40,0,280)
+    Features.Position = UDim2.new(0,20,0,190)
     Features.BackgroundTransparency = 1
     Features.Text = [[• ESP / FRIEND DOT
 • CONSOLE
@@ -180,41 +185,41 @@ local function ShowStartupScreen()
     Features.Font = Enum.Font.Gotham
     Features.TextScaled = true
     Features.TextXAlignment = Enum.TextXAlignment.Left
-    Features.TextLineHeight = 1.6
+    Features.TextLineHeight = 1.8
     Features.Parent = StartupFrame
     AddRainbowText(Features)
 
-    -- LOAD SCRIPT BUTTON
+    -- ✅ STARTUP / LOAD MAIN GUI BUTTON
     local LoadBtn = Instance.new("TextButton")
-    LoadBtn.Size = UDim2.new(0,280,0,55)
-    LoadBtn.Position = UDim2.new(0.5,-140,0,360)
+    LoadBtn.Size = UDim2.new(0,340,0,60)
+    LoadBtn.Position = UDim2.new(0.5,-170,0,490)
     LoadBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    LoadBtn.Text = "▶ LOAD SCRIPT"
+    LoadBtn.Text = "▶ LOAD MAIN SCRIPT"
     LoadBtn.Font = Enum.Font.GothamBold
     LoadBtn.TextScaled = true
     LoadBtn.Parent = StartupFrame
-    Instance.new("UICorner", LoadBtn).CornerRadius = UDim.new(0,12)
-    AddRainbowBorder(LoadBtn, 3) -- ✅ BUTTON RAINBOW BORDER
+    Instance.new("UICorner", LoadBtn).CornerRadius = UDim.new(0,14)
+    AddRainbowBorder(LoadBtn, 3)
     AddRainbowText(LoadBtn)
 
-    -- DELETE / EXIT BUTTON
+    -- ✅ DELETE / EXIT BUTTON
     local DeleteBtn = Instance.new("TextButton")
-    DeleteBtn.Size = UDim2.new(0,280,0,45)
-    DeleteBtn.Position = UDim2.new(0.5,-140,0,430)
+    DeleteBtn.Size = UDim2.new(0,340,0,50)
+    DeleteBtn.Position = UDim2.new(0.5,-170,0,560)
     DeleteBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    DeleteBtn.Text = "🗑️ DELETE / EXIT"
+    DeleteBtn.Text = "🗑️ DELETE / EXIT SCRIPT"
     DeleteBtn.Font = Enum.Font.GothamBold
     DeleteBtn.TextScaled = true
     DeleteBtn.Parent = StartupFrame
-    Instance.new("UICorner", DeleteBtn).CornerRadius = UDim.new(0,12)
-    AddRainbowBorder(DeleteBtn, 3) -- ✅ BUTTON RAINBOW BORDER
+    Instance.new("UICorner", DeleteBtn).CornerRadius = UDim.new(0,14)
+    AddRainbowBorder(DeleteBtn, 3)
     AddRainbowText(DeleteBtn)
 
     -- BUTTON ACTIONS
     LoadBtn.MouseButton1Click:Connect(function()
         StartupUI:Destroy()
         MainUI_Loaded = true
-        LoadMainUI()
+        LoadMainUI() -- ✅ OPENS YOUR MAIN ESP GUI
     end)
 
     DeleteBtn.MouseButton1Click:Connect(function()
@@ -227,7 +232,7 @@ local function ShowStartupScreen()
 end
 
 -- ==============================================
--- MAIN UI LOAD
+-- MAIN ESP GUI (LOADS AFTER CLICKING LOAD)
 -- ==============================================
 function LoadMainUI()
     local FULL_SIZE = UDim2.new(0,680,0,105)
@@ -247,9 +252,9 @@ function LoadMainUI()
     MainFrame.ClipsDescendants = false
     MainFrame.Parent = MainUI
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
-    AddRainbowBorder(MainFrame, 5) -- ✅ MAIN GUI RAINBOW BORDER
+    AddRainbowBorder(MainFrame, 5)
 
-    -- DRAG BAR
+    -- DRAG BAR + TIMER
     local DragBar = Instance.new("TextButton")
     DragBar.Size = UDim2.new(1,-30,0,22)
     DragBar.Position = UDim2.new(0,0,0,0)
@@ -260,7 +265,6 @@ function LoadMainUI()
     DragBar.Parent = MainFrame
     AddRainbowText(DragBar)
 
-    -- TIMER
     local Timer = Instance.new("TextLabel")
     Timer.Size = UDim2.new(0,120,1,0)
     Timer.Position = UDim2.new(1,-125,0,0)
@@ -272,7 +276,7 @@ function LoadMainUI()
     Timer.Parent = MainFrame
     AddRainbowText(Timer)
 
-    -- MINIMIZE
+    -- MINIMIZE BUTTON
     local MinBtn = Instance.new("TextButton")
     MinBtn.Size = UDim2.new(0,22,1,0)
     MinBtn.Position = UDim2.new(1,-22,0,0)
@@ -293,21 +297,8 @@ function LoadMainUI()
     ESPBtn.TextScaled = true
     ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowBorder(ESPBtn, 2)
-    AddRainbowText(ESPBtn)
-
-    -- YOUTUBE BUTTON
-    local YtBtn = Instance.new("TextButton")
-    YtBtn.Size = UDim2.new(0,95,0,30)
-    YtBtn.Position = UDim2.new(0,100,0,30)
-    YtBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
-    YtBtn.Text = "📺 YT"
-    YtBtn.Font = Enum.Font.GothamBold
-    YtBtn.TextScaled = true
-    YtBtn.Parent = MainFrame
-    Instance.new("UICorner", YtBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowBorder(YtBtn, 2)
-    AddRainbowText(YtBtn)
+    AddRainbowBorder(ESPBn, 2)
+    AddRainbowText(ESPBn)
 
     -- MUSIC BUTTON
     local MusicBtn = Instance.new("TextButton")
@@ -321,19 +312,6 @@ function LoadMainUI()
     Instance.new("UICorner", MusicBtn).CornerRadius = UDim.new(0,6)
     AddRainbowBorder(MusicBtn, 2)
     AddRainbowText(MusicBtn)
-
-    -- LOCK BUTTON
-    local LockBtn = Instance.new("TextButton")
-    LockBtn.Size = UDim2.new(0,90,0,30)
-    LockBtn.Position = UDim2.new(0,300,0,30)
-    LockBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
-    LockBtn.Text = "🔓 UNLOCKED"
-    LockBtn.Font = Enum.Font.GothamBold
-    LockBtn.TextScaled = true
-    LockBtn.Parent = MainFrame
-    Instance.new("UICorner", LockBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowBorder(LockBtn, 2)
-    AddRainbowText(LockBtn)
 
     -- CONSOLE BUTTON
     local ConsoleBtn = Instance.new("TextButton")
@@ -361,9 +339,9 @@ function LoadMainUI()
     AddRainbowBorder(DelBtn, 2)
     AddRainbowText(DelBtn)
 
-    print("✅ MAIN UI LOADED SUCCESSFULLY")
+    print("✅ MAIN ESP GUI LOADED!")
 end
 
--- START EVERYTHING
+-- RUN EVERYTHING
 ShowStartupScreen()
 SetupDeathCheck()
