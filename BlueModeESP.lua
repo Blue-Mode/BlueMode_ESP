@@ -1,8 +1,7 @@
 -- ==============================================
--- BLUE MODE ESP | CLEAN TINY MINIMIZED CUBE
--- ✅ Minimized: Only Timer + "+" Button
--- ✅ No Extra Text
--- ✅ All Features Kept
+-- BLUE MODE ESP | ULTRA TINY MINIMIZED CUBE
+-- ✅ Smallest Clean Size | Timer + + Only
+-- ✅ No Blocking | Rainbow Timer
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -18,15 +17,15 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v13"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v13"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v13"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v16"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v16"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v16"
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
--- ✅ FULL CLEANUP: REMOVE ALL OUTLINES + FRIEND DOTS
+-- CLEANUP ESP
 local function ClearAllESP()
     for _,P in pairs(Players:GetPlayers()) do
         if P and P.Character then
@@ -58,7 +57,7 @@ local Buttons_Locked = false
 local Hue = 0
 local IsMinimized = false
 
--- ✅ AUTO TURN OFF ESP WHEN YOU DIE
+-- AUTO OFF ESP WHEN YOU DIE
 local function SetupDeathCheck()
     local function CheckCharacter(Char)
         if not Char then return end
@@ -145,7 +144,7 @@ local function ShowErrorPopup(Message)
     CloseBtn.MouseButton1Click:Connect(function() Popup:Destroy() end)
 end
 
--- VOLUME 1-100%
+-- VOLUME CONTROL
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(newVol, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
@@ -157,7 +156,7 @@ local function UpdateVolume(newVol)
     if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume,0,1,0) end
 end
 
--- SOUND
+-- SOUND SYSTEM
 local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D","") end
 local function PlaySound(id)
     pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
@@ -397,7 +396,7 @@ end
 
 -- MAIN UI SIZES
 local FULL_SIZE = UDim2.new(0,680,0,105)
-local MINI_SIZE = UDim2.new(0,140,0,45) -- ✅ TINY CUBE SIZE
+local MINI_SIZE = UDim2.new(0,110,0,36) -- ✅ ULTRA TINY CUBE
 local MainUI = Instance.new("ScreenGui")
 MainUI.Name = "BLUE_MODE_ESP"
 MainUI.ResetOnSpawn = false
@@ -414,7 +413,7 @@ MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
--- DRAG BAR
+-- DRAG BAR + TIMER ON RIGHT (NO BLOCKING)
 local DragHandle = Instance.new("TextButton")
 DragHandle.Size = UDim2.new(1,-25,0,22)
 DragHandle.Position = UDim2.new(0,0,0,0)
@@ -429,19 +428,19 @@ DragHandle.Parent = MainFrame
 AddRainbowGlow(DragHandle,2)
 
 local TimerLabel = Instance.new("TextLabel")
-TimerLabel.Size = UDim2.new(1,-30,1,0) -- ✅ FULL WIDTH IN MINI
-TimerLabel.Position = UDim2.new(0,5,0,0)
+TimerLabel.Size = UDim2.new(0,130,1,0)
+TimerLabel.Position = UDim2.new(1,-135,0,0)
 TimerLabel.BackgroundTransparency = 1
 TimerLabel.Text = "00:00:00 / 12:00"
 TimerLabel.TextColor3 = Color3.new(1,1,1)
 TimerLabel.Font = Enum.Font.GothamBold
 TimerLabel.TextScaled = true
-TimerLabel.TextXAlignment = Enum.TextXAlignment.Center -- ✅ CENTERED
+TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
 TimerLabel.Parent = DragHandle
 
 local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0,25,1,0)
-MinBtn.Position = UDim2.new(1,-25,0,0)
+MinBtn.Size = UDim2.new(0,22,1,0) -- ✅ SMALL + BUTTON
+MinBtn.Position = UDim2.new(1,-22,0,0)
 MinBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
 MinBtn.Text = "➖"
 MinBtn.TextColor3 = Color3.new(1,1,1)
@@ -569,10 +568,10 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 
--- DRAG SYSTEM: WORKS MINIMIZED, ONLY WHEN UNLOCKED
+-- DRAG SYSTEM
 local DragState = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
 DragHandle.InputBegan:Connect(function(Input)
-    if Buttons_Locked then return end -- NO DRAG WHEN LOCKED
+    if Buttons_Locked then return end
     if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
         DragState.Active = true
         DragState.StartX = Input.Position.X
@@ -602,12 +601,11 @@ LockBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ✅ MINIMIZE: TINY CUBE WITH TIMER + "+" ONLY
+-- ✅ MINIMIZE: ULTRA CLEAN TINY CUBE
 MinBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
     if IsMinimized then
         MainFrame.Size = MINI_SIZE
-        -- HIDE ALL EXCEPT TIMER + BUTTON
         ESPBtn.Visible = false
         YouTubeBtn.Visible = false
         MusicBtn.Visible = false
@@ -617,14 +615,15 @@ MinBtn.MouseButton1Click:Connect(function()
         VolLabelMain.Visible = false
         VolNumTextMain.Visible = false
         VolBGMain.Visible = false
-        DragHandle.Text = "" -- ✅ NO TEXT
-        MinBtn.Text = "➕" -- ✅ PLUS BUTTON
-        MinBtn.Size = UDim2.new(0,25,1,0)
-        MinBtn.Position = UDim2.new(1,-28,0,0)
-        TimerLabel.Visible = true -- ✅ TIMER STAYS
+        DragHandle.Text = "" -- NO NAME TEXT
+        MinBtn.Text = "➕" -- SMALL PLUS
+        TimerLabel.Size = UDim2.new(1,-28,1,0)
+        TimerLabel.Position = UDim2.new(0,4,0,0)
+        TimerLabel.TextXAlignment = Enum.TextXAlignment.Center
+        TimerLabel.TextScaled = false
+        TimerLabel.TextSize = 12 -- ✅ VERY SMALL TIMER FONT
     else
         MainFrame.Size = FULL_SIZE
-        -- SHOW FULL UI
         ESPBtn.Visible = true
         YouTubeBtn.Visible = true
         MusicBtn.Visible = true
@@ -636,9 +635,11 @@ MinBtn.MouseButton1Click:Connect(function()
         VolBGMain.Visible = true
         DragHandle.Text = "made by BLUE_MODE | DRAG HERE"
         MinBtn.Text = "➖"
-        MinBtn.Size = UDim2.new(0,22,1,0)
-        MinBtn.Position = UDim2.new(1,-22,0,0)
-        TimerLabel.Visible = true
+        TimerLabel.Size = UDim2.new(0,130,1,0)
+        TimerLabel.Position = UDim2.new(1,-135,0,0)
+        TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
+        TimerLabel.TextScaled = true
+        TimerLabel.TextSize = nil
     end
 end)
 
@@ -660,7 +661,7 @@ end)
 MusicBtn.MouseButton1Click:Connect(OpenBoomboxMenu)
 ConsoleBtn.MouseButton1Click:Connect(OpenConsole)
 
--- EXIT: FULL CLEANUP
+-- EXIT
 ExitBtn.MouseButton1Click:Connect(function()
     ClearAllESP()
     pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
@@ -668,7 +669,7 @@ ExitBtn.MouseButton1Click:Connect(function()
     getgenv().BlueMode_Loaded = nil
 end)
 
--- START DEATH DETECTION
+-- START DEATH CHECK
 SetupDeathCheck()
 
 -- MAIN LOOP
@@ -693,12 +694,13 @@ RunService.Heartbeat:Connect(function(Delta)
         return
     end
 
-    -- RAINBOW
+    -- RAINBOW FOR ALL ELEMENTS INCLUDING TIMER
     Hue = (Hue + Delta*0.5) % 1
     local Rainbow = Color3.fromHSV(Hue,1,1)
     for _,e in pairs(GuiElements) do e.Color = Rainbow end
     if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
     if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
+    TimerLabel.TextColor3 = Rainbow
 
     -- ESP
     if not ESP_Enabled then return end
@@ -739,7 +741,7 @@ RunService.Heartbeat:Connect(function(Delta)
                 Dot = Instance.new("BillboardGui",Head)
                 Dot.Name = "FriendRainbowDot"
                 Dot.AlwaysOnTop = true
-                Dot.Size = UDim2.new(0,18,0,18)
+                Dot.Size = UDim2.new(0,16,0,16)
                 Dot.StudsOffset = Vector3.new(0,2,0)
                 local Circ = Instance.new("Frame",Dot)
                 Circ.Size = UDim2.new(1,0,1,0)
@@ -754,4 +756,4 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ READY: TINY CUBE MINIMIZED | TIMER + + ONLY")
+print("✅ READY: Ultra Tiny Cube | Timer + + Only | Clear View")
