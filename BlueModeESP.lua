@@ -1,8 +1,8 @@
 -- ==============================================
--- 🔵 👾BLUE MODE HUB👾 | ALL GUI ABOVE GAME MECHANICS
--- ✅ ALL INTERFACES: Startup + Main + Boombox + Console = ALWAYS ON TOP
+-- 🔵 BLUE MODE ESP | ABOVE GAME MECHANICS ONLY
+-- ✅ ALL GUI RENDER ABOVE GAME ELEMENTS
+-- ✅ DOES NOT COVER ROBLOX ESCAPE/SETTINGS/TOPBAR
 -- ✅ VOLUME: 0–1000
--- ✅ ROBLOX DEFAULT MENUS NOT AFFECTED
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -15,7 +15,7 @@ local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- ✅ ROOT CONTAINER IN COREGUI FOR MAX DEPTH
+-- ✅ ALL GUI IN COREGUI, PRIORITY SET TO BELOW ROBLOX DEFAULT UI BUT ABOVE GAME
 local GuiContainer = Instance.new("Folder")
 GuiContainer.Name = "BLUE_MODE_GUI_ROOT"
 GuiContainer.Parent = CoreGui
@@ -28,6 +28,16 @@ local SAVE_KEY_USED = "BlueMode_UsedTime_v19"
 local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
 local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
 local VOLUME_MAX = 1000
+
+-- ✅ PRIORITY RULES:
+-- Above all game mechanics, custom game UI, blocks
+-- BUT BELOW: Roblox Escape Menu, Settings, Topbar, Player List
+local PRIORITY = {
+    STARTUP = 900,
+    MAIN = 899,
+    BOOMBOX = 898,
+    CONSOLE = 897
+}
 
 -- TOGGLE STATES
 local BoomboxUI_Open = false
@@ -42,12 +52,12 @@ local function SaveData(key, value) pcall(function() writefile(key..".txt", tost
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
 -- ==============================================
--- ✅ STARTUP SCREEN — TOP PRIORITY
+-- ✅ STARTUP SCREEN
 -- ==============================================
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_STARTUP"
 StartupUI.ResetOnSpawn = false
-StartupUI.DisplayOrder = 100000 -- ✅ HIGHEST PRIORITY
+StartupUI.DisplayOrder = PRIORITY.STARTUP
 StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 StartupUI.Parent = GuiContainer
 
@@ -70,7 +80,7 @@ StartupTitle.Position = UDim2.new(0, 20, 0, 15)
 StartupTitle.BackgroundTransparency = 1
 StartupTitle.Font = Enum.Font.GothamBlack
 StartupTitle.TextScaled = true
-StartupTitle.Text = "🔵 👾BLUE MODE HUB👾"
+StartupTitle.Text = "🔵 BLUE MODE ESP"
 StartupTitle.TextColor3 = Color3.fromRGB(0, 190, 255)
 StartupTitle.Parent = StartupBox
 
@@ -95,7 +105,8 @@ UpdateList.TextXAlignment = Enum.TextXAlignment.Left
 UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
 UpdateList.Text = [[• VOLUME: 0 → 1000
-• ALL GUI REMAINS ABOVE ALL GAME ELEMENTS
+• ABOVE ALL GAME ELEMENTS
+• DOES NOT COVER ROBLOX DEFAULT MENUS
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -140,10 +151,10 @@ OkBtn.MouseButton1Click:Connect(function()
     LoadMainHub()
 end)
 
-print("✅ STARTUP SCREEN READY")
+print("✅ STARTUP READY")
 
 -- ==============================================
--- ✅ MAIN HUB — SECOND HIGHEST PRIORITY
+-- ✅ MAIN HUB & ALL MENUS
 -- ==============================================
 function LoadMainHub()
     local CurrentTime = os.time()
@@ -232,7 +243,7 @@ function LoadMainHub()
         pcall(function() CurrentSound:Play() end)
     end
 
-    -- BOOMBOX MENU — THIRD HIGHEST PRIORITY
+    -- BOOMBOX MENU
     local function ToggleBoomboxMenu()
         if BoomboxUI_Open then
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
@@ -245,7 +256,7 @@ function LoadMainHub()
         local BoomUI = Instance.new("ScreenGui")
         BoomUI.Name = "BLUE_BOOMBOX_MENU"
         BoomUI.ResetOnSpawn = false
-        BoomUI.DisplayOrder = 99998 -- ✅ ABOVE CONSOLE + ALL GAME UI
+        BoomUI.DisplayOrder = PRIORITY.BOOMBOX
         BoomUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         BoomUI.Parent = GuiContainer
         CurrentBoomboxUI = BoomUI
@@ -370,7 +381,7 @@ function LoadMainHub()
         StopBtn.MouseButton1Click:Connect(function() if CurrentSound then CurrentSound:Destroy() end end)
     end
 
-    -- CONSOLE MENU — FOURTH HIGHEST PRIORITY
+    -- CONSOLE MENU
     local function ToggleConsole()
         if ConsoleUI_Open then
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -383,7 +394,7 @@ function LoadMainHub()
         local ConsoleUI = Instance.new("ScreenGui")
         ConsoleUI.Name = "BLUE_CONSOLE"
         ConsoleUI.ResetOnSpawn = false
-        ConsoleUI.DisplayOrder = 99997 -- ✅ ABOVE ALL GAME UI
+        ConsoleUI.DisplayOrder = PRIORITY.CONSOLE
         ConsoleUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         ConsoleUI.Parent = GuiContainer
         CurrentConsoleUI = ConsoleUI
@@ -482,13 +493,13 @@ function LoadMainHub()
         ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
     end
 
-    -- MAIN UI — STILL ABOVE ALL GAME MECHANICS
+    -- MAIN UI
     local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
     local MainUI = Instance.new("ScreenGui")
     MainUI.Name = "BLUE_MODE_ESP"
     MainUI.ResetOnSpawn = false
-    MainUI.DisplayOrder = 99999 -- ✅ ABOVE GAME, BELOW POPUPS
+    MainUI.DisplayOrder = PRIORITY.MAIN
     MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     MainUI.Parent = GuiContainer
 
@@ -842,5 +853,5 @@ function LoadMainHub()
         end
     end)
 
-    print("✅ ALL GUI SET TO ALWAYS ON TOP | FULLY FIXED")
+    print("✅ SET: ABOVE GAME, NOT ROBLOX DEFAULT MENUS")
 end
