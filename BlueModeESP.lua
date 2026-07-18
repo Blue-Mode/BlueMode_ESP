@@ -1,8 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE ESP | ALWAYS ON TOP
+-- 🔵 BLUE MODE ESP | ALL GUI ABOVE GAME MECHANICS
+-- ✅ ALL INTERFACES: Startup + Main + Boombox + Console = ALWAYS ON TOP
 -- ✅ VOLUME: 0–1000
--- ✅ GUI RENDERS ABOVE ALL GAME MECHANICS
--- ✅ SETTINGS & ROBLOX DEFAULT MENUS NOT AFFECTED
+-- ✅ ROBLOX DEFAULT MENUS NOT AFFECTED
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -15,7 +15,7 @@ local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- ✅ PUT EVERYTHING IN COREGUI FOR MAX DEPTH + HIGH PRIORITY
+-- ✅ ROOT CONTAINER IN COREGUI FOR MAX DEPTH
 local GuiContainer = Instance.new("Folder")
 GuiContainer.Name = "BLUE_MODE_GUI_ROOT"
 GuiContainer.Parent = CoreGui
@@ -42,12 +42,12 @@ local function SaveData(key, value) pcall(function() writefile(key..".txt", tost
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
 -- ==============================================
--- ✅ STARTUP SCREEN — ALWAYS ON TOP
+-- ✅ STARTUP SCREEN — TOP PRIORITY
 -- ==============================================
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_STARTUP"
 StartupUI.ResetOnSpawn = false
-StartupUI.DisplayOrder = 99999 -- ✅ MAX PRIORITY
+StartupUI.DisplayOrder = 100000 -- ✅ HIGHEST PRIORITY
 StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 StartupUI.Parent = GuiContainer
 
@@ -95,7 +95,7 @@ UpdateList.TextXAlignment = Enum.TextXAlignment.Left
 UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
 UpdateList.Text = [[• VOLUME: 0 → 1000
-• GUI REMAINS ABOVE ALL GAME ELEMENTS
+• ALL GUI REMAINS ABOVE ALL GAME ELEMENTS
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -143,7 +143,7 @@ end)
 print("✅ STARTUP SCREEN READY")
 
 -- ==============================================
--- ✅ MAIN HUB — ALWAYS ON TOP
+-- ✅ MAIN HUB — SECOND HIGHEST PRIORITY
 -- ==============================================
 function LoadMainHub()
     local CurrentTime = os.time()
@@ -232,7 +232,7 @@ function LoadMainHub()
         pcall(function() CurrentSound:Play() end)
     end
 
-    -- BOOMBOX MENU
+    -- BOOMBOX MENU — THIRD HIGHEST PRIORITY
     local function ToggleBoomboxMenu()
         if BoomboxUI_Open then
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
@@ -245,7 +245,7 @@ function LoadMainHub()
         local BoomUI = Instance.new("ScreenGui")
         BoomUI.Name = "BLUE_BOOMBOX_MENU"
         BoomUI.ResetOnSpawn = false
-        BoomUI.DisplayOrder = 99998 -- ✅ JUST BELOW MAIN UI
+        BoomUI.DisplayOrder = 99998 -- ✅ ABOVE CONSOLE + ALL GAME UI
         BoomUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         BoomUI.Parent = GuiContainer
         CurrentBoomboxUI = BoomUI
@@ -370,7 +370,7 @@ function LoadMainHub()
         StopBtn.MouseButton1Click:Connect(function() if CurrentSound then CurrentSound:Destroy() end end)
     end
 
-    -- CONSOLE MENU
+    -- CONSOLE MENU — FOURTH HIGHEST PRIORITY
     local function ToggleConsole()
         if ConsoleUI_Open then
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -383,7 +383,7 @@ function LoadMainHub()
         local ConsoleUI = Instance.new("ScreenGui")
         ConsoleUI.Name = "BLUE_CONSOLE"
         ConsoleUI.ResetOnSpawn = false
-        ConsoleUI.DisplayOrder = 99997 -- ✅ BELOW BOOMBOX
+        ConsoleUI.DisplayOrder = 99997 -- ✅ ABOVE ALL GAME UI
         ConsoleUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         ConsoleUI.Parent = GuiContainer
         CurrentConsoleUI = ConsoleUI
@@ -482,13 +482,13 @@ function LoadMainHub()
         ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
     end
 
-    -- MAIN UI — HIGHEST PRIORITY
+    -- MAIN UI — STILL ABOVE ALL GAME MECHANICS
     local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
     local MainUI = Instance.new("ScreenGui")
     MainUI.Name = "BLUE_MODE_ESP"
     MainUI.ResetOnSpawn = false
-    MainUI.DisplayOrder = 99999 -- ✅ TOP OF EVERYTHING EXCEPT STARTUP
+    MainUI.DisplayOrder = 99999 -- ✅ ABOVE GAME, BELOW POPUPS
     MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     MainUI.Parent = GuiContainer
 
@@ -842,5 +842,5 @@ function LoadMainHub()
         end
     end)
 
-    print("✅ BLUE MODE ESP LOADED | ALWAYS ON TOP | VOLUME 0–1000")
+    print("✅ ALL GUI SET TO ALWAYS ON TOP | FULLY FIXED")
 end
