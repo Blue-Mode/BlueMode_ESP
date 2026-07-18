@@ -1,9 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE ESP | FULL COMPLETE VERSION
--- ✅ FIXED "LABEL ONLY" BUG | TEXT FITS PERFECTLY
--- ✅ ALL FEATURES INTACT | NO MISSING CODE
--- ✅ DRAGGABLE UI | RAINBOW EFFECTS | FRIEND DOTS
--- ✅ 12H TIMER | MUSIC PLAYER | SCRIPT CONSOLE
+-- 🔵 BLUE MODE ESP | WITH START BUTTON + FLOATING TITLE
+-- ✅ CLICK START TO LOAD FULL GUI
+-- ✅ FLOATING HEADER + FEATURE LIST
+-- ✅ ALL ORIGINAL FEATURES INTACT
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -15,7 +14,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
-local GuiParent = game:GetService("CoreGui") -- ✅ ALWAYS VISIBLE
+local GuiParent = game:GetService("CoreGui") -- ALWAYS VISIBLE
 
 -- SETTINGS
 local USAGE_LIMIT = 12 * 3600
@@ -57,7 +56,7 @@ local function AddRainbowGlow(target, thickness)
     table.insert(GuiElements, Outline)
 end
 
--- ✅ FIXED TEXT FUNCTION — NO MORE "LABEL" PLACEHOLDER!
+-- ✅ FIXED TEXT — NO MORE "LABEL" BUG
 local function MakeText(obj, displayText)
     if not obj then return end
     obj.BackgroundTransparency = 1
@@ -70,8 +69,8 @@ local function MakeText(obj, displayText)
     obj.ClipsDescendants = false
     obj.Visible = true
     obj.TextColor3 = Color3.fromRGB(0, 180, 255)
-    obj.Text = "" -- CLEAR DEFAULT FIRST
-    task.wait(0.05) -- FORCE RENDER
+    obj.Text = ""
+    task.wait(0.05)
     obj.Text = displayText
     table.insert(GuiElements, obj)
 end
@@ -116,7 +115,7 @@ local function PlaySound(id)
 end
 
 -- ==============================================
--- ✅ STARTUP SCREEN (TEXT SHOWS 100% NOW)
+-- ✅ STARTUP SCREEN — FLOATING TITLE + START BUTTON
 -- ==============================================
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_STARTUP"
@@ -125,100 +124,72 @@ StartupUI.DisplayOrder = 9999
 StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 StartupUI.Parent = GuiParent
 
-local MainBox = Instance.new("Frame")
-MainBox.Size = UDim2.new(0, 450, 0, 580)
-MainBox.Position = UDim2.new(0.5, -225, 0.5, -290)
-MainBox.BackgroundColor3 = Color3.new(0, 0, 0)
-MainBox.Active = true
-MainBox.ClipsDescendants = false
-MainBox.Visible = true
-MainBox.Parent = StartupUI
-Instance.new("UICorner", MainBox).CornerRadius = UDim.new(0, 20)
-AddRainbowGlow(MainBox, 8)
+-- FLOATING MAIN TITLE
+local FloatingTitle = Instance.new("TextLabel")
+FloatingTitle.Size = UDim2.new(1, 0, 0, 70)
+FloatingTitle.Position = UDim2.new(0, 0, 0.05, 0)
+FloatingTitle.BackgroundTransparency = 1
+FloatingTitle.Font = Enum.Font.GothamBlack
+FloatingTitle.TextScaled = true
+FloatingTitle.TextSize = 32
+FloatingTitle.Text = "🔵 BLUE MODE HUB 🔵"
+FloatingTitle.TextColor3 = Color3.fromRGB(0, 200, 255)
+FloatingTitle.TextXAlignment = Enum.TextXAlignment.Center
+FloatingTitle.Parent = StartupUI
+table.insert(GuiElements, FloatingTitle)
 
-task.spawn(function()
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, -40, 0, 50)
-    Title.Position = UDim2.new(0, 20, 0, 15)
-    Title.TextXAlignment = Enum.TextXAlignment.Center
-    Title.Parent = MainBox
-    MakeText(Title, "🔵 BLUE MODE HUB")
-
-    local FeatureHeader = Instance.new("TextLabel")
-    FeatureHeader.Size = UDim2.new(1, -40, 0, 40)
-    FeatureHeader.Position = UDim2.new(0, 20, 0, 75)
-    FeatureHeader.TextXAlignment = Enum.TextXAlignment.Left
-    FeatureHeader.Parent = MainBox
-    MakeText(FeatureHeader, "📋 FEATURE LIST:")
-
-    local FeatureList = Instance.new("TextLabel")
-    FeatureList.Size = UDim2.new(1, -60, 0, 170)
-    FeatureList.Position = UDim2.new(0, 30, 0, 120)
-    FeatureList.TextXAlignment = Enum.TextXAlignment.Left
-    FeatureList.TextYAlignment = Enum.TextYAlignment.Top
-    FeatureList.Parent = MainBox
-    MakeText(FeatureList, [[• RAINBOW PLAYER OUTLINES
+-- FEATURE LIST DISPLAY
+local FeatureDisplay = Instance.new("TextLabel")
+FeatureDisplay.Size = UDim2.new(0, 420, 0, 220)
+FeatureDisplay.Position = UDim2.new(0.5, -210, 0.2, 0)
+FeatureDisplay.BackgroundColor3 = Color3.fromRGB(15,15,15)
+FeatureDisplay.BackgroundTransparency = 0.3
+FeatureDisplay.TextXAlignment = Enum.TextXAlignment.Center
+FeatureDisplay.TextYAlignment = Enum.TextYAlignment.Top
+FeatureDisplay.Parent = StartupUI
+Instance.new("UICorner", FeatureDisplay).CornerRadius = UDim.new(0, 15)
+AddRainbowGlow(FeatureDisplay, 3)
+MakeText(FeatureDisplay, [[📋 FULL FEATURE LIST:
+• RAINBOW PLAYER OUTLINES
 • FRIEND-ONLY RAINBOW DOTS
 • IN-GAME SCRIPT CONSOLE
 • MUSIC PLAYER + VOLUME SLIDER
 • DRAGGABLE + MINIMIZABLE UI
 • 12 HOUR USAGE TIMER
-• MADE BY: BLUE_MODE]])
+• MADE EXCLUSIVELY BY: BLUE_MODE]])
 
-    local UpdateHeader = Instance.new("TextLabel")
-    UpdateHeader.Size = UDim2.new(1, -40, 0, 40)
-    UpdateHeader.Position = UDim2.new(0, 20, 0, 305)
-    UpdateHeader.TextXAlignment = Enum.TextXAlignment.Left
-    UpdateHeader.Parent = MainBox
-    MakeText(UpdateHeader, "🔄 UPDATES:")
+-- BIG START BUTTON
+local StartBtn = Instance.new("TextButton")
+StartBtn.Size = UDim2.new(0, 380, 0, 70)
+StartBtn.Position = UDim2.new(0.5, -190, 0.75, 0)
+StartBtn.BackgroundColor3 = Color3.fromRGB(20, 100, 220)
+StartBtn.AutoLocalize = false
+StartBtn.Visible = true
+StartBtn.Parent = StartupUI
+Instance.new("UICorner", StartBtn).CornerRadius = UDim.new(0, 20)
+MakeText(StartBtn, "▶ CLICK TO START HUB")
+AddRainbowGlow(StartBtn, 6)
 
-    local UpdateList = Instance.new("TextLabel")
-    UpdateList.Size = UDim2.new(1, -60, 0, 70)
-    UpdateList.Position = UDim2.new(0, 30, 0, 350)
-    UpdateList.TextXAlignment = Enum.TextXAlignment.Left
-    UpdateList.TextYAlignment = Enum.TextYAlignment.Top
-    UpdateList.Parent = MainBox
-    MakeText(UpdateList, [[• Fixed "Label Only" bug
-• All text fits perfectly
-• Full ESP GUI included
-• Works on Delta/Pydroid3]])
-
-    local StartBtn = Instance.new("TextButton")
-    StartBtn.Size = UDim2.new(0, 360, 0, 60)
-    StartBtn.Position = UDim2.new(0.5, -180, 0, 440)
-    StartBtn.BackgroundColor3 = Color3.fromRGB(25, 120, 255)
-    StartBtn.AutoLocalize = false
-    StartBtn.Visible = true
-    StartBtn.Parent = MainBox
-    Instance.new("UICorner", StartBtn).CornerRadius = UDim.new(0, 15)
-    MakeText(StartBtn, "▶ START / OPEN ESP HUB")
-    AddRainbowGlow(StartBtn, 5)
-
-    local ExitBtn = Instance.new("TextButton")
-    ExitBtn.Size = UDim2.new(0, 360, 0, 50)
-    ExitBtn.Position = UDim2.new(0.5, -180, 0, 510)
-    ExitBtn.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
-    ExitBtn.AutoLocalize = false
-    ExitBtn.Visible = true
-    ExitBtn.Parent = MainBox
-    Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0, 15)
-    MakeText(ExitBtn, "🗑️ DELETE / EXIT HUB")
-    AddRainbowGlow(ExitBtn, 5)
-
-    -- ✅ BUTTON ACTIONS
-    StartBtn.MouseButton1Click:Connect(function()
-        StartupUI:Destroy()
-        LoadFullESPHub() -- LOAD FULL MAIN GUI
-    end)
-
-    ExitBtn.MouseButton1Click:Connect(function()
-        StartupUI:Destroy()
-        getgenv().BlueMode_Loaded = nil
-    end)
+-- RAINBOW ANIMATION
+RunService.Heartbeat:Connect(function(dt)
+    Hue = (Hue + dt * 0.25) % 1
+    local col = Color3.fromHSV(Hue, 1, 1)
+    for _,e in pairs(GuiElements) do
+        if e:IsA("UIStroke") then e.Color = col end
+        if e:IsA("TextLabel") or e:IsA("TextButton") then e.TextColor3 = col end
+    end
 end)
 
+-- ✅ LOAD FULL GUI WHEN CLICKED
+StartBtn.MouseButton1Click:Connect(function()
+    StartupUI:Destroy()
+    LoadFullESPHub()
+end)
+
+print("✅ STARTUP READY — CLICK THE BIG BUTTON TO BEGIN!")
+
 -- ==============================================
--- ✅ FULL MAIN ESP GUI (NO MISSING PARTS!)
+-- ✅ FULL MAIN ESP GUI (ALL FEATURES INTACT)
 -- ==============================================
 function LoadFullESPHub()
     -- COOLDOWN CHECK
@@ -868,5 +839,3 @@ function LoadFullESPHub()
 
     print("✅ FULL BLUE MODE ESP LOADED SUCCESSFULLY")
 end
-
-print("✅ SCRIPT READY! TEXT WILL SHOW PERFECTLY NOW")
