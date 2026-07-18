@@ -1,7 +1,5 @@
 -- ==============================================
--- BLUE MODE ESP | FINAL FIX | NO HIDDEN BUTTONS
--- ACCESS CODE: Blue_Mode192823
--- ✅ MINIMIZE KEEPS ALL BUTTONS VISIBLE | ✅ RAINBOW | ✅ VOLUME FIXED
+-- BLUE MODE ESP | DRAG ONLY ON DRAG BAR + FRIEND DOT FIX + VOLUME 1-100
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -10,25 +8,23 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
-local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = CoreGui
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("CoreGui")
 
 -- SETTINGS
-local CORRECT_CODE = "Blue_Mode192823"
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v20"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v20"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v20"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v9"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v9"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v9"
 
 -- DATA HELPERS
-local function SaveData(key, value) pcall(function() if writefile then writefile(key..".txt", tostring(value)) end end) end
-local function LoadData(key, default) local v=nil; pcall(function() if readfile then v=readfile(key..".txt") end end); return tonumber(v) or default end
+local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
+local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
--- CLEANUP
-local function ClearAllESP()
+-- ✅ FULL CLEANUP: REMOVE OUTLINES + FRIEND DOTS
+local function ClearESP()
     for _,P in pairs(Players:GetPlayers()) do
         if P and P.Character then
             pcall(function()
@@ -39,135 +35,23 @@ local function ClearAllESP()
     end
 end
 
-local function FullCleanup()
-    ClearAllESP()
-    pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
-    for _,Gui in pairs(PlayerGui:GetChildren()) do if Gui.Name:sub(1,5) == "BLUE_" then Gui:Destroy() end end
-    getgenv().BlueMode_Loaded = nil
-end
-
--- CODE PROMPT
-local function ShowPasswordPrompt()
-    local PromptUI = Instance.new("ScreenGui")
-    PromptUI.Name = "BLUE_CODE_PROMPT"
-    PromptUI.ResetOnSpawn = false
-    PromptUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    PromptUI.DisplayOrder = 999999
-    PromptUI.Parent = PlayerGui
-
-    local PromptFrame = Instance.new("Frame")
-    PromptFrame.Size = UDim2.new(0,350,0,220)
-    PromptFrame.Position = UDim2.new(0.5,-175,0.5,-110)
-    PromptFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-    PromptFrame.Parent = PromptUI
-    Instance.new("UICorner", PromptFrame).CornerRadius = UDim.new(0,12)
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,-20,0,40)
-    Title.Position = UDim2.new(0,10,0,10)
-    Title.BackgroundTransparency = 1
-    Title.Text = "⏳ TIME EXPIRED | ENTER CODE"
-    Title.TextColor3 = Color3.fromRGB(255,80,80)
-    Title.Font = Enum.Font.GothamBold
-    Title.TextScaled = true
-    Title.Parent = PromptFrame
-
-    local CodeInput = Instance.new("TextBox")
-    CodeInput.Size = UDim2.new(1,-40,0,45)
-    CodeInput.Position = UDim2.new(0,20,0,60)
-    CodeInput.BackgroundColor3 = Color3.fromRGB(35,35,35)
-    CodeInput.PlaceholderText = "Enter access code..."
-    CodeInput.TextColor3 = Color3.new(1,1,1)
-    CodeInput.Font = Enum.Font.Gotham
-    CodeInput.TextScaled = true
-    CodeInput.Password = true
-    CodeInput.Parent = PromptFrame
-    Instance.new("UICorner", CodeInput).CornerRadius = UDim.new(0,8)
-
-    local StatusText = Instance.new("TextLabel")
-    StatusText.Size = UDim2.new(1,-20,0,25)
-    StatusText.Position = UDim2.new(0,10,0,115)
-    StatusText.BackgroundTransparency = 1
-    StatusText.Text = ""
-    StatusText.TextColor3 = Color3.new(1,1,1)
-    StatusText.Font = Enum.Font.Gotham
-    StatusText.TextScaled = true
-    StatusText.Parent = PromptFrame
-
-    local SubmitBtn = Instance.new("TextButton")
-    SubmitBtn.Size = UDim2.new(0,140,0,40)
-    SubmitBtn.Position = UDim2.new(0,35,0,150)
-    SubmitBtn.BackgroundColor3 = Color3.fromRGB(30,140,210)
-    SubmitBtn.Text = "✅ SUBMIT CODE"
-    SubmitBtn.TextColor3 = Color3.new(1,1,1)
-    SubmitBtn.Font = Enum.Font.GothamBold
-    SubmitBtn.TextScaled = true
-    SubmitBtn.Parent = PromptFrame
-    Instance.new("UICorner", SubmitBtn).CornerRadius = UDim.new(0,8)
-
-    local ExitBtn = Instance.new("TextButton")
-    ExitBtn.Size = UDim2.new(0,140,0,40)
-    ExitBtn.Position = UDim2.new(0,175,0,150)
-    ExitBtn.BackgroundColor3 = Color3.fromRGB(160,30,30)
-    ExitBtn.Text = "❌ EXIT"
-    ExitBtn.TextColor3 = Color3.new(1,1,1)
-    ExitBtn.Font = Enum.Font.GothamBold
-    ExitBtn.TextScaled = true
-    ExitBtn.Parent = PromptFrame
-    Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,8)
-
-    local CodeValid = false
-    SubmitBtn.MouseButton1Click:Connect(function()
-        if CodeInput.Text == CORRECT_CODE then
-            StatusText.Text = "✅ CORRECT CODE! LOADING..."
-            StatusText.TextColor3 = Color3.fromRGB(0,255,100)
-            CodeValid = true
-            SaveData(SAVE_KEY_USED, 0)
-            SaveData(SAVE_KEY_COOLDOWN, 0)
-            task.wait(1.5)
-            PromptUI:Destroy()
-        else
-            StatusText.Text = "❌ WRONG CODE! DISABLED FOR 12H"
-            StatusText.TextColor3 = Color3.fromRGB(255,50,50)
-            SaveData(SAVE_KEY_COOLDOWN, os.time() + COOLDOWN)
-            task.wait(2)
-            PromptUI:Destroy()
-            FullCleanup()
-        end
-    end)
-
-    ExitBtn.MouseButton1Click:Connect(function()
-        PromptUI:Destroy()
-        FullCleanup()
-    end)
-
-    repeat task.wait(0.1) until not PromptUI.Parent or CodeValid
-    return CodeValid
-end
-
 -- COOLDOWN CHECK
 local CurrentTime = os.time()
 local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
 if CurrentTime < CooldownEnd then
-    print("⏳ COOLDOWN ACTIVE! Wait "..math.floor((CooldownEnd-CurrentTime)/3600).."h "..math.floor(((CooldownEnd-CurrentTime)%3600)/60).."m")
+    print("⏳ COOLDOWN ACTIVE! Wait "..math.floor((CooldownEnd-CurrentTime)/60).." mins")
     return
 end
 
--- TIMER CHECK
-local UsedTime = LoadData(SAVE_KEY_USED, 0)
-if UsedTime >= USAGE_LIMIT then
-    if not ShowPasswordPrompt() then return end
-    UsedTime = 0
-end
-
 -- VARIABLES
+local UsedTime = LoadData(SAVE_KEY_USED, 0)
 local LastCheckTime = os.time()
 local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
 local CurrentSound = nil
 local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
 local GuiElements = {}
 local ESP_Enabled = false
-local Buttons_Locked = false
+local Buttons_Locked = false -- Drag ONLY works when this is false
 local Hue = 0
 local IsMinimized = false
 
@@ -184,12 +68,65 @@ local function AddRainbowGlow(target, thickness)
     return Outline
 end
 
--- VOLUME SYSTEM
+-- ERROR POPUP
+local function ShowErrorPopup(Message)
+    local Popup = Instance.new("ScreenGui")
+    Popup.Name = "BLUE_ERROR_POPUP"
+    Popup.ResetOnSpawn = false
+    Popup.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    Popup.Parent = PlayerGui
+
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 400, 0, 200)
+    Frame.Position = UDim2.new(0.5, -200, 0.5, -100)
+    Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    Frame.Parent = Popup
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
+    AddRainbowGlow(Frame,4)
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1,-40,0,35)
+    Title.Position = UDim2.new(0,10,0,10)
+    Title.BackgroundTransparency = 1
+    Title.Text = "⚠️ SCRIPT ERROR"
+    Title.TextColor3 = Color3.fromRGB(255,80,80)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextScaled = true
+    Title.Parent = Frame
+
+    local ErrorText = Instance.new("TextLabel")
+    ErrorText.Size = UDim2.new(1,-30,1,-90)
+    ErrorText.Position = UDim2.new(0,15,0,50)
+    ErrorText.BackgroundTransparency = 1
+    ErrorText.Text = Message
+    ErrorText.TextColor3 = Color3.new(1,1,1)
+    ErrorText.Font = Enum.Font.Gotham
+    ErrorText.TextScaled = true
+    ErrorText.TextWrapped = true
+    ErrorText.TextXAlignment = Enum.TextXAlignment.Left
+    ErrorText.TextYAlignment = Enum.TextYAlignment.Top
+    ErrorText.Parent = Frame
+
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Size = UDim2.new(0,160,0,40)
+    CloseBtn.Position = UDim2.new(0.5,-80,1,-55)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
+    CloseBtn.Text = "✕ CLOSE"
+    CloseBtn.TextColor3 = Color3.new(1,1,1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextScaled = true
+    CloseBtn.Parent = Frame
+    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,8)
+
+    CloseBtn.MouseButton1Click:Connect(function() Popup:Destroy() end)
+end
+
+-- ✅ VOLUME FIXED: SHOWS 1-100% CORRECTLY
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(newVol, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
     if CurrentSound then CurrentSound.Volume = MusicVolume end
-    local Pct = math.floor(MusicVolume * 100 + 0.5).."%"
+    local Pct = math.floor(MusicVolume * 100 + 0.5).."%" -- Proper rounding 1-100
     if VolNumTextMain then VolNumTextMain.Text = Pct end
     if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume,0,1,0) end
     if VolNumMenu then VolNumMenu.Text = Pct end
@@ -420,44 +357,59 @@ local function OpenConsole()
 
     ExecBtn.MouseButton1Click:Connect(function()
         local ScriptCode = Input.Text
-        if ScriptCode == "" then Output.Text = "⚠️ Nothing to run!" return end
+        if ScriptCode == "" then
+            Output.Text = "⚠️ Nothing to run!"
+            return
+        end
         local Compile = loadstring or load
-        if not Compile then return end
-        local Func, Err = Compile(ScriptCode)
-        if not Func then return end
-        pcall(Func)
-        Output.Text = "✅ Script executed!"
+        if not Compile then
+            ShowErrorPopup("Your executor does not support compiling scripts.")
+            return
+        end
+        local Function, ErrorMsg = Compile(ScriptCode)
+        if not Function then
+            ShowErrorPopup("Syntax Error:\n"..tostring(ErrorMsg))
+            return
+        end
+        local Success, RunError = pcall(Function)
+        if not Success then
+            ShowErrorPopup("Runtime Error:\n"..tostring(RunError))
+            return
+        end
+        Output.Text = "✅ Script executed successfully!"
     end)
 
-    ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
+    ClearBtn.MouseButton1Click:Connect(function()
+        Input.Text = ""
+        Output.Text = "✅ Script deleted fully!"
+    end)
+
     CloseTop.MouseButton1Click:Connect(CloseConsole)
 end
 
--- MAIN UI SIZES ✅ FIXED
-local FULL_HEIGHT = 110
-local MIN_HEIGHT = 90 -- ✅ STILL TALL ENOUGH FOR ALL BUTTONS
-local UI_WIDTH = 680
-
+-- MAIN UI
 local MainUI = Instance.new("ScreenGui")
 MainUI.Name = "BLUE_MODE_ESP"
 MainUI.ResetOnSpawn = false
 MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-MainUI.DisplayOrder = 999999
 MainUI.Parent = PlayerGui
 
+-- ✅ MINIMIZE FIXED: KEEP WIDTH, ONLY REDUCE HEIGHT SO BUTTONS STAY
+local FULL_SIZE = UDim2.new(0,680,0,105)
+local MIN_SIZE = UDim2.new(0,680,0,55) -- Still tall enough for drag bar
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0,UI_WIDTH,0,FULL_HEIGHT)
-MainFrame.Position = UDim2.new(0,20,0.5,-55)
+MainFrame.Size = FULL_SIZE
+MainFrame.Position = UDim2.new(0,20,0.5,-52)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 MainFrame.Active = true
-MainFrame.ClipsDescendants = false -- ✅ NO CLIPPING/BUTTON HIDING
+MainFrame.ClipsDescendants = false
 MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
--- DRAG HANDLE
+-- ✅ DRAG HANDLE: DRAG ONLY WORKS HERE
 local DragHandle = Instance.new("TextButton")
-DragHandle.Size = UDim2.new(1,0,0,28)
+DragHandle.Size = UDim2.new(1,-25,0,22)
 DragHandle.Position = UDim2.new(0,0,0,0)
 DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
 DragHandle.Active = true
@@ -470,10 +422,10 @@ DragHandle.Parent = MainFrame
 AddRainbowGlow(DragHandle,2)
 
 local TimerLabel = Instance.new("TextLabel")
-TimerLabel.Size = UDim2.new(0,110,1,0)
-TimerLabel.Position = UDim2.new(1,-115,0,0)
+TimerLabel.Size = UDim2.new(0,100,1,0)
+TimerLabel.Position = UDim2.new(1,-105,0,0)
 TimerLabel.BackgroundTransparency = 1
-TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00:00",math.floor(UsedTime/3600),math.floor((UsedTime%3600)/60),math.floor(UsedTime%60))
+TimerLabel.Text = "00:00:00 / 12:00:00"
 TimerLabel.TextColor3 = Color3.new(1,1,1)
 TimerLabel.Font = Enum.Font.GothamBold
 TimerLabel.TextScaled = true
@@ -481,8 +433,8 @@ TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
 TimerLabel.Parent = DragHandle
 
 local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Size = UDim2.new(0,28,0,28)
-MinimizeBtn.Position = UDim2.new(1,-28,0,0)
+MinimizeBtn.Size = UDim2.new(0,22,1,0)
+MinimizeBtn.Position = UDim2.new(1,-22,0,0)
 MinimizeBtn.BackgroundColor3 = Color3.fromRGB(160,40,40)
 MinimizeBtn.Text = "➖"
 MinimizeBtn.TextColor3 = Color3.new(1,1,1)
@@ -491,23 +443,22 @@ MinimizeBtn.TextScaled = true
 MinimizeBtn.Parent = MainFrame
 AddRainbowGlow(MinimizeBtn,2)
 
--- ✅ ALL BUTTONS PLACED CORRECTLY
+-- BUTTONS
 local ESPBtn = Instance.new("TextButton")
-ESPBright.Size = UDim2.new(0,85,0,30)
-ESPBright.Position = UDim2.new(0,10,0,32)
-ESPBright.BackgroundColor3 = Color3.fromRGB(40,40,40)
-ESPBright.Text = "ESP: OFF"
-ESPBright.TextColor3 = Color3.new(1,1,1)
-ESPBright.Font = Enum.Font.GothamBold
-ESPBright.TextScaled = true
-ESPBright.Parent = MainFrame
-Instance.new("UICorner", ESPBright).CornerRadius = UDim.new(0,6)
-AddRainbowGlow(ESPBright,2)
-ESPBtn = ESPBright
+ESPBtn.Size = UDim2.new(0,85,0,30)
+ESPBtn.Position = UDim2.new(0,10,0,30)
+ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+ESPBtn.Text = "ESP: OFF"
+ESPBtn.TextColor3 = Color3.new(1,1,1)
+ESPBtn.Font = Enum.Font.GothamBold
+ESPBtn.TextScaled = true
+ESPBtn.Parent = MainFrame
+Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
+AddRainbowGlow(ESPBtn,2)
 
 local YouTubeBtn = Instance.new("TextButton")
 YouTubeBtn.Size = UDim2.new(0,95,0,30)
-YouTubeBtn.Position = UDim2.new(0,100,0,32)
+YouTubeBtn.Position = UDim2.new(0,100,0,30)
 YouTubeBtn.BackgroundColor3 = Color3.fromRGB(200,30,30)
 YouTubeBtn.Text = "📺 YOUTUBE"
 YouTubeBtn.TextColor3 = Color3.new(1,1,1)
@@ -519,7 +470,7 @@ AddRainbowGlow(YouTubeBtn,2)
 
 local MusicBtn = Instance.new("TextButton")
 MusicBtn.Size = UDim2.new(0,90,0,30)
-MusicBtn.Position = UDim2.new(0,200,0,32)
+MusicBtn.Position = UDim2.new(0,200,0,30)
 MusicBtn.BackgroundColor3 = Color3.fromRGB(40,80,160)
 MusicBtn.Text = "🎵 MUSIC"
 MusicBtn.TextColor3 = Color3.new(1,1,1)
@@ -531,7 +482,7 @@ AddRainbowGlow(MusicBtn,2)
 
 local LockBtn = Instance.new("TextButton")
 LockBtn.Size = UDim2.new(0,90,0,30)
-LockBtn.Position = UDim2.new(0,300,0,32)
+LockBtn.Position = UDim2.new(0,300,0,30)
 LockBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
 LockBtn.Text = "🔓 UNLOCKED"
 LockBtn.TextColor3 = Color3.new(1,1,1)
@@ -543,7 +494,7 @@ AddRainbowGlow(LockBtn,2)
 
 local ConsoleBtn = Instance.new("TextButton")
 ConsoleBtn.Size = UDim2.new(0,110,0,30)
-ConsoleBtn.Position = UDim2.new(0,400,0,32)
+ConsoleBtn.Position = UDim2.new(0,400,0,30)
 ConsoleBtn.BackgroundColor3 = Color3.fromRGB(30,120,90)
 ConsoleBtn.Text = "💻 CONSOLE"
 ConsoleBtn.TextColor3 = Color3.new(1,1,1)
@@ -555,7 +506,7 @@ AddRainbowGlow(ConsoleBtn,2)
 
 local ExitBtn = Instance.new("TextButton")
 ExitBtn.Size = UDim2.new(0,90,0,30)
-ExitBtn.Position = UDim2.new(0,520,0,32)
+ExitBtn.Position = UDim2.new(0,520,0,30)
 ExitBtn.BackgroundColor3 = Color3.fromRGB(140,20,20)
 ExitBtn.Text = "🗑️ EXIT"
 ExitBtn.TextColor3 = Color3.new(1,1,1)
@@ -568,7 +519,7 @@ AddRainbowGlow(ExitBtn,2)
 -- VOLUME SLIDER
 local VolLabelMain = Instance.new("TextLabel")
 VolLabelMain.Size = UDim2.new(0,70,0,25)
-VolLabelMain.Position = UDim2.new(0,10,0,68)
+VolLabelMain.Position = UDim2.new(0,10,0,65)
 VolLabelMain.BackgroundTransparency = 1
 VolLabelMain.Text = "🔊 VOLUME:"
 VolLabelMain.TextColor3 = Color3.new(1,1,1)
@@ -578,7 +529,7 @@ VolLabelMain.Parent = MainFrame
 
 VolNumTextMain = Instance.new("TextLabel")
 VolNumTextMain.Size = UDim2.new(0,45,0,25)
-VolNumTextMain.Position = UDim2.new(0,85,0,68)
+VolNumTextMain.Position = UDim2.new(0,85,0,65)
 VolNumTextMain.BackgroundTransparency = 1
 VolNumTextMain.Text = math.floor(MusicVolume*100+0.5).."%"
 VolNumTextMain.TextColor3 = Color3.new(1,1,1)
@@ -588,7 +539,7 @@ VolNumTextMain.Parent = MainFrame
 
 local VolBGMain = Instance.new("Frame")
 VolBGMain.Size = UDim2.new(0,150,0,18)
-VolBGMain.Position = UDim2.new(0,135,0,70)
+VolBGMain.Position = UDim2.new(0,135,0,67)
 VolBGMain.BackgroundColor3 = Color3.fromRGB(50,50,50)
 VolBGMain.Parent = MainFrame
 Instance.new("UICorner", VolBGMain).CornerRadius = UDim.new(0,9)
@@ -606,14 +557,17 @@ UserInputService.InputEnded:Connect(function() SliderActiveMain = false end)
 UserInputService.InputChanged:Connect(function(i)
     if SliderActiveMain then
         local rel = math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X)/VolBGMain.AbsoluteSize.X,0,1)
+        VolFillMain.Size = UDim2.new(rel,0,1,0)
         UpdateVolume(rel)
     end
 end)
 
--- DRAG SYSTEM
+-- ✅ DRAG SYSTEM: ONLY WORKS ON "DRAG HERE" BAR WHEN UNLOCKED
 local DragState = {Active = false, StartX = 0, StartY = 0, StartPosX = 0, StartPosY = 0}
-MainFrame.InputBegan:Connect(function(Input)
-    if Buttons_Locked then return end
+
+-- ❌ REMOVED WHOLE-FRAME DRAG | ONLY DRAG HANDLE WORKS
+DragHandle.InputBegan:Connect(function(Input)
+    if Buttons_Locked then return end -- Block if locked
     if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
         DragState.Active = true
         DragState.StartX = Input.Position.X
@@ -622,34 +576,51 @@ MainFrame.InputBegan:Connect(function(Input)
         DragState.StartPosY = MainFrame.Position.Y.Offset
     end
 end)
+
 UserInputService.InputEnded:Connect(function(Input)
-    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then DragState.Active = false end
-end)
-UserInputService.InputChanged:Connect(function(Input)
-    if DragState.Active and not Buttons_Locked then
-        MainFrame.Position = UDim2.new(0, DragState.StartPosX + (Input.Position.X - DragState.StartX), 0, DragState.StartPosY + (Input.Position.Y - DragState.StartY))
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        DragState.Active = false
     end
 end)
 
--- BUTTON FUNCTIONS
+UserInputService.InputChanged:Connect(function(Input)
+    if DragState.Active and not Buttons_Locked then
+        local DeltaX = Input.Position.X - DragState.StartX
+        local DeltaY = Input.Position.Y - DragState.StartY
+        MainFrame.Position = UDim2.new(0, DragState.StartPosX + DeltaX, 0, DragState.StartPosY + DeltaY)
+    end
+end)
+
+-- LOCK/UNLOCK
 LockBtn.MouseButton1Click:Connect(function()
     Buttons_Locked = not Buttons_Locked
-    LockBtn.Text = Buttons_Locked and "🔒 LOCKED" or "🔓 UNLOCKED"
-    LockBtn.BackgroundColor3 = Buttons_Locked and Color3.fromRGB(180,40,40) or Color3.fromRGB(50,50,50)
+    if Buttons_Locked then
+        LockBtn.Text = "🔒 LOCKED"
+        LockBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
+    else
+        LockBtn.Text = "🔓 UNLOCKED"
+        LockBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    end
 end)
 
--- ✅ MINIMIZE NOW ONLY CHANGES HEIGHT — BUTTONS STAY!
+-- ✅ MINIMIZE: ONLY SHRINKS HEIGHT — BUTTONS STAY VISIBLE
 MinimizeBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
-    MainFrame.Size = UDim2.new(0,UI_WIDTH,0, IsMinimized and MIN_HEIGHT or FULL_HEIGHT)
-    MinimizeBtn.Text = IsMinimized and "➕" or "➖"
+    if IsMinimized then
+        MainFrame.Size = MIN_SIZE
+        MinimizeBtn.Text = "➕"
+    else
+        MainFrame.Size = FULL_SIZE
+        MinimizeBtn.Text = "➖"
+    end
 end)
 
-ESPBright.MouseButton1Click:Connect(function()
+-- ✅ ESP TOGGLE: CLEARS FRIEND DOTS
+ESPBtn.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
     ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
     ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-    if not ESP_Enabled then ClearAllESP() end
+    if not ESP_Enabled then ClearESP() end
 end)
 
 YouTubeBtn.MouseButton1Click:Connect(function()
@@ -661,13 +632,20 @@ end)
 
 MusicBtn.MouseButton1Click:Connect(OpenBoomboxMenu)
 ConsoleBtn.MouseButton1Click:Connect(OpenConsole)
-ExitBtn.MouseButton1Click:Connect(FullCleanup)
+
+-- ✅ EXIT BUTTON: CLEARS FRIEND DOTS + FULL CLEANUP
+ExitBtn.MouseButton1Click:Connect(function()
+    ClearESP()
+    pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
+    MainUI:Destroy()
+    getgenv().BlueMode_Loaded = nil
+end)
 
 -- MAIN LOOP
 RunService.Heartbeat:Connect(function(Delta)
     if not MainUI or not MainUI.Parent then return end
 
-    -- Timer
+    -- TIMER
     local Now = os.time()
     UsedTime = UsedTime + math.max(0, Now - LastCheckTime)
     LastCheckTime = Now
@@ -677,13 +655,14 @@ RunService.Heartbeat:Connect(function(Delta)
     local s = math.floor(UsedTime%60)
     TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00:00",h,m,s)
 
-    -- Time limit
     if UsedTime >= USAGE_LIMIT then
-        if not ShowPasswordPrompt() then return end
-        UsedTime = 0
+        SaveData(SAVE_KEY_COOLDOWN, os.time()+COOLDOWN)
+        pcall(function() delfile(SAVE_KEY_USED..".txt") end)
+        ExitBtn:Fire()
+        return
     end
 
-    -- Rainbow effects
+    -- RAINBOW
     Hue = (Hue + Delta*0.5) %1
     local Rainbow = Color3.fromHSV(Hue,1,1)
     for _,e in pairs(GuiElements) do e.Color = Rainbow end
@@ -735,4 +714,4 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ BLUE MODE ESP | BUTTONS ALWAYS VISIBLE | CODE: Blue_Mode192823")
+print("✅ BLUE MODE ESP | DRAG ONLY ON DRAG BAR | FRIEND DOTS CLEAR | VOLUME 1-100%")
