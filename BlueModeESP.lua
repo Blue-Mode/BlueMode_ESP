@@ -1,7 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE ESP | WITH STARTUP SCREEN
--- ✅ VOLUME UPDATED: 0 → 1000 (ONLY CHANGE)
--- ✅ ALL ORIGINAL FEATURES 100% INTACT
+-- 🔵 BLUE MODE ESP | ALWAYS ON TOP
+-- ✅ VOLUME: 0–1000
+-- ✅ GUI RENDERS ABOVE ALL GAME MECHANICS
+-- ✅ SETTINGS & ROBLOX DEFAULT MENUS NOT AFFECTED
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -11,8 +12,13 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
+local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("CoreGui")
+
+-- ✅ PUT EVERYTHING IN COREGUI FOR MAX DEPTH + HIGH PRIORITY
+local GuiContainer = Instance.new("Folder")
+GuiContainer.Name = "BLUE_MODE_GUI_ROOT"
+GuiContainer.Parent = CoreGui
 
 -- SETTINGS
 local USAGE_LIMIT = 12 * 3600
@@ -21,7 +27,7 @@ local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
 local SAVE_KEY_USED = "BlueMode_UsedTime_v19"
 local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
 local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
-local VOLUME_MAX = 1000 -- ✅ UPDATED MAX VOLUME
+local VOLUME_MAX = 1000
 
 -- TOGGLE STATES
 local BoomboxUI_Open = false
@@ -36,14 +42,14 @@ local function SaveData(key, value) pcall(function() writefile(key..".txt", tost
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
 -- ==============================================
--- ✅ STARTUP SCREEN — UNCHANGED
+-- ✅ STARTUP SCREEN — ALWAYS ON TOP
 -- ==============================================
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_STARTUP"
 StartupUI.ResetOnSpawn = false
-StartupUI.DisplayOrder = 9999
+StartupUI.DisplayOrder = 99999 -- ✅ MAX PRIORITY
 StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-StartupUI.Parent = PlayerGui
+StartupUI.Parent = GuiContainer
 
 local StartupBox = Instance.new("Frame")
 StartupBox.Size = UDim2.new(0, 420, 0, 480)
@@ -88,8 +94,8 @@ UpdateList.TextWrapped = true
 UpdateList.TextXAlignment = Enum.TextXAlignment.Left
 UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
-UpdateList.Text = [[• VOLUME RANGE UPDATED: 0 → 1000
-• All other features unchanged
+UpdateList.Text = [[• VOLUME: 0 → 1000
+• GUI REMAINS ABOVE ALL GAME ELEMENTS
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -137,7 +143,7 @@ end)
 print("✅ STARTUP SCREEN READY")
 
 -- ==============================================
--- ✅ MAIN HUB — ONLY VOLUME RANGE CHANGED
+-- ✅ MAIN HUB — ALWAYS ON TOP
 -- ==============================================
 function LoadMainHub()
     local CurrentTime = os.time()
@@ -148,7 +154,7 @@ function LoadMainHub()
     end
 
     local LastCheckTime = os.time()
-    local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500) -- ✅ DEFAULT 500 INSTEAD 0.5
+    local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
     local CurrentSound = nil
     local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
     local GuiElements = {}
@@ -203,11 +209,10 @@ function LoadMainHub()
         table.insert(GuiElements, Outline)
     end
 
-    -- ✅ UPDATED VOLUME FUNCTION (0–1000)
     local function UpdateVolume(newVol)
         MusicVolume = math.clamp(tonumber(newVol) or 500, 0, VOLUME_MAX)
         SaveData(SAVE_KEY_VOLUME, MusicVolume)
-        if CurrentSound then CurrentSound.Volume = MusicVolume / VOLUME_MAX end -- ✅ SCALE TO 0–1
+        if CurrentSound then CurrentSound.Volume = MusicVolume / VOLUME_MAX end
         local Val = tostring(math.floor(MusicVolume + 0.5))
         if VolNumTextMain then VolNumTextMain.Text = Val end
         if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
@@ -221,13 +226,13 @@ function LoadMainHub()
         CurrentSound = Instance.new("Sound")
         CurrentSound.Name = "BLUE_BOOMBOX"
         CurrentSound.SoundId = FormatSoundID(id)
-        CurrentSound.Volume = MusicVolume / VOLUME_MAX -- ✅ CORRECT SCALE
+        CurrentSound.Volume = MusicVolume / VOLUME_MAX
         CurrentSound.Looped = true
         CurrentSound.Parent = SoundService
         pcall(function() CurrentSound:Play() end)
     end
 
-    -- BOOMBOX MENU — VOLUME RANGE UPDATED
+    -- BOOMBOX MENU
     local function ToggleBoomboxMenu()
         if BoomboxUI_Open then
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
@@ -240,8 +245,9 @@ function LoadMainHub()
         local BoomUI = Instance.new("ScreenGui")
         BoomUI.Name = "BLUE_BOOMBOX_MENU"
         BoomUI.ResetOnSpawn = false
+        BoomUI.DisplayOrder = 99998 -- ✅ JUST BELOW MAIN UI
         BoomUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-        BoomUI.Parent = PlayerGui
+        BoomUI.Parent = GuiContainer
         CurrentBoomboxUI = BoomUI
         BoomboxUI_Open = true
 
@@ -364,7 +370,7 @@ function LoadMainHub()
         StopBtn.MouseButton1Click:Connect(function() if CurrentSound then CurrentSound:Destroy() end end)
     end
 
-    -- CONSOLE — UNCHANGED
+    -- CONSOLE MENU
     local function ToggleConsole()
         if ConsoleUI_Open then
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -377,8 +383,9 @@ function LoadMainHub()
         local ConsoleUI = Instance.new("ScreenGui")
         ConsoleUI.Name = "BLUE_CONSOLE"
         ConsoleUI.ResetOnSpawn = false
+        ConsoleUI.DisplayOrder = 99997 -- ✅ BELOW BOOMBOX
         ConsoleUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-        ConsoleUI.Parent = PlayerGui
+        ConsoleUI.Parent = GuiContainer
         CurrentConsoleUI = ConsoleUI
         ConsoleUI_Open = true
 
@@ -475,14 +482,15 @@ function LoadMainHub()
         ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
     end
 
-    -- MAIN UI — ONLY VOLUME SLIDER UPDATED
+    -- MAIN UI — HIGHEST PRIORITY
     local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
     local MainUI = Instance.new("ScreenGui")
     MainUI.Name = "BLUE_MODE_ESP"
     MainUI.ResetOnSpawn = false
+    MainUI.DisplayOrder = 99999 -- ✅ TOP OF EVERYTHING EXCEPT STARTUP
     MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    MainUI.Parent = PlayerGui
+    MainUI.Parent = GuiContainer
 
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = FULL_SIZE
@@ -601,7 +609,6 @@ function LoadMainHub()
     Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
     AddRainbowGlow(ExitBtn,2)
 
-    -- ✅ MAIN VOLUME SLIDER UPDATED FOR 0–1000
     local VolLabelMain = Instance.new("TextLabel")
     VolLabelMain.Size = UDim2.new(0,100,0,25)
     VolLabelMain.Position = UDim2.new(0,10,0,65)
@@ -651,7 +658,6 @@ function LoadMainHub()
         end
     end)
 
-    -- DRAG — UNCHANGED
     local DragState = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
     DragHandle.InputBegan:Connect(function(Input)
         GuiFocused = true
@@ -683,14 +689,12 @@ function LoadMainHub()
         end
     end)
 
-    -- LOCK/UNLOCK — UNCHANGED
     LockBtn.MouseButton1Click:Connect(function()
         Buttons_Locked = not Buttons_Locked
         LockBtn.Text = Buttons_Locked and "🔒 LOCKED" or "🔓 UNLOCK"
         LockBtn.BackgroundColor3 = Buttons_Locked and Color3.fromRGB(180,40,40) or Color3.fromRGB(50,50,50)
     end)
 
-    -- MINIMIZE — UNCHANGED
     MinBtn.MouseButton1Click:Connect(function()
         IsMinimized = not IsMinimized
         if IsMinimized then
@@ -732,7 +736,6 @@ function LoadMainHub()
         end
     end)
 
-    -- ESP — UNCHANGED
     ESPBtn.MouseButton1Click:Connect(function()
         ESP_Enabled = not ESP_Enabled
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
@@ -750,7 +753,6 @@ function LoadMainHub()
     MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)
     ConsoleBtn.MouseButton1Click:Connect(ToggleConsole)
 
-    -- EXIT — UNCHANGED
     ExitBtn.MouseButton1Click:Connect(function()
         ClearAllESP()
         pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
@@ -762,7 +764,6 @@ function LoadMainHub()
 
     SetupDeathCheck()
 
-    -- MAIN LOOP — UNCHANGED EXCEPT VOLUME
     RunService.Heartbeat:Connect(function(Delta)
         if not MainUI or not MainUI.Parent then return end
 
@@ -841,5 +842,5 @@ function LoadMainHub()
         end
     end)
 
-    print("✅ FULL BLUE MODE ESP LOADED | VOLUME 0–1000")
+    print("✅ BLUE MODE ESP LOADED | ALWAYS ON TOP | VOLUME 0–1000")
 end
