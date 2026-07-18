@@ -1,5 +1,5 @@
 -- ==============================================
--- BLUE MODE ESP | DRAG ONLY ON HANDLE + FULL FIXES
+-- BLUE MODE ESP | VOLUME 0-100% | DRAG RULES FIXED
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -12,23 +12,16 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("CoreGui")
 
 -- SETTINGS
-local USAGE_LIMIT = 12 * 3600
-local COOLDOWN = 12 * 3600
-local YOUTUBE_LINK = "https://youtube.com/@blue_mode"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v13"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v16"
 
 -- VARIABLES
-local MusicVolume = 0.5
+local MusicVolume = 0.5 -- Default 50%
 local CurrentSound = nil
-local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
-local OpenWindows = {}
+local VolNumTextMain, VolFillMain
 local ESP_Enabled = false
 local Buttons_Locked = false
 local IsMinimized = false
-local MainLoop = nil
-local MainUI = nil
-local MainFrame = nil
-local DragHandle = nil
+local MainUI, MainFrame, DragHandle
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
@@ -37,42 +30,27 @@ MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
 
 -- FULL CLEANUP
 local function FullCleanup()
-    if MainLoop then MainLoop:Disconnect() end
     if CurrentSound then pcall(function() CurrentSound:Stop() CurrentSound:Destroy() end) end
     for _,P in pairs(Players:GetPlayers()) do
         if P and P.Character then
-            pcall(function()
-                if P.Character:FindFirstChild("BLUE_Outline") then P.Character.BLUE_Outline:Destroy() end
-            end)
+            pcall(function() if P.Character:FindFirstChild("BLUE_Outline") then P.Character.BLUE_Outline:Destroy() end end)
         end
     end
-    for _,gui in pairs(OpenWindows) do if gui then gui:Destroy() end end
     if MainUI then MainUI:Destroy() end
     getgenv().BlueMode_Loaded = nil
 end
 
--- RAINBOW GLOW
-local function AddRainbowGlow(target, thickness)
-    if not target then return end
-    local Outline = Instance.new("UIStroke")
-    Outline.Name = "RainbowAura"
-    Outline.Thickness = thickness or 3
-    Outline.Transparency = 0
-    Outline.LineJoinMode = Enum.LineJoinMode.Round
-    Outline.Parent = target
-    return Outline
-end
-
--- VOLUME CONTROL
+-- ✅ EXACT 0-100% VOLUME SYSTEM
 local function UpdateVolume(newVol)
+    -- Clamp to exact 0 to 1 (0% to 100%)
     MusicVolume = math.clamp(newVol, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
+    -- Apply to playing sound immediately
     if CurrentSound then CurrentSound.Volume = MusicVolume end
-    local Pct = math.floor(MusicVolume*100).."%"
-    if VolNumTextMain then VolNumTextMain.Text = Pct end
-    if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume,0,1,0) end
-    if VolNumMenu then VolNumMenu.Text = Pct end
-    if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume,0,1,0) end
+    -- Show clean whole number percentage
+    local Percent = math.floor(MusicVolume * 100 + 0.5) .. "%"
+    if VolNumTextMain then VolNumTextMain.Text = Percent end
+    if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume, 0, 1, 0) end
 end
 
 -- SOUND FUNCTIONS
@@ -89,27 +67,25 @@ local function PlaySound(id)
 end
 
 -- ==============================================
--- DRAG SYSTEM: ONLY WORKS ON DRAG HANDLE
+-- SMART DRAG SYSTEM
 -- ==============================================
-local DragState = {
-    Dragging = false,
-    StartX = 0, StartY = 0,
-    StartPosX = 0, StartPosY = 0
-}
+local DragState = { Dragging = false, StartX=0, StartY=0, StartPosX=0, StartPosY=0 }
 
--- Start drag ONLY when clicking the drag handle
 local function StartDrag(input)
     if Buttons_Locked then return end
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        DragState.Dragging = true
-        DragState.StartX = input.Position.X
-        DragState.StartY = input.Position.Y
-        DragState.StartPosX = MainFrame.Position.X.Offset
-        DragState.StartPosY = MainFrame.Position.Y.Offset
-    end
+    if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+    -- Normal mode: only drag from blue bar; Minimized: drag anywhere
+    local IsDragHandle = input:GetAttribute("IsDragHandle") or input.Parent == DragHandle or DragHandle:IsAncestorOf(input.Parent)
+    local IsMinimizedDrag = IsMinimized and (input.Parent == MainFrame or MainFrame:IsAncestorOf(input.Parent))
+    if not (IsDragHandle or IsMinimizedDrag) then return end
+
+    DragState.Dragging = true
+    DragState.StartX = input.Position.X
+    DragState.StartY = input.Position.Y
+    DragState.StartPosX = MainFrame.Position.X.Offset
+    DragState.StartPosY = MainFrame.Position.Y.Offset
 end
 
--- Update position only while dragging
 local function UpdateDrag(input)
     if not DragState.Dragging then return end
     local DeltaX = input.Position.X - DragState.StartX
@@ -117,7 +93,6 @@ local function UpdateDrag(input)
     MainFrame.Position = UDim2.new(0, DragState.StartPosX + DeltaX, 0, DragState.StartPosY + DeltaY)
 end
 
--- Stop drag when releasing click
 local function StopDrag(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         DragState.Dragging = false
@@ -140,14 +115,14 @@ MainFrame = Instance.new("Frame")
 MainFrame.Size = FULL_SIZE
 MainFrame.Position = UDim2.new(0,20,0.5,-52)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+MainFrame.Active = true
 MainFrame.ClipsDescendants = false
 MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
-AddRainbowGlow(MainFrame,5)
 
--- 🎯 DRAG HANDLE: DEDICATED DRAG AREA, NO OVERLAP
+-- DRAG HANDLE
 DragHandle = Instance.new("TextButton")
-DragHandle.Size = UDim2.new(1, -30, 0, 28) -- Leave space for minimize button
+DragHandle.Size = UDim2.new(1, -30, 0, 28)
 DragHandle.Position = UDim2.new(0,0,0,0)
 DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
 DragHandle.Text = "🔓 DRAG HERE | made by BLUE_MODE"
@@ -157,11 +132,11 @@ DragHandle.TextScaled = true
 DragHandle.TextXAlignment = Enum.TextXAlignment.Center
 DragHandle.AutoLocalize = false
 DragHandle.Active = true
+DragHandle.ZIndex = 100
 DragHandle.Parent = MainFrame
-AddRainbowGlow(DragHandle,2)
 
--- Connect drag ONLY to this handle
-DragHandle.InputBegan:Connect(StartDrag)
+-- Connect drag
+MainFrame.InputBegan:Connect(StartDrag)
 UserInputService.InputChanged:Connect(UpdateDrag)
 UserInputService.InputEnded:Connect(StopDrag)
 
@@ -174,6 +149,7 @@ MinimizeBtn.Text = "❌"
 MinimizeBtn.TextColor3 = Color3.new(1,1,1)
 MinimizeBtn.Font = Enum.Font.GothamBold
 MinimizeBtn.TextSize = 20
+MinimizeBtn.ZIndex = 101
 MinimizeBtn.Parent = MainFrame
 Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0,6)
 
@@ -189,20 +165,9 @@ ESPBtn.TextScaled = true
 ESPBtn.Parent = MainFrame
 Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
 
-local MusicBtn = Instance.new("TextButton")
-MusicBtn.Size = UDim2.new(0,90,0,30)
-MusicBtn.Position = UDim2.new(0,100,0,35)
-MusicBtn.BackgroundColor3 = Color3.fromRGB(40,80,160)
-MusicBtn.Text = "🎵 MUSIC"
-MusicBtn.TextColor3 = Color3.new(1,1,1)
-MusicBtn.Font = Enum.Font.GothamBold
-MusicBtn.TextScaled = true
-MusicBtn.Parent = MainFrame
-Instance.new("UICorner", MusicBtn).CornerRadius = UDim.new(0,6)
-
 local LockBtn = Instance.new("TextButton")
 LockBtn.Size = UDim2.new(0,90,0,30)
-LockBtn.Position = UDim2.new(0,200,0,35)
+LockBtn.Position = UDim2.new(0,100,0,35)
 LockBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
 LockBtn.Text = "🔓 UNLOCKED"
 LockBtn.TextColor3 = Color3.new(1,1,1)
@@ -213,7 +178,7 @@ Instance.new("UICorner", LockBtn).CornerRadius = UDim.new(0,6)
 
 local ExitBtn = Instance.new("TextButton")
 ExitBtn.Size = UDim2.new(0,90,0,30)
-ExitBtn.Position = UDim2.new(0,300,0,35)
+ExitBtn.Position = UDim2.new(0,200,0,35)
 ExitBtn.BackgroundColor3 = Color3.fromRGB(140,20,20)
 ExitBtn.Text = "🗑️ EXIT"
 ExitBtn.TextColor3 = Color3.new(1,1,1)
@@ -222,10 +187,10 @@ ExitBtn.TextScaled = true
 ExitBtn.Parent = MainFrame
 Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
 
--- MAIN VOLUME SLIDER (NO DRAG CONFLICT)
+-- ✅ VOLUME SLIDER (0% TO 100% EXACT)
 local VolLabelMain = Instance.new("TextLabel")
 VolLabelMain.Size = UDim2.new(0,70,0,25)
-VolLabelMain.Position = UDim2.new(0,410,0,37)
+VolLabelMain.Position = UDim2.new(0,310,0,37)
 VolLabelMain.BackgroundTransparency = 1
 VolLabelMain.Text = "🔊 VOLUME:"
 VolLabelMain.TextColor3 = Color3.new(1,1,1)
@@ -234,36 +199,42 @@ VolLabelMain.TextScaled = true
 VolLabelMain.Parent = MainFrame
 
 VolNumTextMain = Instance.new("TextLabel")
-VolNumTextMain.Size = UDim2.new(0,45,0,25)
-VolNumTextMain.Position = UDim2.new(0,480,0,37)
+VolNumTextMain.Size = UDim2.new(0,50,0,25)
+VolNumTextMain.Position = UDim2.new(0,380,0,37)
 VolNumTextMain.BackgroundTransparency = 1
-VolNumTextMain.Text = math.floor(MusicVolume*100).."%"
+VolNumTextMain.Text = math.floor(MusicVolume*100+0.5).."%"
 VolNumTextMain.TextColor3 = Color3.new(1,1,1)
 VolNumTextMain.Font = Enum.Font.GothamBold
 VolNumTextMain.TextScaled = true
 VolNumTextMain.Parent = MainFrame
 
 local VolBGMain = Instance.new("Frame")
-VolBGMain.Size = UDim2.new(0,150,0,20)
-VolBGMain.Position = UDim2.new(0,535,0,38)
+VolBGMain.Size = UDim2.new(0,180,0,20)
+VolBGMain.Position = UDim2.new(0,435,0,38)
 VolBGMain.BackgroundColor3 = Color3.fromRGB(50,50,50)
+VolBGMain.ZIndex = 3
 VolBGMain.Parent = MainFrame
 Instance.new("UICorner", VolBGMain).CornerRadius = UDim.new(0,10)
 
 VolFillMain = Instance.new("Frame")
 VolFillMain.Size = UDim2.new(MusicVolume,0,1,0)
-VolFillMain.BackgroundColor3 = Color3.fromRGB(100,200,255)
+VolFillMain.BackgroundColor3 = Color3.fromRGB(60,140,220)
+VolFillMain.ZIndex = 4
 VolFillMain.Parent = VolBGMain
 Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0,10)
 
--- Volume slider logic (works without moving GUI)
+-- Slider works without moving GUI
 local SliderActive = false
-VolBGMain.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then SliderActive = true end end)
+VolBGMain.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        SliderActive = true
+    end
+end)
 UserInputService.InputEnded:Connect(function() SliderActive = false end)
 UserInputService.InputChanged:Connect(function(i)
     if SliderActive then
-        local rel = math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X)/VolBGMain.AbsoluteSize.X, 0, 1)
-        UpdateVolume(rel)
+        local RelPos = math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X) / VolBGMain.AbsoluteSize.X, 0, 1)
+        UpdateVolume(RelPos)
     end
 end)
 
@@ -287,7 +258,6 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         MainFrame.Size = MIN_SIZE
         DragHandle.Visible = false
         ESPBtn.Visible = false
-        MusicBtn.Visible = false
         LockBtn.Visible = false
         ExitBtn.Visible = false
         VolLabelMain.Visible = false
@@ -298,7 +268,6 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         MainFrame.Size = FULL_SIZE
         DragHandle.Visible = true
         ESPBtn.Visible = true
-        MusicBtn.Visible = true
         LockBtn.Visible = true
         ExitBtn.Visible = true
         VolLabelMain.Visible = true
@@ -316,4 +285,4 @@ ESPBtn.MouseButton1Click:Connect(function()
     ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(20,150,70) or Color3.fromRGB(40,40,40)
 end)
 
-print("✅ LOADED! Drag only works on the top blue bar. Volume slider works separately!")
+print("✅ READY! Volume slides 0-100%, drag works correctly in both modes!")
