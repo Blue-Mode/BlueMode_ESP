@@ -1,7 +1,7 @@
 -- ==============================================
--- 🔵 BLUE MODE ESP | ABOVE GAME MECHANICS ONLY
--- ✅ ALL GUI RENDER ABOVE GAME ELEMENTS
--- ✅ DOES NOT COVER ROBLOX ESCAPE/SETTINGS/TOPBAR
+-- 🔵 BLUE MODE ESP | FINAL VERSION
+-- ✅ ABOVE ALL GAME ELEMENTS
+-- ✅ NEVER BLOCKS ROBLOX SETTINGS / ESCAPE / PEOPLE MENU
 -- ✅ VOLUME: 0–1000
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
@@ -15,10 +15,17 @@ local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- ✅ ALL GUI IN COREGUI, PRIORITY SET TO BELOW ROBLOX DEFAULT UI BUT ABOVE GAME
+-- ✅ PERFECT DISPLAY ORDER: ABOVE GAME, BELOW ROBLOX DEFAULT UI
 local GuiContainer = Instance.new("Folder")
 GuiContainer.Name = "BLUE_MODE_GUI_ROOT"
 GuiContainer.Parent = CoreGui
+
+local PRIORITY = {
+    STARTUP = 800,
+    MAIN = 799,
+    BOOMBOX = 798,
+    CONSOLE = 797
+}
 
 -- SETTINGS
 local USAGE_LIMIT = 12 * 3600
@@ -28,16 +35,6 @@ local SAVE_KEY_USED = "BlueMode_UsedTime_v19"
 local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
 local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
 local VOLUME_MAX = 1000
-
--- ✅ PRIORITY RULES:
--- Above all game mechanics, custom game UI, blocks
--- BUT BELOW: Roblox Escape Menu, Settings, Topbar, Player List
-local PRIORITY = {
-    STARTUP = 900,
-    MAIN = 899,
-    BOOMBOX = 898,
-    CONSOLE = 897
-}
 
 -- TOGGLE STATES
 local BoomboxUI_Open = false
@@ -105,8 +102,8 @@ UpdateList.TextXAlignment = Enum.TextXAlignment.Left
 UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
 UpdateList.Text = [[• VOLUME: 0 → 1000
-• ABOVE ALL GAME ELEMENTS
-• DOES NOT COVER ROBLOX DEFAULT MENUS
+• NO LONGER BLOCKS ROBLOX MENUS
+• REMAINS ABOVE ALL GAME ELEMENTS
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -151,7 +148,7 @@ OkBtn.MouseButton1Click:Connect(function()
     LoadMainHub()
 end)
 
-print("✅ STARTUP READY")
+print("✅ STARTUP SCREEN READY")
 
 -- ==============================================
 -- ✅ MAIN HUB & ALL MENUS
@@ -853,5 +850,5 @@ function LoadMainHub()
         end
     end)
 
-    print("✅ SET: ABOVE GAME, NOT ROBLOX DEFAULT MENUS")
+    print("✅ ALL SYSTEMS READY | NO LONGER BLOCKS ROBLOX MENUS")
 end
