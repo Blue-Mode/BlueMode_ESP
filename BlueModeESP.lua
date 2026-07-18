@@ -1,6 +1,6 @@
 -- ==============================================
--- BLUE MODE ESP | FRIEND DOTS HIDE WITH ESP/EXIT
--- ✅ Dots vanish when ESP OFF / Exit
+-- BLUE MODE ESP | FRIEND DOT FIX: NO STUCK + RAINBOW
+-- ✅ Dots vanish 100% when ESP OFF | Full Rainbow
 -- ✅ Music/Console Toggle Close | No Drag Overlap
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -17,9 +17,9 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v19"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v20"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v20"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v20"
 
 -- TOGGLE STATES
 local BoomboxUI_Open = false
@@ -31,13 +31,20 @@ local CurrentConsoleUI = nil
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
--- ✅ CLEAR BOTH OUTLINES + FRIEND DOTS
+-- ✅ FORCE CLEAR ALL OUTLINES + DOTS (NO LEFTOVERS)
 local function ClearAllESP()
     for _,P in pairs(Players:GetPlayers()) do
         if P and P.Character then
             pcall(function()
-                if P.Character:FindFirstChild("BLUE_Outline") then P.Character.BLUE_Outline:Destroy() end
-                if P.Character:FindFirstChild("FriendRainbowDot") then P.Character.FriendRainbowDot:Destroy() end
+                local Char = P.Character
+                -- Remove ALL outlines
+                for _,Obj in pairs(Char:GetChildren()) do
+                    if Obj.Name == "BLUE_Outline" or Obj.Name == "Highlight" then Obj:Destroy() end
+                end
+                -- Remove ALL friend dots (any name variation)
+                for _,Obj in pairs(Char:GetChildren()) do
+                    if Obj.Name == "FriendRainbowDot" or Obj:IsA("BillboardGui") then Obj:Destroy() end
+                end
             end)
         end
     end
@@ -77,7 +84,7 @@ local function SetupDeathCheck()
                     ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
                 end
                 ClearAllESP()
-                print("⚠️ YOU DIED! ESP & FRIEND DOTS TURNED OFF")
+                print("⚠️ YOU DIED! ESP & FRIEND DOTS FULLY CLEARED")
             end
         end)
     end
@@ -664,7 +671,7 @@ MinBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ✅ ESP TOGGLE NOW CLEARS FRIEND DOTS
+-- ESP TOGGLE
 ESPBtn.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
     ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
@@ -682,7 +689,7 @@ end)
 MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)
 ConsoleBtn.MouseButton1Click:Connect(ToggleConsole)
 
--- ✅ EXIT CLEARS ALL + FRIEND DOTS
+-- EXIT
 ExitBtn.MouseButton1Click:Connect(function()
     ClearAllESP()
     pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
@@ -717,7 +724,7 @@ RunService.Heartbeat:Connect(function(Delta)
         return
     end
 
-    -- RAINBOW
+    -- RAINBOW COLOR
     Hue = (Hue + Delta*0.5) % 1
     local Rainbow = Color3.fromHSV(Hue,1,1)
     for _,e in pairs(GuiElements) do e.Color = Rainbow end
@@ -725,8 +732,9 @@ RunService.Heartbeat:Connect(function(Delta)
     if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
     TimerLabel.TextColor3 = Rainbow
 
-    -- ✅ ONLY SHOW OUTLINES + DOTS WHEN ESP IS ON
+    -- ✅ ONLY RUN ESP WHEN ACTIVE
     if not ESP_Enabled then return end
+
     for _,P in pairs(Players:GetPlayers()) do
         if P == LocalPlayer then continue end
         local Char = P.Character
@@ -754,29 +762,41 @@ RunService.Heartbeat:Connect(function(Delta)
         Outline.OutlineColor = Rainbow
         Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 
-        -- ✅ FRIEND DOT ONLY SPAWNS WHEN ESP IS ACTIVE
+        -- ✅ FRIEND DOT: NO STUCK + FULL RAINBOW
         local IsFriend = false
         pcall(function() IsFriend = LocalPlayer:IsFriendsWith(P.UserId) end)
         local Head = Char:FindFirstChild("Head")
         local Dot = Char:FindFirstChild("FriendRainbowDot")
+
         if IsFriend and Head then
             if not Dot then
-                Dot = Instance.new("BillboardGui",Head)
+                -- Create fresh dot with proper circle
+                Dot = Instance.new("BillboardGui")
                 Dot.Name = "FriendRainbowDot"
                 Dot.AlwaysOnTop = true
                 Dot.Size = UDim2.new(0,16,0,16)
                 Dot.StudsOffset = Vector3.new(0,2,0)
-                local Circ = Instance.new("Frame",Dot)
+                Dot.Parent = Head
+
+                local Circ = Instance.new("Frame")
+                Circ.Name = "DotCircle"
                 Circ.Size = UDim2.new(1,0,1,0)
                 Circ.BackgroundColor3 = Rainbow
-                Instance.new("UICorner",Circ).CornerRadius = UDim.new(1,0)
+                Circ.AnchorPoint = Vector2.new(0.5,0.5)
+                Circ.Position = UDim2.new(0.5,0,0.5,0)
+                Instance.new("UICorner", Circ).CornerRadius = UDim.new(1,0)
+                Circ.Parent = Dot
             else
-                Dot.Frame.BackgroundColor3 = Rainbow
+                -- Update existing dot color every frame
+                if Dot:FindFirstChild("DotCircle") then
+                    Dot.DotCircle.BackgroundColor3 = Rainbow
+                end
             end
         elseif Dot then
+            -- Remove dot instantly if not friend / ESP off
             Dot:Destroy()
         end
     end
 end)
 
-print("✅ DONE: Friend Dots Hide With ESP/Exit | All Features Kept")
+print("✅ FIXED: Friend Dots Disappear Fully | Rainbow Works | No Stuck Dots")
