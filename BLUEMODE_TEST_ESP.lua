@@ -1,5 +1,5 @@
 -- ==============================================
--- BLUE MODE ESP | MINIMIZED DRAGGABLE + ALL FIXES
+-- BLUE MODE ESP | DRAG WHEN UNLOCKED + MINIMIZED SUPPORT
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -15,9 +15,9 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v7"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v7"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v7"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v9"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v9"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v9"
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
@@ -51,7 +51,7 @@ local CurrentSound = nil
 local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
 local GuiElements = {}
 local ESP_Enabled = false
-local Buttons_Locked = false
+local Buttons_Locked = false -- Drag ONLY works when this is false
 local Hue = 0
 local IsMinimized = false
 
@@ -406,7 +406,6 @@ MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
--- ✅ DRAG WORKS IN BOTH FULL & MINIMIZED MODE
 local DragHandle = Instance.new("TextButton")
 DragHandle.Size = UDim2.new(1,-25,0,22)
 DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
@@ -560,12 +559,13 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 
--- ✅ DRAG SYSTEM: WORKS FULLY + MINIMIZED
+-- ✅ DRAG SYSTEM: ONLY WORKS WHEN UNLOCKED (FULL & MINIMIZED)
 local DragState = {Active = false, StartX = 0, StartY = 0, StartPosX = 0, StartPosY = 0}
 
--- Drag works on ANY part of the main frame even when minimized
 MainFrame.InputBegan:Connect(function(Input)
+    -- ❌ BLOCK DRAG IF LOCKED
     if Buttons_Locked then return end
+    -- ✅ ALLOW DRAG WHEN UNLOCKED (WORKS ON FULL OR SHRUNK GUI)
     if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
         DragState.Active = true
         DragState.StartX = Input.Position.X
@@ -582,6 +582,7 @@ UserInputService.InputEnded:Connect(function(Input)
 end)
 
 UserInputService.InputChanged:Connect(function(Input)
+    -- ✅ ONLY UPDATE POSITION IF UNLOCKED
     if DragState.Active and not Buttons_Locked then
         local DeltaX = Input.Position.X - DragState.StartX
         local DeltaY = Input.Position.Y - DragState.StartY
@@ -589,6 +590,7 @@ UserInputService.InputChanged:Connect(function(Input)
     end
 end)
 
+-- ✅ LOCK/UNLOCK TOGGLE
 LockBtn.MouseButton1Click:Connect(function()
     Buttons_Locked = not Buttons_Locked
     if Buttons_Locked then
@@ -600,7 +602,7 @@ LockBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ✅ MINIMIZE: DRAG REMAINS ENABLED WHEN UNLOCKED
+-- ✅ MINIMIZE/SHRINK: DRAG STILL WORKS WHEN UNLOCKED
 MinimizeBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
     if IsMinimized then
@@ -730,4 +732,4 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ MINIMIZED GUI CAN BE DRAGGED WHEN UNLOCKED!")
+print("✅ DRAG WORKS WHEN UNLOCKED — FULL & SHRUNK/MINIMIZED MODE!")
