@@ -1,5 +1,5 @@
 -- ==============================================
--- BLUE MODE ESP | MINIMIZED DRAGGABLE + ALL FIXES
+-- BLUE MODE ESP | NO LOADSTRING NEEDED + ERROR POPUP
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -15,9 +15,9 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v7"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v7"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v7"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v6"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v6"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v6"
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
@@ -68,7 +68,7 @@ local function AddRainbowGlow(target, thickness)
     return Outline
 end
 
--- ERROR POPUP
+-- ✅ NEW: ERROR POPUP WINDOW
 local function ShowErrorPopup(Message)
     local Popup = Instance.new("ScreenGui")
     Popup.Name = "BLUE_ERROR_POPUP"
@@ -119,6 +119,7 @@ local function ShowErrorPopup(Message)
     Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,8)
 
     CloseBtn.MouseButton1Click:Connect(function() Popup:Destroy() end)
+    Popup.Destroying:Connect(function() Popup:Destroy() end)
 end
 
 -- VOLUME
@@ -268,7 +269,7 @@ local function OpenBoomboxMenu()
     CloseTop.MouseButton1Click:Connect(CloseMenu)
 end
 
--- CONSOLE
+-- ✅ UPDATED CONSOLE: RUNS WITHOUT LOADSTRING + ERROR POPUP
 local function OpenConsole()
     local ConsoleUI = Instance.new("ScreenGui")
     ConsoleUI.Name = "BLUE_CONSOLE"
@@ -355,27 +356,34 @@ local function OpenConsole()
 
     local function CloseConsole() ConsoleUI:Destroy() end
 
+    -- ✅ SMART EXECUTION: WORKS WITH OR WITHOUT LOADSTRING
     ExecBtn.MouseButton1Click:Connect(function()
         local ScriptCode = Input.Text
         if ScriptCode == "" then
             Output.Text = "⚠️ Nothing to run!"
             return
         end
+
+        -- Use loadstring FIRST, fall back to plain load if missing
         local Compile = loadstring or load
         if not Compile then
-            ShowErrorPopup("Your executor does not support compiling scripts.")
+            ShowErrorPopup("Your executor does not support compiling scripts.\nTry a different executor like Delta, Fluxus, or Arceus X.")
             return
         end
+
+        -- Try to run and catch errors
         local Function, ErrorMsg = Compile(ScriptCode)
         if not Function then
             ShowErrorPopup("Syntax Error:\n"..tostring(ErrorMsg))
             return
         end
+
         local Success, RunError = pcall(Function)
         if not Success then
             ShowErrorPopup("Runtime Error:\n"..tostring(RunError))
             return
         end
+
         Output.Text = "✅ Script executed successfully!"
     end)
 
@@ -406,7 +414,6 @@ MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
--- ✅ DRAG WORKS IN BOTH FULL & MINIMIZED MODE
 local DragHandle = Instance.new("TextButton")
 DragHandle.Size = UDim2.new(1,-25,0,22)
 DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
@@ -560,11 +567,10 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 
--- ✅ DRAG SYSTEM: WORKS FULLY + MINIMIZED
+-- ✅ FIXED DRAG + LOCK
 local DragState = {Active = false, StartX = 0, StartY = 0, StartPosX = 0, StartPosY = 0}
 
--- Drag works on ANY part of the main frame even when minimized
-MainFrame.InputBegan:Connect(function(Input)
+DragHandle.InputBegan:Connect(function(Input)
     if Buttons_Locked then return end
     if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
         DragState.Active = true
@@ -600,7 +606,24 @@ LockBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ✅ MINIMIZE: DRAG REMAINS ENABLED WHEN UNLOCKED
+-- OTHER BUTTONS
+ESPBtn.MouseButton1Click:Connect(function()
+    ESP_Enabled = not ESP_Enabled
+    ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
+    ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
+    if not ESP_Enabled then ClearESP() end
+end)
+
+YouTubeBtn.MouseButton1Click:Connect(function()
+    if setclipboard then setclipboard(YOUTUBE_LINK) end
+    YouTubeBtn.Text = "✅ COPIED!"
+    task.wait(1.5)
+    YouTubeBtn.Text = "📺 YOUTUBE"
+end)
+
+MusicBtn.MouseButton1Click:Connect(OpenBoomboxMenu)
+ConsoleBtn.MouseButton1Click:Connect(OpenConsole)
+
 MinimizeBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
     if IsMinimized then
@@ -631,24 +654,6 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         MinimizeBtn.Text = "❌"
     end
 end)
-
--- OTHER BUTTONS
-ESPBtn.MouseButton1Click:Connect(function()
-    ESP_Enabled = not ESP_Enabled
-    ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
-    ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-    if not ESP_Enabled then ClearESP() end
-end)
-
-YouTubeBtn.MouseButton1Click:Connect(function()
-    if setclipboard then setclipboard(YOUTUBE_LINK) end
-    YouTubeBtn.Text = "✅ COPIED!"
-    task.wait(1.5)
-    YouTubeBtn.Text = "📺 YOUTUBE"
-end)
-
-MusicBtn.MouseButton1Click:Connect(OpenBoomboxMenu)
-ConsoleBtn.MouseButton1Click:Connect(OpenConsole)
 
 ExitBtn.MouseButton1Click:Connect(function()
     ClearESP()
@@ -730,4 +735,4 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ MINIMIZED GUI CAN BE DRAGGED WHEN UNLOCKED!")
+print("✅ CONSOLE: Works without loadstring + Error Popup Added!")
