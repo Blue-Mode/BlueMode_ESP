@@ -1,5 +1,6 @@
 -- ==============================================
--- BLUE MODE ESP | FULL COMPLETE VERSION | NO MISSING FEATURES
+-- BLUE MODE ESP | ACCESS CODE: Blue_Mode192823
+-- WRONG CODE = DISABLED FOR 12 HOURS
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -12,20 +13,29 @@ local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("CoreGui")
 
+-- FALLBACK FOR ALL EXECUTORS
+local task_wait = task and task.wait or wait
+
 -- SETTINGS
-local OWNER_NAME = "Blue_Mode"
-local USAGE_LIMIT = 12 * 3600
-local COOLDOWN = 12 * 3600
+local CORRECT_CODE = "Blue_Mode192823" -- SAME CODE FOR EVERYONE
+local USAGE_LIMIT = 12 * 3600 -- 12 HOURS RUNTIME
+local COOLDOWN = 12 * 3600 -- 12 HOUR LOCKOUT ON WRONG CODE
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v11"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v11"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v11"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v14"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v14"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v14"
 
 -- DATA HELPERS
-local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
-local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
+local function SaveData(key, value)
+    pcall(function() if writefile then writefile(key..".txt", tostring(value)) end end)
+end
+local function LoadData(key, default)
+    local v = nil
+    pcall(function() if readfile then v = readfile(key..".txt") end end)
+    return tonumber(v) or default
+end
 
--- FULL CLEANUP
+-- FULL CLEANUP FUNCTION
 local MainLoop, CurrentSound
 local function FullCleanup()
     if MainLoop then MainLoop:Disconnect() end
@@ -40,17 +50,122 @@ local function FullCleanup()
     getgenv().BlueMode_Loaded = nil
 end
 
--- COOLDOWN + OWNER SKIP
-local CurrentTime = os.time()
-local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
-local IsOwner = (LocalPlayer.Name == OWNER_NAME)
-if not IsOwner and CurrentTime < CooldownEnd then
-    print("⏳ Cooldown: "..math.floor((CooldownEnd-CurrentTime)/60).." mins left")
-    return
+-- PASSWORD PROMPT (APPEARS ON TIMEOUT)
+local function ShowPasswordPrompt()
+    local PromptUI = Instance.new("ScreenGui")
+    PromptUI.Name = "BLUE_CODE_PROMPT"
+    PromptUI.ResetOnSpawn = false
+    PromptUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    PromptUI.Parent = PlayerGui
+
+    local PromptFrame = Instance.new("Frame")
+    PromptFrame.Size = UDim2.new(0,350,0,220)
+    PromptFrame.Position = UDim2.new(0.5,-175,0.5,-110)
+    PromptFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    PromptFrame.Parent = PromptUI
+    Instance.new("UICorner", PromptFrame).CornerRadius = UDim.new(0,12)
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1,-20,0,40)
+    Title.Position = UDim2.new(0,10,0,10)
+    Title.BackgroundTransparency = 1
+    Title.Text = "⏳ TIME EXPIRED | ENTER CODE"
+    Title.TextColor3 = Color3.fromRGB(255,80,80)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextScaled = true
+    Title.Parent = PromptFrame
+
+    local CodeInput = Instance.new("TextBox")
+    CodeInput.Size = UDim2.new(1,-40,0,45)
+    CodeInput.Position = UDim2.new(0,20,0,60)
+    CodeInput.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    CodeInput.PlaceholderText = "Enter access code..."
+    CodeInput.TextColor3 = Color3.new(1,1,1)
+    CodeInput.Font = Enum.Font.Gotham
+    CodeInput.TextScaled = true
+    CodeInput.Password = true
+    CodeInput.Parent = PromptFrame
+    Instance.new("UICorner", CodeInput).CornerRadius = UDim.new(0,8)
+
+    local StatusText = Instance.new("TextLabel")
+    StatusText.Size = UDim2.new(1,-20,0,25)
+    StatusText.Position = UDim2.new(0,10,0,115)
+    StatusText.BackgroundTransparency = 1
+    StatusText.Text = ""
+    StatusText.TextColor3 = Color3.new(1,1,1)
+    StatusText.Font = Enum.Font.Gotham
+    StatusText.TextScaled = true
+    StatusText.Parent = PromptFrame
+
+    local SubmitBtn = Instance.new("TextButton")
+    SubmitBtn.Size = UDim2.new(0,140,0,40)
+    SubmitBtn.Position = UDim2.new(0,35,0,150)
+    SubmitBtn.BackgroundColor3 = Color3.fromRGB(30,140,210)
+    SubmitBtn.Text = "✅ SUBMIT CODE"
+    SubmitBtn.TextColor3 = Color3.new(1,1,1)
+    SubmitBtn.Font = Enum.Font.GothamBold
+    SubmitBtn.TextScaled = true
+    SubmitBtn.Parent = PromptFrame
+    Instance.new("UICorner", SubmitBtn).CornerRadius = UDim.new(0,8)
+
+    local ExitBtn = Instance.new("TextButton")
+    ExitBtn.Size = UDim2.new(0,140,0,40)
+    ExitBtn.Position = UDim2.new(0,175,0,150)
+    ExitBtn.BackgroundColor3 = Color3.fromRGB(160,30,30)
+    ExitBtn.Text = "❌ EXIT"
+    ExitBtn.TextColor3 = Color3.new(1,1,1)
+    ExitBtn.Font = Enum.Font.GothamBold
+    ExitBtn.TextScaled = true
+    ExitBtn.Parent = PromptFrame
+    Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,8)
+
+    local CodeValid = false
+    SubmitBtn.MouseButton1Click:Connect(function()
+        if CodeInput.Text == CORRECT_CODE then
+            StatusText.Text = "✅ CORRECT CODE! LOADING..."
+            StatusText.TextColor3 = Color3.fromRGB(0,255,100)
+            CodeValid = true
+            SaveData(SAVE_KEY_USED, 0) -- RESET TIMER
+            SaveData(SAVE_KEY_COOLDOWN, 0) -- REMOVE LOCKOUT
+            task_wait(1.5)
+            PromptUI:Destroy()
+            return true
+        else
+            StatusText.Text = "❌ WRONG CODE! DISABLED FOR 12H"
+            StatusText.TextColor3 = Color3.fromRGB(255,50,50)
+            SaveData(SAVE_KEY_COOLDOWN, os.time() + COOLDOWN) -- LOCK FOR 12H
+            task_wait(2)
+            PromptUI:Destroy()
+            FullCleanup() -- SCRIPT DISAPPEARS COMPLETELY
+            return false
+        end
+    end)
+
+    ExitBtn.MouseButton1Click:Connect(function()
+        PromptUI:Destroy()
+        FullCleanup()
+    end)
+
+    repeat task_wait(0.1) until not PromptUI.Parent or CodeValid
+    return CodeValid
 end
 
--- VARIABLES
+-- CHECK IF LOCKED OUT
+local CurrentTime = os.time()
+local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
+if CurrentTime < CooldownEnd then
+    print("⏭️ LOCKED: Returns in "..math.floor((CooldownEnd-CurrentTime)/3600).."h "..math.floor(((CooldownEnd-CurrentTime)%3600)/60).."m")
+    return -- SCRIPT DOES NOT LOAD UNTIL TIMEOUT ENDS
+end
+
+-- TRIGGER CODE PROMPT WHEN TIME RUNS OUT
 local UsedTime = LoadData(SAVE_KEY_USED, 0)
+if UsedTime >= USAGE_LIMIT then
+    if not ShowPasswordPrompt() then return end
+    UsedTime = 0
+end
+
+-- REMAINING SCRIPT SETUP
 local LastCheckTime = os.time()
 local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
 local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, TimerLabel
@@ -61,7 +176,7 @@ local Hue = 0
 local IsMinimized = false
 local MainUI, MainFrame, DragHandle, ESPBtn
 
--- RAINBOW GLOW
+-- RAINBOW GLOW EFFECT
 local function AddRainbowGlow(target, thickness)
     if not target then return end
     local Stroke = Instance.new("UIStroke")
@@ -73,7 +188,7 @@ local function AddRainbowGlow(target, thickness)
     table.insert(GuiElements, Stroke)
 end
 
--- ✅ PERFECT VOLUME SYSTEM
+-- VOLUME SYSTEM
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(newVol, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
@@ -85,7 +200,7 @@ local function UpdateVolume(newVol)
     if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume, 0, 1, 0) end
 end
 
--- SOUND SYSTEM
+-- SOUND PLAYER
 local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D", "") end
 local function PlaySound(id)
     pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
@@ -202,11 +317,11 @@ local function OpenBoomboxMenu()
     AddRainbowGlow(StopBtn,2)
 
     PlayBtn.MouseButton1Click:Connect(function() if Input.Text ~= "" then PlaySound(Input.Text) end end)
-    StopBtn.MouseButton1Click:Connect(function() pcall(function() CurrentSound:Destroy() end) end)
+    StopBtn.MouseButton1Click:Connect(function() pcall(function() if CurrentSound then CurrentSound:Destroy() end) end)
     CloseBtn.MouseButton1Click:Connect(function() BoomUI:Destroy() end)
 end
 
--- CONSOLE
+-- SCRIPT CONSOLE
 local function OpenConsole()
     local ConsoleUI = Instance.new("ScreenGui")
     ConsoleUI.Name = "BLUE_CONSOLE"
@@ -319,7 +434,6 @@ MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
--- DRAG HANDLE
 DragHandle = Instance.new("TextButton")
 DragHandle.Size = UDim2.new(1,-25,0,22)
 DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
@@ -336,7 +450,7 @@ TimerLabel = Instance.new("TextLabel")
 TimerLabel.Size = UDim2.new(0,100,1,0)
 TimerLabel.Position = UDim2.new(1,-105,0,0)
 TimerLabel.BackgroundTransparency = 1
-TimerLabel.Text = "00:00:00 / 12:00:00"
+TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00:00",math.floor(UsedTime/3600),math.floor((UsedTime%3600)/60),math.floor(UsedTime%60))
 TimerLabel.TextColor3 = Color3.new(1,1,1)
 TimerLabel.Font = Enum.Font.GothamBold
 TimerLabel.TextScaled = true
@@ -354,7 +468,6 @@ MinimizeBtn.TextScaled = true
 MinimizeBtn.Parent = MainFrame
 AddRainbowGlow(MinimizeBtn,2)
 
--- ALL BUTTONS | NO MISSING | NO TYPOS
 ESPBright = Instance.new("TextButton")
 ESPBright.Size = UDim2.new(0,85,0,30)
 ESPBright.Position = UDim2.new(0,10,0,30)
@@ -364,8 +477,9 @@ ESPBright.TextColor3 = Color3.new(1,1,1)
 ESPBright.Font = Enum.Font.GothamBold
 ESPBright.TextScaled = true
 ESPBright.Parent = MainFrame
-Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
+Instance.new("UICorner", ESPBright).CornerRadius = UDim.new(0,6)
 AddRainbowGlow(ESPBright,2)
+ESPBtn = ESPBright
 
 local YouTubeBtn = Instance.new("TextButton")
 YouTubeBtn.Size = UDim2.new(0,95,0,30)
@@ -427,7 +541,6 @@ ExitBtn.Parent = MainFrame
 Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
 AddRainbowGlow(ExitBtn,2)
 
--- MAIN VOLUME SLIDER
 local VolLabelMain = Instance.new("TextLabel")
 VolLabelMain.Size = UDim2.new(0,70,0,25)
 VolLabelMain.Position = UDim2.new(0,10,0,65)
@@ -469,7 +582,6 @@ UserInputService.InputChanged:Connect(function(i)
     if SliderActiveMain then UpdateVolume(math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X)/VolBGMain.AbsoluteSize.X, 0, 1)) end
 end)
 
--- DRAG RULES EXACTLY AS REQUESTED
 local DragState = {Active = false, StartX = 0, StartY = 0, StartPosX = 0, StartPosY = 0}
 MainFrame.InputBegan:Connect(function(Input)
     if Buttons_Locked then return end
@@ -491,14 +603,12 @@ UserInputService.InputChanged:Connect(function(Input)
     end
 end)
 
--- LOCK/UNLOCK
 LockBtn.MouseButton1Click:Connect(function()
     Buttons_Locked = not Buttons_Locked
     LockBtn.Text = Buttons_Locked and "🔒 LOCKED" or "🔓 UNLOCKED"
     LockBtn.BackgroundColor3 = Buttons_Locked and Color3.fromRGB(180,40,40) or Color3.fromRGB(50,50,50)
 end)
 
--- MINIMIZE
 MinimizeBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
     if IsMinimized then
@@ -530,7 +640,6 @@ MinimizeBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- BUTTON FUNCTIONS
 ESPBright.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
     ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
@@ -544,9 +653,9 @@ ESPBright.MouseButton1Click:Connect(function()
 end)
 
 YouTubeBtn.MouseButton1Click:Connect(function()
-    if setclipboard then setclipboard(YOUTUBE_LINK) end
+    pcall(function() if setclipboard then setclipboard(YOUTUBE_LINK) end end)
     YouTubeBtn.Text = "✅ COPIED!"
-    task.wait(1.5)
+    task_wait(1.5)
     YouTubeBtn.Text = "📺 YOUTUBE"
 end)
 
@@ -558,7 +667,6 @@ ExitBtn.MouseButton1Click:Connect(FullCleanup)
 MainLoop = RunService.Heartbeat:Connect(function(Delta)
     if not MainUI or not MainUI.Parent then return end
 
-    -- TIMER
     local Now = os.time()
     UsedTime = UsedTime + math.max(0, Now - LastCheckTime)
     LastCheckTime = Now
@@ -568,21 +676,20 @@ MainLoop = RunService.Heartbeat:Connect(function(Delta)
     local s = math.floor(UsedTime%60)
     TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00:00",h,m,s)
 
-    if UsedTime >= USAGE_LIMIT and not IsOwner then
-        SaveData(SAVE_KEY_COOLDOWN, os.time()+COOLDOWN)
-        pcall(function() delfile(SAVE_KEY_USED..".txt") end)
-        FullCleanup()
-        return
+    -- AUTO PROMPT WHEN TIME RUNS OUT
+    if UsedTime >= USAGE_LIMIT then
+        if not ShowPasswordPrompt() then return end
+        UsedTime = 0
     end
 
-    -- RAINBOW EFFECT
+    -- RAINBOW ANIMATION
     Hue = (Hue + Delta*0.5) % 1
     local Rainbow = Color3.fromHSV(Hue, 1, 1)
     for _,e in pairs(GuiElements) do e.Color = Rainbow end
     if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
     if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
 
-    -- ESP + FRIEND MARKERS
+    -- ESP SYSTEM
     if not ESP_Enabled then return end
     for _,P in pairs(Players:GetPlayers()) do
         if P == LocalPlayer then continue end
@@ -599,7 +706,6 @@ MainLoop = RunService.Heartbeat:Connect(function(Delta)
         Outline.FillTransparency = 1
         Outline.OutlineTransparency = 0
         Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        Outline.Adornee = Char
         Outline.OutlineColor = Rainbow
 
         local IsFriend = false
@@ -623,4 +729,4 @@ MainLoop = RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ BLUE MODE ESP | FULL VERSION | ALL FEATURES READY!")
+print("✅ BLUE MODE ESP | LOADED | CODE: Blue_Mode192823")
