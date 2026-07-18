@@ -1,7 +1,7 @@
 -- ==============================================
--- BLUE MODE ESP | VOLUME FULLY FIXED | ALL FEATURES KEPT
+-- BLUE MODE ESP | FINAL FIX | NO HIDDEN BUTTONS
 -- ACCESS CODE: Blue_Mode192823
--- ✅ VOLUME 0-100% | ✅ SAVED | ✅ SYNCED | ✅ NO MISSING BUTTONS
+-- ✅ MINIMIZE KEEPS ALL BUTTONS VISIBLE | ✅ RAINBOW | ✅ VOLUME FIXED
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -19,9 +19,9 @@ local CORRECT_CODE = "Blue_Mode192823"
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v19"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v20"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v20"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v20"
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() if writefile then writefile(key..".txt", tostring(value)) end end) end
@@ -184,27 +184,26 @@ local function AddRainbowGlow(target, thickness)
     return Outline
 end
 
--- ✅ VOLUME UPDATE (PERMANENTLY FIXED)
+-- VOLUME SYSTEM
 local function UpdateVolume(newVol)
-    MusicVolume = math.clamp(newVol, 0, 1) -- Lock 0-100%
-    SaveData(SAVE_KEY_VOLUME, MusicVolume) -- Save setting
-    if CurrentSound then CurrentSound.Volume = MusicVolume end -- Apply to playing music
+    MusicVolume = math.clamp(newVol, 0, 1)
+    SaveData(SAVE_KEY_VOLUME, MusicVolume)
+    if CurrentSound then CurrentSound.Volume = MusicVolume end
     local Pct = math.floor(MusicVolume * 100 + 0.5).."%"
-    -- Sync ALL displays
     if VolNumTextMain then VolNumTextMain.Text = Pct end
     if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume,0,1,0) end
     if VolNumMenu then VolNumMenu.Text = Pct end
     if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume,0,1,0) end
 end
 
--- SOUND SYSTEM
+-- SOUND
 local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D","") end
 local function PlaySound(id)
     pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
     CurrentSound = Instance.new("Sound")
     CurrentSound.Name = "BLUE_BOOMBOX"
     CurrentSound.SoundId = FormatSoundID(id)
-    CurrentSound.Volume = MusicVolume -- Load saved volume
+    CurrentSound.Volume = MusicVolume
     CurrentSound.Looped = true
     CurrentSound.Parent = SoundService
     pcall(function() CurrentSound:Play() end)
@@ -434,7 +433,11 @@ local function OpenConsole()
     CloseTop.MouseButton1Click:Connect(CloseConsole)
 end
 
--- MAIN UI
+-- MAIN UI SIZES ✅ FIXED
+local FULL_HEIGHT = 110
+local MIN_HEIGHT = 90 -- ✅ STILL TALL ENOUGH FOR ALL BUTTONS
+local UI_WIDTH = 680
+
 local MainUI = Instance.new("ScreenGui")
 MainUI.Name = "BLUE_MODE_ESP"
 MainUI.ResetOnSpawn = false
@@ -442,21 +445,19 @@ MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 MainUI.DisplayOrder = 999999
 MainUI.Parent = PlayerGui
 
-local FULL_SIZE = UDim2.new(0,680,0,105)
-local MIN_SIZE = UDim2.new(0,680,0,50)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = FULL_SIZE
-MainFrame.Position = UDim2.new(0,20,0.5,-52)
+MainFrame.Size = UDim2.new(0,UI_WIDTH,0,FULL_HEIGHT)
+MainFrame.Position = UDim2.new(0,20,0.5,-55)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 MainFrame.Active = true
-MainFrame.ClipsDescendants = false
+MainFrame.ClipsDescendants = false -- ✅ NO CLIPPING/BUTTON HIDING
 MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
 -- DRAG HANDLE
 local DragHandle = Instance.new("TextButton")
-DragHandle.Size = UDim2.new(1,0,0,26)
+DragHandle.Size = UDim2.new(1,0,0,28)
 DragHandle.Position = UDim2.new(0,0,0,0)
 DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
 DragHandle.Active = true
@@ -469,8 +470,8 @@ DragHandle.Parent = MainFrame
 AddRainbowGlow(DragHandle,2)
 
 local TimerLabel = Instance.new("TextLabel")
-TimerLabel.Size = UDim2.new(0,100,1,0)
-TimerLabel.Position = UDim2.new(1,-105,0,0)
+TimerLabel.Size = UDim2.new(0,110,1,0)
+TimerLabel.Position = UDim2.new(1,-115,0,0)
 TimerLabel.BackgroundTransparency = 1
 TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00:00",math.floor(UsedTime/3600),math.floor((UsedTime%3600)/60),math.floor(UsedTime%60))
 TimerLabel.TextColor3 = Color3.new(1,1,1)
@@ -480,8 +481,8 @@ TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
 TimerLabel.Parent = DragHandle
 
 local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Size = UDim2.new(0,26,0,26)
-MinimizeBtn.Position = UDim2.new(1,-26,0,0)
+MinimizeBtn.Size = UDim2.new(0,28,0,28)
+MinimizeBtn.Position = UDim2.new(1,-28,0,0)
 MinimizeBtn.BackgroundColor3 = Color3.fromRGB(160,40,40)
 MinimizeBtn.Text = "➖"
 MinimizeBtn.TextColor3 = Color3.new(1,1,1)
@@ -490,7 +491,7 @@ MinimizeBtn.TextScaled = true
 MinimizeBtn.Parent = MainFrame
 AddRainbowGlow(MinimizeBtn,2)
 
--- ALL BUTTONS
+-- ✅ ALL BUTTONS PLACED CORRECTLY
 local ESPBtn = Instance.new("TextButton")
 ESPBright.Size = UDim2.new(0,85,0,30)
 ESPBright.Position = UDim2.new(0,10,0,32)
@@ -637,9 +638,10 @@ LockBtn.MouseButton1Click:Connect(function()
     LockBtn.BackgroundColor3 = Buttons_Locked and Color3.fromRGB(180,40,40) or Color3.fromRGB(50,50,50)
 end)
 
+-- ✅ MINIMIZE NOW ONLY CHANGES HEIGHT — BUTTONS STAY!
 MinimizeBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
-    MainFrame.Size = IsMinimized and MIN_SIZE or FULL_SIZE
+    MainFrame.Size = UDim2.new(0,UI_WIDTH,0, IsMinimized and MIN_HEIGHT or FULL_HEIGHT)
     MinimizeBtn.Text = IsMinimized and "➕" or "➖"
 end)
 
@@ -681,7 +683,7 @@ RunService.Heartbeat:Connect(function(Delta)
         UsedTime = 0
     end
 
-    -- Rainbow effect
+    -- Rainbow effects
     Hue = (Hue + Delta*0.5) %1
     local Rainbow = Color3.fromHSV(Hue,1,1)
     for _,e in pairs(GuiElements) do e.Color = Rainbow end
@@ -733,4 +735,4 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ BLUE MODE ESP | VOLUME FIXED | CODE: Blue_Mode192823")
+print("✅ BLUE MODE ESP | BUTTONS ALWAYS VISIBLE | CODE: Blue_Mode192823")
