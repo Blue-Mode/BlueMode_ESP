@@ -1,7 +1,7 @@
 -- ==============================================
--- BLUE MODE ESP | ULTRA TINY MINIMIZED CUBE
--- ✅ Smallest Clean Size | Timer + + Only
--- ✅ No Blocking | Rainbow Timer
+-- BLUE MODE ESP | FINAL DRAG AREA FIXED
+-- ✅ Drag Text Fully Visible | No Overlap Ever
+-- ✅ Ultra Tiny Minimized | Rainbow Timer
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -17,9 +17,9 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v16"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v16"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v16"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v17"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v17"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v17"
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
@@ -396,7 +396,7 @@ end
 
 -- MAIN UI SIZES
 local FULL_SIZE = UDim2.new(0,680,0,105)
-local MINI_SIZE = UDim2.new(0,110,0,36) -- ✅ ULTRA TINY CUBE
+local MINI_SIZE = UDim2.new(0,110,0,36) -- ULTRA TINY CUBE
 local MainUI = Instance.new("ScreenGui")
 MainUI.Name = "BLUE_MODE_ESP"
 MainUI.ResetOnSpawn = false
@@ -413,9 +413,9 @@ MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
--- DRAG BAR + TIMER ON RIGHT (NO BLOCKING)
+-- ✅ DRAG BAR: FULL LEFT AREA FREE | TIMER ON FAR RIGHT
 local DragHandle = Instance.new("TextButton")
-DragHandle.Size = UDim2.new(1,-25,0,22)
+DragHandle.Size = UDim2.new(1,-30,0,22) -- Extra space reserved for timer
 DragHandle.Position = UDim2.new(0,0,0,0)
 DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
 DragHandle.Active = true
@@ -427,9 +427,10 @@ DragHandle.TextXAlignment = Enum.TextXAlignment.Left
 DragHandle.Parent = MainFrame
 AddRainbowGlow(DragHandle,2)
 
+-- ✅ TIMER: PLACED ON FAR RIGHT, NO OVERLAP
 local TimerLabel = Instance.new("TextLabel")
-TimerLabel.Size = UDim2.new(0,130,1,0)
-TimerLabel.Position = UDim2.new(1,-135,0,0)
+TimerLabel.Size = UDim2.new(0,120,1,0)
+TimerLabel.Position = UDim2.new(1,-125,0,0) -- Fully separated from drag text
 TimerLabel.BackgroundTransparency = 1
 TimerLabel.Text = "00:00:00 / 12:00"
 TimerLabel.TextColor3 = Color3.new(1,1,1)
@@ -439,7 +440,7 @@ TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
 TimerLabel.Parent = DragHandle
 
 local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0,22,1,0) -- ✅ SMALL + BUTTON
+MinBtn.Size = UDim2.new(0,22,1,0)
 MinBtn.Position = UDim2.new(1,-22,0,0)
 MinBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
 MinBtn.Text = "➖"
@@ -601,7 +602,7 @@ LockBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ✅ MINIMIZE: ULTRA CLEAN TINY CUBE
+-- ✅ MINIMIZE: CLEAN TINY CUBE
 MinBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
     if IsMinimized then
@@ -615,13 +616,13 @@ MinBtn.MouseButton1Click:Connect(function()
         VolLabelMain.Visible = false
         VolNumTextMain.Visible = false
         VolBGMain.Visible = false
-        DragHandle.Text = "" -- NO NAME TEXT
-        MinBtn.Text = "➕" -- SMALL PLUS
+        DragHandle.Text = ""
+        MinBtn.Text = "➕"
         TimerLabel.Size = UDim2.new(1,-28,1,0)
         TimerLabel.Position = UDim2.new(0,4,0,0)
         TimerLabel.TextXAlignment = Enum.TextXAlignment.Center
         TimerLabel.TextScaled = false
-        TimerLabel.TextSize = 12 -- ✅ VERY SMALL TIMER FONT
+        TimerLabel.TextSize = 12
     else
         MainFrame.Size = FULL_SIZE
         ESPBtn.Visible = true
@@ -635,8 +636,8 @@ MinBtn.MouseButton1Click:Connect(function()
         VolBGMain.Visible = true
         DragHandle.Text = "made by BLUE_MODE | DRAG HERE"
         MinBtn.Text = "➖"
-        TimerLabel.Size = UDim2.new(0,130,1,0)
-        TimerLabel.Position = UDim2.new(1,-135,0,0)
+        TimerLabel.Size = UDim2.new(0,120,1,0)
+        TimerLabel.Position = UDim2.new(1,-125,0,0)
         TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
         TimerLabel.TextScaled = true
         TimerLabel.TextSize = nil
@@ -756,4 +757,4 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ READY: Ultra Tiny Cube | Timer + + Only | Clear View")
+print("✅ DONE: Drag Text Fully Visible | No Overlap | Tiny Clean Cube")
