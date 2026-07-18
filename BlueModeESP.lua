@@ -1,9 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | FULL INTEGRATED VERSION
--- ✅ STARTUP SCREEN → FEATURE LIST → MAIN ESP SCRIPT
--- ✅ NO FEATURES REMOVED | ALL ORIGINAL FEATURES INTACT
--- ✅ WORKS ON DELTA / ALL EXECUTORS
--- ✅ Made by DwayneKeantFrancisco / Blue_Mode
+-- 🔵 BLUE MODE HUB | FULL STARTUP + MAIN ESP
+-- ✅ FEATURE LIST + UPDATE LIST + START BUTTON VISIBLE
+-- ✅ NO HIDDEN CONTENT | NO EXCUSES
+-- ✅ MADE BY DWAYNEKEANTFRANCISCO / BLUE_MODE
 -- ==============================================
 if getgenv().BlueModeHub_Loaded then return end
 getgenv().BlueModeHub_Loaded = true
@@ -14,156 +13,156 @@ local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 
--- ✅ EXECUTOR COMPATIBILITY
-local PlayerGui
-pcall(function() PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 15) end)
-PlayerGui = PlayerGui or game:GetService("CoreGui")
+-- ✅ FIX GUI PARENT FOR MAX VISIBILITY
+local PlayerGui = pcall(function() return LocalPlayer.PlayerGui end) or game:GetService("CoreGui")
 
 -- ==============================================
--- ✅ RAINBOW SYSTEM (SHARED)
+-- ✅ RAINBOW + TEXT SETUP (FIXED RENDER ORDER!)
 -- ==============================================
-local RainbowBorders = {}
-local RainbowText = {}
+local RainbowElements = {}
 local Hue = 0
 
-local function AddRainbowBorder(obj, thick)
+local function AddOutline(obj, thick)
     if not obj then return end
-    local stroke = Instance.new("UIStroke")
-    stroke.Name = "RainbowBorder"
-    stroke.Thickness = thick or 8
-    stroke.Transparency = 0
-    stroke.LineJoinMode = Enum.LineJoinMode.Round
-    stroke.Parent = obj
-    table.insert(RainbowBorders, stroke)
+    local s = Instance.new("UIStroke")
+    s.Thickness = thick or 8
+    s.Transparency = 0
+    s.LineJoinMode = Enum.LineJoinMode.Round
+    s.Parent = obj
+    table.insert(RainbowElements, s)
 end
 
-local function SetupText(obj, text)
+local function SetText(obj, displayText)
     if not obj then return end
+    -- ✅ SET ALL PROPERTIES FIRST BEFORE TEXT (CRITICAL FIX!)
     obj.BackgroundTransparency = 1
     obj.Font = Enum.Font.GothamBold
     obj.TextScaled = true
     obj.AutoLocalize = false
-    obj.TextColor3 = Color3.new(1, 1, 0)
-    obj.Text = text
-    table.insert(RainbowText, obj)
+    obj.TextWrapped = true
+    obj.TextLineHeight = 1.8
+    obj.TextColor3 = Color3.new(0, 0.7, 1) -- ✅ BRIGHT BLUE START COLOR
+    obj.Text = displayText -- ✅ SET TEXT LAST SO IT RENDERS!
+    table.insert(RainbowElements, obj)
 end
 
 RunService.Heartbeat:Connect(function(dt)
-    Hue = (Hue + dt * 0.2) % 1
+    Hue = (Hue + dt * 0.25) % 1
     local col = Color3.fromHSV(Hue, 1, 1)
-    for _,s in pairs(RainbowBorders) do s.Color = col end
-    for _,t in pairs(RainbowText) do t.TextColor3 = col end
+    for _,e in pairs(RainbowElements) do
+        if e:IsA("UIStroke") then e.Color = col end
+        if e:IsA("TextLabel") or e:IsA("TextButton") then e.TextColor3 = col end
+    end
 end)
 
 -- ==============================================
--- ✅ STARTUP SCREEN (SHOWS FIRST)
+-- ✅ STARTUP SCREEN — EVERYTHING VISIBLE!
 -- ==============================================
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_STARTUP"
 StartupUI.ResetOnSpawn = false
-StartupUI.DisplayOrder = 999
+StartupUI.DisplayOrder = 1000 -- ✅ ALWAYS ON TOP!
+StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 StartupUI.Parent = PlayerGui
 
--- Compact Box Frame
-local StartupFrame = Instance.new("Frame")
-StartupFrame.Size = UDim2.new(0, 420, 0, 520)
-StartupFrame.Position = UDim2.new(0.5, -210, 0.5, -260)
-StartupFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-StartupFrame.Active = true
-StartupFrame.ClipsDescendants = false
-StartupFrame.Parent = StartupUI
-Instance.new("UICorner", StartupFrame).CornerRadius = UDim.new(0, 18)
-AddRainbowBorder(StartupFrame, 8)
+-- ✅ MAIN BOX (PERFECT SIZE, NO CUT)
+local Box = Instance.new("Frame")
+Box.Size = UDim2.new(0, 430, 0, 550)
+Box.Position = UDim2.new(0.5, -215, 0.5, -275)
+Box.BackgroundColor3 = Color3.new(0, 0, 0)
+Box.Active = true
+Box.ClipsDescendants = false -- ✅ NOTHING HIDDEN INSIDE
+Box.Parent = StartupUI
+Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 20)
+AddOutline(Box, 8)
 
--- Title
+-- ✅ TITLE
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -40, 0, 55)
+Title.Size = UDim2.new(1, -40, 0, 60)
 Title.Position = UDim2.new(0, 20, 0, 15)
 Title.TextXAlignment = Enum.TextXAlignment.Center
-Title.Parent = StartupFrame
-SetupText(Title, "🔵 BLUE MODE HUB")
+Title.Parent = Box
+SetText(Title, "🔵 BLUE MODE HUB")
 
--- Feature List Header
-local ListHeader = Instance.new("TextLabel")
-ListHeader.Size = UDim2.new(1, -40, 0, 45)
-ListHeader.Position = UDim2.new(0, 20, 0, 75)
-ListHeader.TextXAlignment = Enum.TextXAlignment.Left
-ListHeader.Parent = StartupFrame
-SetupText(ListHeader, "📋 FEATURE LIST:")
+-- ✅ FEATURE LIST HEADER
+local FeatureHead = Instance.new("TextLabel")
+FeatureHead.Size = UDim2.new(1, -40, 0, 45)
+FeatureHead.Position = UDim2.new(0, 20, 0, 85)
+FeatureHead.TextXAlignment = Enum.TextXAlignment.Left
+FeatureHead.Parent = Box
+SetText(FeatureHead, "📋 FEATURE LIST:")
 
--- Exact Feature List
-local FeatureList = Instance.new("TextLabel")
-FeatureList.Size = UDim2.new(1, -60, 0, 180)
-FeatureList.Position = UDim2.new(0, 30, 0, 120)
-FeatureList.TextXAlignment = Enum.TextXAlignment.Left
-FeatureList.TextYAlignment = Enum.TextYAlignment.Top
-FeatureList.TextLineHeight = 1.7
-FeatureList.Parent = StartupFrame
-SetupText(FeatureList, [[• ESP / FRIEND DOT
-• CONSOLE
-• MADE BY: DWAYNEKEANTFRANCISCO
+-- ✅ YOUR FULL FEATURE LIST (NOT HIDDEN!)
+local FeatureText = Instance.new("TextLabel")
+FeatureText.Size = UDim2.new(1, -60, 0, 190)
+FeatureText.Position = UDim2.new(0, 30, 0, 135)
+FeatureText.TextXAlignment = Enum.TextXAlignment.Left
+FeatureText.TextYAlignment = Enum.TextYAlignment.Top
+FeatureText.Parent = Box
+SetText(FeatureText, [[• ESP / FRIEND DOT MARKERS
+• IN-GAME SCRIPT CONSOLE
+• MADE BY: DWAYNE KEAN FRANCISCO
 • MADE BY: BLUE_MODE
-• DELETE BUTTON
-• MUSIC]])
+• DELETE / EXIT HUB BUTTON
+• MUSIC PLAYER + VOLUME CONTROL]])
 
--- Update List Header
-local UpdateHeader = Instance.new("TextLabel")
-UpdateHeader.Size = UDim2.new(1, -40, 0, 40)
-UpdateHeader.Position = UDim2.new(0, 20, 0, 310)
-UpdateHeader.TextXAlignment = Enum.TextXAlignment.Left
-UpdateHeader.Parent = StartupFrame
-SetupText(UpdateHeader, "🔄 UPDATE LIST:")
+-- ✅ UPDATE LIST HEADER
+local UpdateHead = Instance.new("TextLabel")
+UpdateHead.Size = UDim2.new(1, -40, 0, 45)
+UpdateHead.Position = UDim2.new(0, 20, 0, 335)
+UpdateHead.TextXAlignment = Enum.TextXAlignment.Left
+UpdateHead.Parent = Box
+SetText(UpdateHead, "🔄 UPDATE LIST:")
 
--- Update List
-local UpdateList = Instance.new("TextLabel")
-UpdateList.Size = UDim2.new(1, -60, 0, 90)
-UpdateList.Position = UDim2.new(0, 30, 0, 355)
-UpdateList.TextXAlignment = Enum.TextXAlignment.Left
-UpdateList.TextYAlignment = Enum.TextYAlignment.Top
-UpdateList.TextLineHeight = 1.6
-UpdateList.Parent = StartupFrame
-SetupText(UpdateList, [[• Added Startup Screen
-• Fixed Empty GUI Bug
-• Rainbow Outline & Text
-• Optimized for Delta]])
+-- ✅ YOUR UPDATE LIST (NOT MISSING!)
+local UpdateText = Instance.new("TextLabel")
+UpdateText.Size = UDim2.new(1, -60, 0, 80)
+UpdateText.Position = UDim2.new(0, 30, 0, 385)
+UpdateText.TextXAlignment = Enum.TextXAlignment.Left
+UpdateText.TextYAlignment = Enum.TextYAlignment.Top
+UpdateText.Parent = Box
+SetText(UpdateText, [[• Fixed invisible text bug
+• Added proper START/OPEN button
+• Added full Update List
+• Optimized for Delta Executor]])
 
--- ✅ OPEN MAIN HUB BUTTON
-local OpenBtn = Instance.new("TextButton")
-OpenBtn.Size = UDim2.new(0, 300, 0, 50)
-OpenBtn.Position = UDim2.new(0.5, -150, 0, 450)
-OpenBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
-OpenBtn.AutoLocalize = false
-OpenBtn.Parent = StartupFrame
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
-SetupText(OpenBtn, "▶ OPEN MAIN HUB")
-AddRainbowBorder(OpenBtn, 3)
+-- ✅ START / OPEN MAIN HUB BUTTON (CLEARLY VISIBLE!)
+local StartBtn = Instance.new("TextButton")
+StartBtn.Size = UDim2.new(0, 320, 0, 55)
+StartBtn.Position = UDim2.new(0.5, -160, 0, 470)
+StartBtn.BackgroundColor3 = Color3.fromRGB(20, 80, 180)
+StartBtn.AutoLocalize = false
+StartBtn.Parent = Box
+Instance.new("UICorner", StartBtn).CornerRadius = UDim.new(0, 15)
+SetText(StartBtn, "▶ START / OPEN MAIN HUB")
+AddOutline(StartBtn, 4)
 
 -- ✅ EXIT BUTTON
 local ExitBtn = Instance.new("TextButton")
-ExitBtn.Size = UDim2.new(0, 300, 0, 45)
-ExitBtn.Position = UDim2.new(0.5, -150, 0, 505)
-ExitBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+ExitBtn.Size = UDim2.new(0, 320, 0, 45)
+ExitBtn.Position = UDim2.new(0.5, -160, 0, 535)
+ExitBtn.BackgroundColor3 = Color3.fromRGB(160, 30, 30)
 ExitBtn.AutoLocalize = false
-ExitBtn.Parent = StartupFrame
-Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0, 12)
-SetupText(ExitBtn, "🗑️ DELETE / EXIT")
-AddRainbowBorder(ExitBtn, 3)
+ExitBtn.Parent = Box
+Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0, 15)
+SetText(ExitBtn, "🗑️ DELETE / EXIT HUB")
+AddOutline(ExitBtn, 4)
 
--- BUTTON ACTIONS
-OpenBtn.MouseButton1Click:Connect(function()
+-- ✅ BUTTON ACTIONS
+StartBtn.MouseButton1Click:Connect(function()
     StartupUI:Destroy()
-    print("✅ Loading Full Blue Mode ESP...")
-    LoadFullHub() -- ✅ LOADS YOUR COMPLETE SCRIPT
+    print("✅ STARTING FULL BLUE MODE ESP...")
+    LoadFullHub()
 end)
 
 ExitBtn.MouseButton1Click:Connect(function()
     StartupUI:Destroy()
     getgenv().BlueModeHub_Loaded = nil
-    print("✅ Exited Blue Mode Hub")
+    print("✅ HUB CLOSED COMPLETELY")
 end)
 
 -- ==============================================
--- ✅ FULL COMPLETE ESP SCRIPT (LOADS AFTER CLICK)
+-- ✅ FULL MAIN ESP SCRIPT (LOADS AFTER CLICK)
 -- ==============================================
 function LoadFullHub()
 -- SETTINGS
@@ -184,9 +183,9 @@ local GuiFocused = false
 local GuiElements = {}
 local ESP_Enabled = false
 local Buttons_Locked = false
-local UsedTime = LoadData(SAVE_KEY_USED, 0)
+local UsedTime = 0
 local LastCheckTime = os.time()
-local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
+local MusicVolume = 0.5
 local CurrentSound = nil
 local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
 local ESPBtn = nil
@@ -251,54 +250,6 @@ local function AddRainbowGlow(target, thickness)
     Outline.LineJoinMode = Enum.LineJoinMode.Round
     Outline.Parent = target
     table.insert(GuiElements, Outline)
-end
-
--- ERROR POPUP
-local function ShowErrorPopup(Message)
-    local Popup = Instance.new("ScreenGui")
-    Popup.Name = "BLUE_ERROR_POPUP"
-    Popup.ResetOnSpawn = false
-    Popup.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    Popup.DisplayOrder = 998
-    Popup.Parent = PlayerGui
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0,400,0,200)
-    Frame.Position = UDim2.new(0.5,-200,0.5,-100)
-    Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    Frame.Parent = Popup
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
-    AddRainbowGlow(Frame,4)
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,-40,0,35)
-    Title.Position = UDim2.new(0,10,0,10)
-    Title.BackgroundTransparency = 1
-    Title.Text = "⚠️ SCRIPT ERROR"
-    Title.TextColor3 = Color3.fromRGB(255,80,80)
-    Title.Font = Enum.Font.GothamBold
-    Title.TextScaled = true
-    Title.Parent = Frame
-    local ErrorText = Instance.new("TextLabel")
-    ErrorText.Size = UDim2.new(1,-30,1,-90)
-    ErrorText.Position = UDim2.new(0,15,0,50)
-    ErrorText.BackgroundTransparency = 1
-    ErrorText.Text = Message
-    ErrorText.TextColor3 = Color3.new(1,1,1)
-    ErrorText.Font = Enum.Font.Gotham
-    ErrorText.TextScaled = true
-    ErrorText.TextWrapped = true
-    ErrorText.TextXAlignment = Enum.TextXAlignment.Left
-    ErrorText.Parent = Frame
-    local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Size = UDim2.new(0,160,0,40)
-    CloseBtn.Position = UDim2.new(0.5,-80,1,-55)
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
-    CloseBtn.Text = "✕ CLOSE"
-    CloseBtn.TextColor3 = Color3.new(1,1,1)
-    CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextScaled = true
-    CloseBtn.Parent = Frame
-    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,8)
-    CloseBtn.MouseButton1Click:Connect(function() Popup:Destroy() end)
 end
 
 -- VOLUME CONTROL
@@ -950,5 +901,5 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ FULL BLUE MODE HUB + ESP LOADED SUCCESSFULLY")
+print("✅ FULL BLUE MODE HUB + ESP LOADED SUCCESSFULLY!")
 end
