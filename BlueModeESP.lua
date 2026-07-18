@@ -1,7 +1,8 @@
 -- ==============================================
--- BLUE MODE ESP | AUTO OFF WHEN YOU DIE
--- ✅ ESP + Friend Dots CLEAR on OFF / EXIT / YOUR DEATH
--- ✅ Minimized Cube | Drag Only When Unlocked
+-- BLUE MODE ESP | CLEAN TINY MINIMIZED CUBE
+-- ✅ Minimized: Only Timer + "+" Button
+-- ✅ No Extra Text
+-- ✅ All Features Kept
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -17,9 +18,9 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v11"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v11"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v11"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v13"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v13"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v13"
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
@@ -396,7 +397,7 @@ end
 
 -- MAIN UI SIZES
 local FULL_SIZE = UDim2.new(0,680,0,105)
-local MINI_SIZE = UDim2.new(0,160,0,40) -- ✅ CUBE SHAPE MINIMIZED
+local MINI_SIZE = UDim2.new(0,140,0,45) -- ✅ TINY CUBE SIZE
 local MainUI = Instance.new("ScreenGui")
 MainUI.Name = "BLUE_MODE_ESP"
 MainUI.ResetOnSpawn = false
@@ -428,20 +429,20 @@ DragHandle.Parent = MainFrame
 AddRainbowGlow(DragHandle,2)
 
 local TimerLabel = Instance.new("TextLabel")
-TimerLabel.Size = UDim2.new(0,100,1,0)
-TimerLabel.Position = UDim2.new(1,-105,0,0)
+TimerLabel.Size = UDim2.new(1,-30,1,0) -- ✅ FULL WIDTH IN MINI
+TimerLabel.Position = UDim2.new(0,5,0,0)
 TimerLabel.BackgroundTransparency = 1
 TimerLabel.Text = "00:00:00 / 12:00"
 TimerLabel.TextColor3 = Color3.new(1,1,1)
 TimerLabel.Font = Enum.Font.GothamBold
 TimerLabel.TextScaled = true
-TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
+TimerLabel.TextXAlignment = Enum.TextXAlignment.Center -- ✅ CENTERED
 TimerLabel.Parent = DragHandle
 
 local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0,22,1,0)
-MinBtn.Position = UDim2.new(1,-22,0,0)
-MinBtn.BackgroundColor3 = Color3.fromRGB(160,40,40)
+MinBtn.Size = UDim2.new(0,25,1,0)
+MinBtn.Position = UDim2.new(1,-25,0,0)
+MinBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
 MinBtn.Text = "➖"
 MinBtn.TextColor3 = Color3.new(1,1,1)
 MinBtn.Font = Enum.Font.GothamBold
@@ -601,11 +602,12 @@ LockBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- MINIMIZE TO CUBE
+-- ✅ MINIMIZE: TINY CUBE WITH TIMER + "+" ONLY
 MinBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
     if IsMinimized then
         MainFrame.Size = MINI_SIZE
+        -- HIDE ALL EXCEPT TIMER + BUTTON
         ESPBtn.Visible = false
         YouTubeBtn.Visible = false
         MusicBtn.Visible = false
@@ -615,10 +617,14 @@ MinBtn.MouseButton1Click:Connect(function()
         VolLabelMain.Visible = false
         VolNumTextMain.Visible = false
         VolBGMain.Visible = false
-        MinBtn.Text = "➕"
-        DragHandle.Text = "BLUE MODE"
+        DragHandle.Text = "" -- ✅ NO TEXT
+        MinBtn.Text = "➕" -- ✅ PLUS BUTTON
+        MinBtn.Size = UDim2.new(0,25,1,0)
+        MinBtn.Position = UDim2.new(1,-28,0,0)
+        TimerLabel.Visible = true -- ✅ TIMER STAYS
     else
         MainFrame.Size = FULL_SIZE
+        -- SHOW FULL UI
         ESPBtn.Visible = true
         YouTubeBtn.Visible = true
         MusicBtn.Visible = true
@@ -628,8 +634,11 @@ MinBtn.MouseButton1Click:Connect(function()
         VolLabelMain.Visible = true
         VolNumTextMain.Visible = true
         VolBGMain.Visible = true
-        MinBtn.Text = "➖"
         DragHandle.Text = "made by BLUE_MODE | DRAG HERE"
+        MinBtn.Text = "➖"
+        MinBtn.Size = UDim2.new(0,22,1,0)
+        MinBtn.Position = UDim2.new(1,-22,0,0)
+        TimerLabel.Visible = true
     end
 end)
 
@@ -671,26 +680,27 @@ RunService.Heartbeat:Connect(function(Delta)
     UsedTime = UsedTime + math.max(0, Now - LastCheckTime)
     LastCheckTime = Now
     SaveData(SAVE_KEY_USED, UsedTime)
-    local h = math.floor(UsedTime/3600)
-    local m = math.floor((UsedTime%3600)/60)
-    local s = math.floor(UsedTime%60)
+    local Remaining = math.max(0, USAGE_LIMIT - UsedTime)
+    local h = math.floor(Remaining/3600)
+    local m = math.floor((Remaining%3600)/60)
+    local s = Remaining%60
     TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00",h,m,s)
 
-    if UsedTime >= USAGE_LIMIT then
-        SaveData(SAVE_KEY_COOLDOWN, os.time()+COOLDOWN)
+    if Remaining <= 0 then
+        SaveData(SAVE_KEY_COOLDOWN, os.time() + COOLDOWN)
         pcall(function() delfile(SAVE_KEY_USED..".txt") end)
         ExitBtn:Fire()
         return
     end
 
-    -- RAINBOW ANIMATION
-    Hue = (Hue + Delta*0.5) %1
+    -- RAINBOW
+    Hue = (Hue + Delta*0.5) % 1
     local Rainbow = Color3.fromHSV(Hue,1,1)
     for _,e in pairs(GuiElements) do e.Color = Rainbow end
     if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
     if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
 
-    -- ESP RENDER
+    -- ESP
     if not ESP_Enabled then return end
     for _,P in pairs(Players:GetPlayers()) do
         if P == LocalPlayer then continue end
@@ -703,7 +713,7 @@ RunService.Heartbeat:Connect(function(Delta)
             continue
         end
         local Hum = Char:FindFirstChildOfClass("Humanoid")
-        if not Hum or Hum.Health <=0 then
+        if not Hum or Hum.Health <= 0 then
             pcall(function()
                 if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                 if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
@@ -716,10 +726,8 @@ RunService.Heartbeat:Connect(function(Delta)
         Outline.Name = "BLUE_Outline"
         Outline.FillTransparency = 1
         Outline.OutlineTransparency = 0
-        Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        Outline.Adornee = Char
         Outline.OutlineColor = Rainbow
-        Outline.Parent = Char
+        Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 
         -- FRIEND DOT
         local IsFriend = false
@@ -732,18 +740,18 @@ RunService.Heartbeat:Connect(function(Delta)
                 Dot.Name = "FriendRainbowDot"
                 Dot.AlwaysOnTop = true
                 Dot.Size = UDim2.new(0,18,0,18)
-                Dot.StudsOffset = Vector3.new(0,1.8,0)
-                local C = Instance.new("Frame",Dot)
-                C.Size = UDim2.new(1,0,1,0)
-                C.BackgroundColor3 = Rainbow
-                Instance.new("UICorner",C).CornerRadius = UDim.new(1,0)
+                Dot.StudsOffset = Vector3.new(0,2,0)
+                local Circ = Instance.new("Frame",Dot)
+                Circ.Size = UDim2.new(1,0,1,0)
+                Circ.BackgroundColor3 = Rainbow
+                Instance.new("UICorner",Circ).CornerRadius = UDim.new(1,0)
             else
                 Dot.Frame.BackgroundColor3 = Rainbow
             end
         elseif Dot then
-            Dot:Destroy() -- REMOVE IF NOT FRIEND
+            Dot:Destroy()
         end
     end
 end)
 
-print("✅ FINAL: ESP OFF ON DEATH | FRIEND DOTS CLEAR | MINI CUBE | DRAG WHEN UNLOCKED")
+print("✅ READY: TINY CUBE MINIMIZED | TIMER + + ONLY")
