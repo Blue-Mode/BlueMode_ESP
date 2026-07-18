@@ -1,7 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE ESP | FULL VERSION
--- ✅ ROBLOX SETTINGS > YOUR GUI > CHAT/GAME UI
--- ✅ NO BLOCKING TOP BUTTONS | ORIGINAL CODE UNCHANGED
+-- 🔵 BLUE MODE ESP | FULLY FIXED VERSION
+-- ✅ GUI STAYS OPEN AFTER STARTUP
+-- ✅ SETTINGS > YOUR GUI > CHAT/GAME UI
+-- ✅ NO BLOCKING TOP BUTTONS
 -- ✅ CREATOR: DWAYNE KEAN FRANCISCO / BLUE_MODE
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -13,9 +14,9 @@ local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 
--- ✅ PERFECT PRIORITY SETUP
+-- ✅ PERFECT PRIORITY: SETTINGS ALWAYS ABOVE YOUR GUI, YOUR GUI ABOVE GAME UI
 local GuiParent = game:GetService("CoreGui")
-local GUI_PRIORITY = 9999 -- Roblox system UI uses 10000+, so they stay above yours
+local GUI_PRIORITY = 9999 -- Roblox system UI uses 10000+, so they stay on top
 
 -- SETTINGS (EXACTLY YOUR ORIGINAL)
 local USAGE_LIMIT = 12 * 3600
@@ -32,6 +33,7 @@ local CurrentBoomboxUI = nil
 local CurrentConsoleUI = nil
 local IsMinimized = false
 local GuiFocused = false
+local StartupUI = nil -- ✅ Save reference so we only destroy startup, not everything
 
 -- DATA HELPERS (EXACTLY YOUR ORIGINAL)
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
@@ -40,7 +42,7 @@ local function LoadData(key, default) local v=nil; pcall(function() v=readfile(k
 -- ==============================================
 -- ✅ STARTUP SCREEN
 -- ==============================================
-local StartupUI = Instance.new("ScreenGui")
+StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_STARTUP"
 StartupUI.ResetOnSpawn = false
 StartupUI.DisplayOrder = GUI_PRIORITY
@@ -134,6 +136,7 @@ RunService.Heartbeat:Connect(function(dt)
     StartupTimerLabel.Text = string.format("TIME REMAINING: %02d:%02d:%02d", h, m, s)
 end)
 
+-- ✅ FIXED: ONLY DESTROY STARTUP, NOTHING ELSE
 OkBtn.MouseButton1Click:Connect(function()
     StartupUI:Destroy()
     LoadMainHub()
@@ -142,7 +145,7 @@ end)
 print("✅ BLUE MODE LOADED | PRIORITY: SETTINGS > GUI > CHAT")
 
 -- ==============================================
--- ✅ MAIN HUB & ALL FEATURES
+-- ✅ FULLY FIXED MAIN HUB
 -- ==============================================
 function LoadMainHub()
     local CurrentTime = os.time()
@@ -354,7 +357,7 @@ function LoadMainHub()
     end
 
     -- ==============================================
-    -- ✅ CONSOLE / MAIN HUB
+    -- ✅ MAIN HUB / CONSOLE
     -- ==============================================
     local function ToggleConsole()
         if ConsoleUI_Open then
@@ -414,7 +417,7 @@ function LoadMainHub()
         ESPBtn.TextScaled = true
         ESPBtn.Parent = Frame
         Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,10)
-        AddRainbowGlow(ESPBtn,2)
+        AddRainbowGlow(ESPBt n,2)
 
         local BoomBtn = Instance.new("TextButton")
         BoomBtn.Size = UDim2.new(1,-40,0,50)
@@ -452,9 +455,8 @@ function LoadMainHub()
         ExitBtn.MouseButton1Click:Connect(function()
             ClearAllESP()
             pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
-            pcall(function() StartupUI:Destroy() end)
-            pcall(function() ConsoleUI:Destroy() end)
             pcall(function() if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end end)
+            pcall(function() if CurrentConsoleUI then CurrentConsoleUI:Destroy() end end)
             getgenv().BlueMode_Loaded = nil
             print("✅ BLUE MODE UNLOADED")
         end)
@@ -465,10 +467,9 @@ function LoadMainHub()
             Hue = (Hue + dt * 0.5) % 1
             local Col = Color3.fromHSV(Hue, 1, 1)
             for _,v in pairs(GuiElements) do v.Color = Col end
-            if GuiFocused then return end
-            -- Add your ESP logic here if needed
         end)
     end
 
+    -- ✅ START THE MAIN HUB SO IT ACTUALLY SHOWS UP
     ToggleConsole()
 end
