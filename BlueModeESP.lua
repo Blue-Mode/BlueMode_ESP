@@ -1,5 +1,5 @@
 -- ==============================================
--- 🔵 BLUE MODE ESP | ALL GUI ABOVE GAME MECHANICS
+-- 🔵 👾BLUE MODE HUB👾 | ALL GUI ABOVE GAME MECHANICS
 -- ✅ ALL INTERFACES: Startup + Main + Boombox + Console = ALWAYS ON TOP
 -- ✅ VOLUME: 0–1000
 -- ✅ ROBLOX DEFAULT MENUS NOT AFFECTED
@@ -70,7 +70,7 @@ StartupTitle.Position = UDim2.new(0, 20, 0, 15)
 StartupTitle.BackgroundTransparency = 1
 StartupTitle.Font = Enum.Font.GothamBlack
 StartupTitle.TextScaled = true
-StartupTitle.Text = "🔵 BLUE MODE ESP"
+StartupTitle.Text = "🔵 👾BLUE MODE HUB👾"
 StartupTitle.TextColor3 = Color3.fromRGB(0, 190, 255)
 StartupTitle.Parent = StartupBox
 
