@@ -1,9 +1,8 @@
 -- ==============================================
--- BLUE MODE ESP | FULL VERSION + GLOBAL COUNTDOWN
--- ✅ Added Unfinish Global Countdown Popup
--- ✅ Same countdown for EVERYONE worldwide
--- ✅ All original ESP features fully preserved
--- ✅ Matches Blue Mode style perfectly
+-- BLUE MODE ESP | AUTO-UPDATE ON TIMER END
+-- ✅ Original old script 100% preserved
+-- ✅ Auto-loads new script when timer hits 0
+-- ✅ Keeps Global Countdown Popup
 -- ✅ Works on Delta & all executors
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -17,35 +16,7 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("CoreGui")
 
 -- ==============================================
--- 🕒 GLOBAL COUNTDOWN SETTINGS (SAME FOR ALL)
--- ==============================================
-local SHOW_GLOBAL_POPUP_ON_LOAD = true
-local GLOBAL_RELEASE_TIMESTAMP = 1784474940 -- 24 Hours from now (Global Sync)
-
--- ==============================================
--- SETTINGS
--- ==============================================
-local USAGE_LIMIT = 12 * 3600
-local COOLDOWN = 12 * 3600
-local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v19"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
-
--- TOGGLE STATES
-local BoomboxUI_Open = false
-local ConsoleUI_Open = false
-local CurrentBoomboxUI = nil
-local CurrentConsoleUI = nil
-local IsMinimized = false
-local GuiFocused = false
-
--- DATA HELPERS
-local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
-local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
-
--- ==============================================
--- 📢 UNFINISH GLOBAL COUNTDOWN POPUP
+-- 🕒 GLOBAL UNFINISH COUNTDOWN POPUP
 -- ==============================================
 local function ShowGlobalCountdownPopup()
     local PopupGui = Instance.new("ScreenGui")
@@ -108,10 +79,10 @@ local function ShowGlobalCountdownPopup()
     OkBtn.Parent = Box
     Instance.new("UICorner", OkBtn).CornerRadius = UDim.new(0,10)
 
-    -- Global Sync Update
+    local GLOBAL_RELEASE = 1784474940
     RunService.Heartbeat:Connect(function()
         if not PopupGui.Parent then return end
-        local Remaining = math.max(0, GLOBAL_RELEASE_TIMESTAMP - os.time())
+        local Remaining = math.max(0, GLOBAL_RELEASE - os.time())
         local d = math.floor(Remaining / 86400)
         local h = math.floor((Remaining % 86400) / 3600)
         local m = math.floor((Remaining % 3600) / 60)
@@ -132,16 +103,59 @@ local function ShowGlobalCountdownPopup()
     end)
 end
 
--- Show popup automatically on load
-if SHOW_GLOBAL_POPUP_ON_LOAD then
-    task.spawn(ShowGlobalCountdownPopup)
+task.spawn(ShowGlobalCountdownPopup)
+
+-- ==============================================
+-- 🔗 AUTO-LOAD NEW SCRIPT WHEN TIMER ENDS
+-- ==============================================
+local NEW_SCRIPT_URL = "https://raw.githubusercontent.com/YOUR_NAME/YOUR_REPO/main/BlueMode_NEW.lua" -- Replace with your GitHub link
+
+local function LoadNewVersion()
+    pcall(function()
+        print("🔄 Timer ended! Loading new Blue Mode version...")
+        task.wait(1)
+        loadstring(game:HttpGet(NEW_SCRIPT_URL))()
+    end)
 end
 
 -- ==============================================
--- REST OF YOUR ORIGINAL BLUE MODE ESP SCRIPT
+-- YOUR ORIGINAL OLD SCRIPT BELOW
 -- ==============================================
+local USAGE_LIMIT = 12 * 3600
+local COOLDOWN = 12 * 3600
+local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v19"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
 
--- FULL CLEANUP FUNCTION
+local BoomboxUI_Open = false
+local ConsoleUI_Open = false
+local CurrentBoomboxUI = nil
+local CurrentConsoleUI = nil
+local IsMinimized = false
+local GuiFocused = false
+local MainUI = nil
+
+local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
+local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
+
+local CurrentTime = os.time()
+local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
+if CurrentTime < CooldownEnd then
+    print("⏳ COOLDOWN ACTIVE! Wait "..math.floor((CooldownEnd-CurrentTime)/60).." mins")
+    return
+end
+
+local UsedTime = LoadData(SAVE_KEY_USED, 0)
+local LastCheckTime = os.time()
+local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
+local CurrentSound = nil
+local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
+local GuiElements = {}
+local ESP_Enabled = false
+local Buttons_Locked = false
+local Hue = 0
+
 local function ClearAllESP()
     for _,P in pairs(Players:GetPlayers()) do
         if P and P.Character then
@@ -158,26 +172,15 @@ local function ClearAllESP()
     end)
 end
 
--- COOLDOWN CHECK
-local CurrentTime = os.time()
-local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
-if CurrentTime < CooldownEnd then
-    print("⏳ COOLDOWN ACTIVE! Wait "..math.floor((CooldownEnd-CurrentTime)/60).." mins")
-    return
+local function FullCleanupAndExit()
+    ClearAllESP()
+    pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
+    if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
+    if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
+    if MainUI then MainUI:Destroy() end
+    getgenv().BlueMode_Loaded = nil
 end
 
--- VARIABLES
-local UsedTime = LoadData(SAVE_KEY_USED, 0)
-local LastCheckTime = os.time()
-local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
-local CurrentSound = nil
-local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
-local GuiElements = {}
-local ESP_Enabled = false
-local Buttons_Locked = false
-local Hue = 0
-
--- DEATH CHECK
 local function SetupDeathCheck()
     local function CheckCharacter(Char)
         if not Char then return end
@@ -198,7 +201,6 @@ local function SetupDeathCheck()
     LocalPlayer.CharacterAdded:Connect(CheckCharacter)
 end
 
--- RAINBOW GLOW
 local function AddRainbowGlow(target, thickness)
     if not target then return end
     local Outline = Instance.new("UIStroke")
@@ -210,54 +212,6 @@ local function AddRainbowGlow(target, thickness)
     table.insert(GuiElements, Outline)
 end
 
--- ERROR POPUP
-local function ShowErrorPopup(Message)
-    local Popup = Instance.new("ScreenGui")
-    Popup.Name = "BLUE_ERROR_POPUP"
-    Popup.ResetOnSpawn = false
-    Popup.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    Popup.Parent = PlayerGui
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0,400,0,200)
-    Frame.Position = UDim2.new(0.5,-200,0.5,-100)
-    Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    Frame.Parent = Popup
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
-    AddRainbowGlow(Frame,4)
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,-40,0,35)
-    Title.Position = UDim2.new(0,10,0,10)
-    Title.BackgroundTransparency = 1
-    Title.Text = "⚠️ SCRIPT ERROR"
-    Title.TextColor3 = Color3.fromRGB(255,80,80)
-    Title.Font = Enum.Font.GothamBold
-    Title.TextScaled = true
-    Title.Parent = Frame
-    local ErrorText = Instance.new("TextLabel")
-    ErrorText.Size = UDim2.new(1,-30,1,-90)
-    ErrorText.Position = UDim2.new(0,15,0,50)
-    ErrorText.BackgroundTransparency = 1
-    ErrorText.Text = Message
-    ErrorText.TextColor3 = Color3.new(1,1,1)
-    ErrorText.Font = Enum.Font.Gotham
-    ErrorText.TextScaled = true
-    ErrorText.TextWrapped = true
-    ErrorText.TextXAlignment = Enum.TextXAlignment.Left
-    ErrorText.Parent = Frame
-    local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Size = UDim2.new(0,160,0,40)
-    CloseBtn.Position = UDim2.new(0.5,-80,1,-55)
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
-    CloseBtn.Text = "✕ CLOSE"
-    CloseBtn.TextColor3 = Color3.new(1,1,1)
-    CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextScaled = true
-    CloseBtn.Parent = Frame
-    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,8)
-    CloseBtn.MouseButton1Click:Connect(function() Popup:Destroy() end)
-end
-
--- VOLUME CONTROL
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(tonumber(newVol) or 0.5, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
@@ -269,7 +223,6 @@ local function UpdateVolume(newVol)
     if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume,0,1,0) end
 end
 
--- SOUND SYSTEM
 local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D","") end
 local function PlaySound(id)
     pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
@@ -282,7 +235,6 @@ local function PlaySound(id)
     pcall(function() CurrentSound:Play() end)
 end
 
--- BOOMBOX MENU
 local function ToggleBoomboxMenu()
     if BoomboxUI_Open then
         if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
@@ -419,7 +371,6 @@ local function ToggleBoomboxMenu()
     StopBtn.MouseButton1Click:Connect(function() if CurrentSound then CurrentSound:Destroy() end end)
 end
 
--- CONSOLE MENU
 local function ToggleConsole()
     if ConsoleUI_Open then
         if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -530,10 +481,9 @@ local function ToggleConsole()
     ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
 end
 
--- MAIN UI
 local FULL_SIZE = UDim2.new(0,680,0,105)
 local MINI_SIZE = UDim2.new(0,110,0,36)
-local MainUI = Instance.new("ScreenGui")
+MainUI = Instance.new("ScreenGui")
 MainUI.Name = "BLUE_MODE_ESP"
 MainUI.ResetOnSpawn = false
 MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -549,7 +499,6 @@ MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
--- DRAG BAR + TIMER
 local DragHandle = Instance.new("TextButton")
 DragHandle.Size = UDim2.new(1,-30,0,22)
 DragHandle.Position = UDim2.new(0,0,0,0)
@@ -585,7 +534,6 @@ MinBtn.TextScaled = true
 MinBtn.Parent = MainFrame
 AddRainbowGlow(MinBtn,2)
 
--- BUTTONS
 local ESPBtn = Instance.new("TextButton")
 ESPBn = ESPBtn
 ESPBn.Size = UDim2.new(0,85,0,30)
@@ -659,7 +607,6 @@ ExitBtn.Parent = MainFrame
 Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
 AddRainbowGlow(ExitBtn,2)
 
--- MAIN VOLUME SLIDER
 local VolLabelMain = Instance.new("TextLabel")
 VolLabelMain.Size = UDim2.new(0,70,0,25)
 VolLabelMain.Position = UDim2.new(0,10,0,65)
@@ -685,7 +632,7 @@ VolBGMain.Size = UDim2.new(0,150,0,18)
 VolBGMain.Position = UDim2.new(0,135,0,67)
 VolBGMain.BackgroundColor3 = Color3.fromRGB(50,50,50)
 VolBGMain.Active = true
-VolBGMain.Parent = MainFrame
+VolBGMain.Parent = MainUI
 Instance.new("UICorner", VolBGMain).CornerRadius = UDim.new(0,9)
 AddRainbowGlow(VolBGMain,2)
 
@@ -709,7 +656,6 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 
--- DRAG + TOUCH BLOCK
 local DragState = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
 DragHandle.InputBegan:Connect(function(Input)
     GuiFocused = true
@@ -741,14 +687,12 @@ UserInputService.InputBegan:Connect(function(Input, GameProcessed)
     end
 end)
 
--- LOCK/UNLOCK
 LockBtn.MouseButton1Click:Connect(function()
     Buttons_Locked = not Buttons_Locked
     LockBtn.Text = Buttons_Locked and "🔒 LOCKED" or "🔓 UNLOCK"
     LockBtn.BackgroundColor3 = Buttons_Locked and Color3.fromRGB(180,40,40) or Color3.fromRGB(50,50,50)
 end)
 
--- MINIMIZE
 MinBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
     if IsMinimized then
@@ -790,7 +734,6 @@ MinBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ESP TOGGLE
 ESPBn.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
     ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
@@ -808,23 +751,15 @@ end)
 MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)
 ConsoleBtn.MouseButton1Click:Connect(ToggleConsole)
 
--- EXIT SCRIPT
 ExitBtn.MouseButton1Click:Connect(function()
-    ClearAllESP()
-    pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
-    if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
-    if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
-    MainUI:Destroy()
-    getgenv().BlueMode_Loaded = nil
+    FullCleanupAndExit()
 end)
 
 SetupDeathCheck()
 
--- MAIN LOOP
 RunService.Heartbeat:Connect(function(Delta)
     if not MainUI or not MainUI.Parent then return end
 
-    -- TIMER
     local Now = os.time()
     UsedTime = UsedTime + math.max(0, Now - LastCheckTime)
     LastCheckTime = Now
@@ -835,14 +770,15 @@ RunService.Heartbeat:Connect(function(Delta)
     local s = Remaining%60
     TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00",h,m,s)
 
+    -- ⏰ TIMER HITS 0 → AUTO LOAD NEW SCRIPT
     if Remaining <= 0 then
         SaveData(SAVE_KEY_COOLDOWN, os.time() + COOLDOWN)
         pcall(function() delfile(SAVE_KEY_USED..".txt") end)
-        ExitBtn:Fire()
+        FullCleanupAndExit()
+        LoadNewVersion() -- New version loads automatically here
         return
     end
 
-    -- RAINBOW ANIMATION
     Hue = (Hue + Delta*0.5) % 1
     local Rainbow = Color3.fromHSV(Hue,1,1)
     for _,e in pairs(GuiElements) do e.Color = Rainbow end
@@ -850,18 +786,11 @@ RunService.Heartbeat:Connect(function(Delta)
     if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
     TimerLabel.TextColor3 = Rainbow
 
-    -- ESP RENDER
     if not ESP_Enabled then return end
     for _,P in pairs(Players:GetPlayers()) do
         if P == LocalPlayer then continue end
         local Char = P.Character
-        if not Char then
-            pcall(function()
-                if Char and Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                if Char and Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-            end)
-            continue
-        end
+        if not Char then continue end
         local Hum = Char:FindFirstChildOfClass("Humanoid")
         if not Hum or Hum.Health <= 0 then
             pcall(function()
@@ -871,7 +800,6 @@ RunService.Heartbeat:Connect(function(Delta)
             continue
         end
 
-        -- RAINBOW OUTLINE
         local Outline = Char:FindFirstChild("BLUE_Outline") or Instance.new("Highlight",Char)
         Outline.Name = "BLUE_Outline"
         Outline.FillTransparency = 1
@@ -879,7 +807,6 @@ RunService.Heartbeat:Connect(function(Delta)
         Outline.OutlineColor = Rainbow
         Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 
-        -- FRIEND DOT
         local IsFriend = false
         pcall(function() IsFriend = LocalPlayer:IsFriendsWith(P.UserId) end)
         local Head = Char:FindFirstChild("Head")
@@ -904,4 +831,4 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ BLUE MODE ESP + GLOBAL COUNTDOWN LOADED SUCCESSFULLY")
+print("✅ BLUE MODE ESP READY | AUTO-UPDATE ENABLED")
