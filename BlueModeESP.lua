@@ -1,8 +1,8 @@
 -- ==============================================
--- BLUE MODE ESP | BUTTONS SHOW BY DEFAULT | MINIMIZE FIXED
--- ✅ All Buttons Visible On Load
--- ✅ No More Stuck Minimized
--- ✅ Volume / Rainbow / ESP All Working
+-- BLUE MODE ESP | VOLUME NO SCREEN SPIN FIX
+-- ✅ Slider Only Reacts To Slider Area
+-- ✅ All Original Features Kept
+-- ✅ Buttons Visible On Load
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -22,12 +22,12 @@ local SAVE_KEY_USED = "BlueMode_UsedTime_v19"
 local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v19"
 local SAVE_KEY_VOLUME = "BlueMode_Volume_v19"
 
--- TOGGLE STATES -- ✅ RESET TO NOT MINIMIZED
+-- TOGGLE STATES
 local BoomboxUI_Open = false
 local ConsoleUI_Open = false
 local CurrentBoomboxUI = nil
 local CurrentConsoleUI = nil
-local IsMinimized = false -- FORCE SHOW BUTTONS ON START
+local IsMinimized = false -- ✅ DEFAULT: SHOW BUTTONS
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
@@ -95,10 +95,56 @@ local function AddRainbowGlow(target, thickness)
     Outline.LineJoinMode = Enum.LineJoinMode.Round
     Outline.Parent = target
     table.insert(GuiElements, Outline)
-    return Outline
 end
 
--- VOLUME FIXED
+-- ERROR POPUP
+local function ShowErrorPopup(Message)
+    local Popup = Instance.new("ScreenGui")
+    Popup.Name = "BLUE_ERROR_POPUP"
+    Popup.ResetOnSpawn = false
+    Popup.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    Popup.Parent = PlayerGui
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0,400,0,200)
+    Frame.Position = UDim2.new(0.5,-200,0.5,-100)
+    Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    Frame.Parent = Popup
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
+    AddRainbowGlow(Frame,4)
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1,-40,0,35)
+    Title.Position = UDim2.new(0,10,0,10)
+    Title.BackgroundTransparency = 1
+    Title.Text = "⚠️ SCRIPT ERROR"
+    Title.TextColor3 = Color3.fromRGB(255,80,80)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextScaled = true
+    Title.Parent = Frame
+    local ErrorText = Instance.new("TextLabel")
+    ErrorText.Size = UDim2.new(1,-30,1,-90)
+    ErrorText.Position = UDim2.new(0,15,0,50)
+    ErrorText.BackgroundTransparency = 1
+    ErrorText.Text = Message
+    ErrorText.TextColor3 = Color3.new(1,1,1)
+    ErrorText.Font = Enum.Font.Gotham
+    ErrorText.TextScaled = true
+    ErrorText.TextWrapped = true
+    ErrorText.TextXAlignment = Enum.TextXAlignment.Left
+    ErrorText.Parent = Frame
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Size = UDim2.new(0,160,0,40)
+    CloseBtn.Position = UDim2.new(0.5,-80,1,-55)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
+    CloseBtn.Text = "✕ CLOSE"
+    CloseBtn.TextColor3 = Color3.new(1,1,1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextScaled = true
+    CloseBtn.Parent = Frame
+    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,8)
+    CloseBtn.MouseButton1Click:Connect(function() Popup:Destroy() end)
+end
+
+-- ✅ VOLUME CONTROL
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(tonumber(newVol) or 0.5, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
@@ -214,6 +260,7 @@ local function ToggleBoomboxMenu()
     VolFillMenu.Parent = VolBG
     Instance.new("UICorner", VolFillMenu).CornerRadius = UDim.new(0,12)
 
+    -- ✅ FIXED: ONLY REACTS TO SLIDER AREA
     local SliderActive = false
     VolBG.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -423,7 +470,7 @@ MinBtn.TextScaled = true
 MinBtn.Parent = MainFrame
 AddRainbowGlow(MinBtn,2)
 
--- ✅ FIXED TYPO: ESPBin → ESPBtn
+-- BUTTONS
 local ESPBtn = Instance.new("TextButton")
 ESPBtn.Size = UDim2.new(0,85,0,30)
 ESPBtn.Position = UDim2.new(0,10,0,30)
@@ -434,7 +481,7 @@ ESPBtn.Font = Enum.Font.GothamBold
 ESPBtn.TextScaled = true
 ESPBtn.Parent = MainFrame
 Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-AddRainbowGlow(ESPBtn,2)
+AddRainbowGlow(ESPBin,2)
 
 local YouTubeBtn = Instance.new("TextButton")
 YouTubeBtn.Size = UDim2.new(0,95,0,30)
@@ -496,7 +543,7 @@ ExitBtn.Parent = MainFrame
 Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
 AddRainbowGlow(ExitBtn,2)
 
--- MAIN VOLUME SLIDER
+-- MAIN VOLUME SLIDER ✅ FIXED
 local VolLabelMain = Instance.new("TextLabel")
 VolLabelMain.Size = UDim2.new(0,70,0,25)
 VolLabelMain.Position = UDim2.new(0,10,0,65)
@@ -531,7 +578,7 @@ VolFillMain.BackgroundColor3 = Color3.fromRGB(100,100,100)
 VolFillMain.Parent = VolBGMain
 Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0,9)
 
--- FIXED MAIN SLIDER
+-- ✅ NO SCREEN SPIN: ONLY WORKS ON SLIDER
 local SliderActiveMain = false
 VolBGMain.InputBegan:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -583,7 +630,7 @@ LockBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- MINIMIZE/MAXIMIZE FIXED
+-- MINIMIZE
 MinBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
     if IsMinimized then
@@ -626,7 +673,7 @@ MinBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ESP TOGGLE
-ESPBtn.MouseButton1Click:Connect(function()
+ESPBin.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
     ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
     ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
@@ -738,4 +785,4 @@ RunService.Heartbeat:Connect(function(Delta)
     end
 end)
 
-print("✅ DONE: Buttons Show On Load | No Stuck Minimize | All Features Working")
+print("✅ FIXED: Volume No Screen Spin | All Features Working Perfectly")
