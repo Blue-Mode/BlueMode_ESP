@@ -1,5 +1,7 @@
 -- ==============================================
--- BLUE MODE ESP | MINIMIZE BOX | DRAG ONLY BAR | FRIEND DOTS CLEAR | VOLUME 1-100
+-- BLUE MODE ESP | AUTO OFF WHEN YOU DIE
+-- ✅ ESP + Friend Dots CLEAR on OFF / EXIT / YOUR DEATH
+-- ✅ Minimized Cube | Drag Only When Unlocked
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -15,16 +17,16 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v9"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v9"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v9"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v11"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v11"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v11"
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
--- ✅ FULL CLEANUP: REMOVE OUTLINES + FRIEND DOTS COMPLETELY
-local function ClearESP()
+-- ✅ FULL CLEANUP: REMOVE ALL OUTLINES + FRIEND DOTS
+local function ClearAllESP()
     for _,P in pairs(Players:GetPlayers()) do
         if P and P.Character then
             pcall(function()
@@ -54,6 +56,28 @@ local ESP_Enabled = false
 local Buttons_Locked = false
 local Hue = 0
 local IsMinimized = false
+
+-- ✅ AUTO TURN OFF ESP WHEN YOU DIE
+local function SetupDeathCheck()
+    local function CheckCharacter(Char)
+        if not Char then return end
+        local Hum = Char:WaitForChild("Humanoid", 10)
+        if not Hum then return end
+        Hum.Died:Connect(function()
+            if ESP_Enabled then
+                ESP_Enabled = false
+                if ESPBtn then
+                    ESPBtn.Text = "ESP: OFF"
+                    ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+                end
+                ClearAllESP()
+                print("⚠️ YOU DIED! ESP TURNED OFF AUTOMATICALLY")
+            end
+        end)
+    end
+    CheckCharacter(LocalPlayer.Character)
+    LocalPlayer.CharacterAdded:Connect(CheckCharacter)
+end
 
 -- RAINBOW GLOW
 local function AddRainbowGlow(target, thickness)
@@ -117,11 +141,10 @@ local function ShowErrorPopup(Message)
     CloseBtn.TextScaled = true
     CloseBtn.Parent = Frame
     Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,8)
-
     CloseBtn.MouseButton1Click:Connect(function() Popup:Destroy() end)
 end
 
--- ✅ VOLUME: 1–100% CORRECT ROUNDING
+-- VOLUME 1-100%
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(newVol, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
@@ -306,7 +329,7 @@ local function OpenConsole()
     Title.Parent = Frame
 
     local Output = Instance.new("TextLabel")
-    Output.Size = UDim2.new(1,-30,0,50)
+    Output.Size = UDim2.new(1,-30,0,40)
     Output.Position = UDim2.new(0,15,0,45)
     Output.BackgroundTransparency = 1
     Output.Text = "Paste script code below..."
@@ -319,8 +342,8 @@ local function OpenConsole()
     Output.Parent = Frame
 
     local Input = Instance.new("TextBox")
-    Input.Size = UDim2.new(1,-30,0,120)
-    Input.Position = UDim2.new(0,15,0,105)
+    Input.Size = UDim2.new(1,-30,0,130)
+    Input.Position = UDim2.new(0,15,0,95)
     Input.BackgroundColor3 = Color3.fromRGB(45,45,45)
     Input.PlaceholderText = "Paste your script here..."
     Input.TextColor3 = Color3.new(1,1,1)
@@ -373,7 +396,7 @@ end
 
 -- MAIN UI SIZES
 local FULL_SIZE = UDim2.new(0,680,0,105)
-local MINI_SIZE = UDim2.new(0,180,0,35) -- ✅ SMALL BOX WHEN MINIMIZED
+local MINI_SIZE = UDim2.new(0,160,0,40) -- ✅ CUBE SHAPE MINIMIZED
 local MainUI = Instance.new("ScreenGui")
 MainUI.Name = "BLUE_MODE_ESP"
 MainUI.ResetOnSpawn = false
@@ -390,7 +413,7 @@ MainFrame.Parent = MainUI
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(MainFrame,5)
 
--- ✅ DRAG BAR: ONLY HERE YOU CAN DRAG
+-- DRAG BAR
 local DragHandle = Instance.new("TextButton")
 DragHandle.Size = UDim2.new(1,-25,0,22)
 DragHandle.Position = UDim2.new(0,0,0,0)
@@ -545,10 +568,10 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 
--- ✅ DRAG SYSTEM: ONLY ON DRAG BAR
+-- DRAG SYSTEM: WORKS MINIMIZED, ONLY WHEN UNLOCKED
 local DragState = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
 DragHandle.InputBegan:Connect(function(Input)
-    if Buttons_Locked then return end
+    if Buttons_Locked then return end -- NO DRAG WHEN LOCKED
     if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
         DragState.Active = true
         DragState.StartX = Input.Position.X
@@ -570,7 +593,7 @@ end)
 LockBtn.MouseButton1Click:Connect(function()
     Buttons_Locked = not Buttons_Locked
     if Buttons_Locked then
-        LockBtn.Text = "🔒 LOCK"
+        LockBtn.Text = "🔒 LOCKED"
         LockBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
     else
         LockBtn.Text = "🔓 UNLOCK"
@@ -578,7 +601,7 @@ LockBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ✅ MINIMIZE TO SMALL BOX — BUTTONS HIDE, BOX STAYS VISIBLE
+-- MINIMIZE TO CUBE
 MinBtn.MouseButton1Click:Connect(function()
     IsMinimized = not IsMinimized
     if IsMinimized then
@@ -593,7 +616,7 @@ MinBtn.MouseButton1Click:Connect(function()
         VolNumTextMain.Visible = false
         VolBGMain.Visible = false
         MinBtn.Text = "➕"
-        DragHandle.Text = "BLUE MODE ESP"
+        DragHandle.Text = "BLUE MODE"
     else
         MainFrame.Size = FULL_SIZE
         ESPBtn.Visible = true
@@ -610,17 +633,17 @@ MinBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ✅ ESP TOGGLE: CLEARS FRIEND DOTS
+-- ESP TOGGLE
 ESPBtn.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
     ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
     ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-    if not ESP_Enabled then ClearESP() end
+    if not ESP_Enabled then ClearAllESP() end
 end)
 
 YouTubeBtn.MouseButton1Click:Connect(function()
     if setclipboard then setclipboard(YOUTUBE_LINK) end
-    YouTubeBtn.Text = "✅ COPIED"
+    YouTubeBtn.Text = "✅ COPIED!"
     task.wait(1.5)
     YouTubeBtn.Text = "📺 YT"
 end)
@@ -628,13 +651,16 @@ end)
 MusicBtn.MouseButton1Click:Connect(OpenBoomboxMenu)
 ConsoleBtn.MouseButton1Click:Connect(OpenConsole)
 
--- ✅ EXIT: CLEARS FRIEND DOTS + FULL CLEANUP
+-- EXIT: FULL CLEANUP
 ExitBtn.MouseButton1Click:Connect(function()
-    ClearESP()
+    ClearAllESP()
     pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
     MainUI:Destroy()
     getgenv().BlueMode_Loaded = nil
 end)
+
+-- START DEATH DETECTION
+SetupDeathCheck()
 
 -- MAIN LOOP
 RunService.Heartbeat:Connect(function(Delta)
@@ -657,19 +683,25 @@ RunService.Heartbeat:Connect(function(Delta)
         return
     end
 
-    -- RAINBOW
+    -- RAINBOW ANIMATION
     Hue = (Hue + Delta*0.5) %1
     local Rainbow = Color3.fromHSV(Hue,1,1)
     for _,e in pairs(GuiElements) do e.Color = Rainbow end
     if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
     if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
 
-    -- ESP
+    -- ESP RENDER
     if not ESP_Enabled then return end
     for _,P in pairs(Players:GetPlayers()) do
         if P == LocalPlayer then continue end
         local Char = P.Character
-        if not Char then continue end
+        if not Char then
+            pcall(function()
+                if Char and Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
+                if Char and Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+            end)
+            continue
+        end
         local Hum = Char:FindFirstChildOfClass("Humanoid")
         if not Hum or Hum.Health <=0 then
             pcall(function()
@@ -679,6 +711,7 @@ RunService.Heartbeat:Connect(function(Delta)
             continue
         end
 
+        -- OUTLINE
         local Outline = Char:FindFirstChild("BLUE_Outline") or Instance.new("Highlight",Char)
         Outline.Name = "BLUE_Outline"
         Outline.FillTransparency = 1
@@ -688,6 +721,7 @@ RunService.Heartbeat:Connect(function(Delta)
         Outline.OutlineColor = Rainbow
         Outline.Parent = Char
 
+        -- FRIEND DOT
         local IsFriend = false
         pcall(function() IsFriend = LocalPlayer:IsFriendsWith(P.UserId) end)
         local Head = Char:FindFirstChild("Head")
@@ -707,9 +741,9 @@ RunService.Heartbeat:Connect(function(Delta)
                 Dot.Frame.BackgroundColor3 = Rainbow
             end
         elseif Dot then
-            Dot:Destroy() -- ✅ REMOVE DOT IF NOT FRIEND / ESP OFF
+            Dot:Destroy() -- REMOVE IF NOT FRIEND
         end
     end
 end)
 
-print("✅ READY: MINI BOX | DRAG ONLY BAR | FRIEND DOTS CLEAR | VOLUME 1-100")
+print("✅ FINAL: ESP OFF ON DEATH | FRIEND DOTS CLEAR | MINI CUBE | DRAG WHEN UNLOCKED")
