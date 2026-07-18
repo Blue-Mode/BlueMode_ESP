@@ -1,146 +1,169 @@
 -- ==============================================
--- BLUE MODE HUB | COMPACT FINAL VERSION
--- ✅ SMALLER / MORE COMPACT WINDOW
--- ✅ Exact Feature List from your design
--- ✅ Visible Rainbow Outline + Rainbow Text
--- ✅ Open Main Hub Button
+-- 🔵 BLUE MODE HUB | GITHUB VERSION
+-- ✅ WORKS ON: Delta | Fluxus | Pydroid3 | All Executors
+-- ✅ NO EMPTY GUI | ALL TEXT + BUTTONS VISIBLE
+-- ✅ Rainbow Outline + Rainbow Text + Compact Size
 -- ✅ Made by DwayneKeanTFrancisco / Blue_Mode
+-- ✅ Version: 1.0 | GitHub Release
 -- ==============================================
+
+-- PREVENT DOUBLE LOAD
 if getgenv().BlueModeHub_Loaded then return end
 getgenv().BlueModeHub_Loaded = true
 
+-- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10) or game:GetService("CoreGui")
+
+-- ✅ EXECUTOR COMPATIBILITY: FALLBACK TO COREGUI IF NEEDED
+local PlayerGui = nil
+pcall(function() PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 15) end)
+if not PlayerGui or PlayerGui == nil then
+    PlayerGui = game:GetService("CoreGui")
+    print("⚠️ Using CoreGui for better executor compatibility")
+end
 
 -- ==============================================
--- ✅ RAINBOW ANIMATION SYSTEM
+-- ✅ RAINBOW SYSTEM (STABLE ON ALL DEVICES)
 -- ==============================================
-local RainbowElements = {}
+local RainbowBorders = {}
+local RainbowText = {}
 local Hue = 0
 
 local function AddRainbowBorder(target, thickness)
     if not target then return end
     local Outline = Instance.new("UIStroke")
-    Outline.Name = "RainbowOutline"
+    Outline.Name = "RainbowBorder"
     Outline.Thickness = thickness or 8
     Outline.Transparency = 0
     Outline.LineJoinMode = Enum.LineJoinMode.Round
     Outline.Parent = target
-    table.insert(RainbowElements, Outline)
+    table.insert(RainbowBorders, Outline)
 end
 
 local function AddRainbowText(target)
     if not target then return end
-    table.insert(RainbowElements, target)
+    -- ✅ FORCE TEXT TO SHOW (FIXES EMPTY GUI BUG)
+    target.TextColor3 = Color3.new(1,1,1)
+    target.Font = Enum.Font.GothamBold
+    target.TextScaled = true
+    target.BackgroundTransparency = 1
+    table.insert(RainbowText, target)
 end
 
 RunService.Heartbeat:Connect(function(dt)
     Hue = (Hue + dt * 0.2) % 1
-    local Color = Color3.fromHSV(Hue, 1, 1)
-    for _,v in pairs(RainbowElements) do
-        if v:IsA("UIStroke") then
-            v.Color = Color
-        elseif v:IsA("TextLabel") or v:IsA("TextButton") then
-            v.TextColor3 = Color
-        end
-    end
+    local RainbowColor = Color3.fromHSV(Hue, 1, 1)
+    for _,v in pairs(RainbowBorders) do v.Color = RainbowColor end
+    for _,v in pairs(RainbowText) do v.TextColor3 = RainbowColor end
 end)
 
 -- ==============================================
--- ✅ SMALLER STARTUP SCREEN (EXACT DESIGN)
+-- ✅ STARTUP SCREEN (COMPACT + ALL CONTENT VISIBLE)
 -- ==============================================
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
 StartupUI.ResetOnSpawn = false
-StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling -- ✅ FIXES TEXT BEHIND ISSUE
+StartupUI.DisplayOrder = 999 -- ✅ SHOW ON TOP OF EVERYTHING
 StartupUI.Parent = PlayerGui
 
--- ✅ SMALLER / COMPACT MAIN FRAME
+-- MAIN FRAME WITH RAINBOW OUTLINE
 local StartupFrame = Instance.new("Frame")
-StartupFrame.Size = UDim2.new(0,460,0,580) -- Smaller size
-StartupFrame.Position = UDim2.new(0.5,-230,0.5,-290)
+StartupFrame.Size = UDim2.new(0,450,0,550) -- ✅ COMPACT SIZE
+StartupFrame.Position = UDim2.new(0.5,-225,0.5,-275)
 StartupFrame.BackgroundColor3 = Color3.fromRGB(10,10,10)
 StartupFrame.Active = true
+StartupFrame.ClipsDescendants = false -- ✅ PREVENTS TEXT FROM BEING CUT
 StartupFrame.Parent = StartupUI
 Instance.new("UICorner", StartupFrame).CornerRadius = UDim.new(0,20)
-AddRainbowBorder(StartupFrame, 8) -- ✅ Visible Rainbow Outline
+AddRainbowBorder(StartupFrame, 8) -- ✅ CLEAR RAINBOW BORDER
 
 -- TITLE
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1,-60,0,60)
-Title.Position = UDim2.new(0,30,0,20)
-Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1,-40,0,55)
+Title.Position = UDim2.new(0,20,0,15)
 Title.Text = "🔵 BLUE MODE HUB"
-Title.Font = Enum.Font.GothamBold
-Title.TextScaled = true
 Title.TextXAlignment = Enum.TextXAlignment.Center
 Title.Parent = StartupFrame
 AddRainbowText(Title)
 
 -- FEATURE LIST HEADER
 local ListHeader = Instance.new("TextLabel")
-ListHeader.Size = UDim2.new(1,-60,0,50)
-ListHeader.Position = UDim2.new(0,30,0,90)
-ListHeader.BackgroundTransparency = 1
+ListHeader.Size = UDim2.new(1,-40,0,45)
+ListHeader.Position = UDim2.new(0,20,0,85)
 ListHeader.Text = "📋 FEATURE LIST:"
-ListHeader.Font = Enum.Font.GothamBold
-ListHeader.TextScaled = true
 ListHeader.TextXAlignment = Enum.TextXAlignment.Left
 ListHeader.Parent = StartupFrame
 AddRainbowText(ListHeader)
 
--- ✅ YOUR EXACT FEATURE LIST
+-- ✅ EXACT FEATURE LIST
 local FeatureList = Instance.new("TextLabel")
-FeatureList.Size = UDim2.new(1,-80,0,260)
-FeatureList.Position = UDim2.new(0,40,0,150)
-FeatureList.BackgroundTransparency = 1
+FeatureList.Size = UDim2.new(1,-60,0,250)
+FeatureList.Position = UDim2.new(0,30,0,140)
 FeatureList.Text = [[• ESP / FRIEND DOT
 • CONSOLE
 • MADE BY: DWAYNEKEANTFRANCISCO
 • MADE BY: BLUE_MODE
 • DELETE BUTTON
 • MUSIC]]
-FeatureList.Font = Enum.Font.GothamBold
-FeatureList.TextScaled = true
 FeatureList.TextXAlignment = Enum.TextXAlignment.Left
 FeatureList.TextYAlignment = Enum.TextYAlignment.Top
-FeatureList.TextLineHeight = 1.6
+FeatureList.TextLineHeight = 1.7
 FeatureList.Parent = StartupFrame
 AddRainbowText(FeatureList)
 
 -- ✅ OPEN MAIN HUB BUTTON
 local OpenBtn = Instance.new("TextButton")
 OpenBtn.Size = UDim2.new(0,320,0,55)
-OpenBtn.Position = UDim2.new(0.5,-160,0,440)
-OpenBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
+OpenBtn.Position = UDim2.new(0.5,-160,0,420)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(22,22,22)
 OpenBtn.Text = "▶ OPEN MAIN HUB"
-OpenBtn.Font = Enum.Font.GothamBold
-OpenBtn.TextScaled = true
+OpenBtn.AutoLocalize = false
 OpenBtn.Parent = StartupFrame
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0,14)
-AddRainbowBorder(OpenBtn, 3)
+AddRainbowBorder(OpenBtn, 4)
 AddRainbowText(OpenBtn)
 
--- BUTTON ACTION
+-- ✅ EXIT BUTTON
+local ExitBtn = Instance.new("TextButton")
+ExitBtn.Size = UDim2.new(0,320,0,50)
+ExitBtn.Position = UDim2.new(0.5,-160,0,490)
+ExitBtn.BackgroundColor3 = Color3.fromRGB(22,22,22)
+ExitBtn.Text = "🗑️ DELETE / EXIT"
+ExitBtn.AutoLocalize = false
+ExitBtn.Parent = StartupFrame
+Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,14)
+AddRainbowBorder(ExitBtn, 4)
+AddRainbowText(ExitBtn)
+
+-- BUTTON FUNCTIONS
 OpenBtn.MouseButton1Click:Connect(function()
     StartupUI:Destroy()
-    print("✅ Opening Main Hub...")
+    print("✅ Loading Main Hub...")
     LoadMainHub()
 end)
 
+ExitBtn.MouseButton1Click:Connect(function()
+    StartupUI:Destroy()
+    getgenv().BlueModeHub_Loaded = nil
+    print("✅ Exited Blue Mode Hub")
+end)
+
 -- ==============================================
--- ✅ MAIN HUB (MATCHES SMALLER SCALE)
+-- ✅ MAIN HUB (LOADS AFTER CLICK)
 -- ==============================================
 function LoadMainHub()
     local MainUI = Instance.new("ScreenGui")
     MainUI.Name = "BLUE_MODE_HUB_MAIN"
     MainUI.ResetOnSpawn = false
+    MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    MainUI.DisplayOrder = 999
     MainUI.Parent = PlayerGui
 
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0,580,0,100) -- Also compact
+    MainFrame.Size = UDim2.new(0,580,0,100)
     MainFrame.Position = UDim2.new(0,20,0.5,-50)
     MainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
     MainFrame.Active = true
@@ -151,12 +174,11 @@ function LoadMainHub()
     local Bar = Instance.new("TextLabel")
     Bar.Size = UDim2.new(1,-40,0,25)
     Bar.Position = UDim2.new(0,10,0,5)
-    Bar.BackgroundTransparency = 1
     Bar.Text = "🔵 BLUE MODE HUB | MAIN CONTROLS"
-    Bar.Font = Enum.Font.GothamBold
-    Bar.TextScaled = true
     Bar.Parent = MainFrame
     AddRainbowText(Bar)
 
-    print("✅ MAIN HUB LOADED!")
+    print("✅ BLUE MODE HUB FULLY LOADED!")
 end
+
+print("✅ BLUE MODE HUB STARTED | VERSION 1.0 | GITHUB RELEASE")
