@@ -2,7 +2,7 @@
 -- ESP Script | FULL RAINBOW GLOW AURA OUTLINES
 -- made by BLUE_MODE
 -- UNLOCK CODE: Blue_Mode192823
--- Version: 2.0 | Fixed: 2026-07-19
+-- Version: 2.1 | Fixed: 2026-07-19
 -- ==============================================
 
 if getgenv().BlueMode_Loaded then return end
@@ -246,21 +246,21 @@ local function OpenBoomboxMenu()
     StopBtn.MouseButton1Click:Connect(function() if CurrentSound then pcall(function() CurrentSound:Destroy() end) end end)
 end
 
--- ✅ AUTO-HIDE ROBLOX MENU
-UserInputService.MenuOpened:Connect(function()
-    if UI then UI.Visible = false end
-end)
-UserInputService.MenuClosed:Connect(function()
-    if UI then UI.Visible = true end
-end)
-
--- 🎮 MAIN UI
+-- 🎮 MAIN UI (CREATED BEFORE EVENTS!)
 local UI = Instance.new("ScreenGui")
 UI.Name = "BLUE_MODE_ESP"
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 UI.DisplayOrder = 99
 UI.Parent = CoreGui
+
+-- ✅ AUTO-HIDE ROBLOX MENU (NOW AFTER UI IS CREATED)
+UserInputService.MenuOpened:Connect(function()
+    if UI then UI.Visible = false end
+end)
+UserInputService.MenuClosed:Connect(function()
+    if UI then UI.Visible = true end
+end)
 
 local MAIN_SIZE = UDim2.new(0, 570, 0, 105)
 local MIN_SIZE = UDim2.new(0, 50, 0, 50)
@@ -308,9 +308,9 @@ MinBtn.TextScaled = true
 MinBtn.Parent = Main
 AddRainbowGlow(MinBtn, 2)
 
--- BUTTONS
+-- BUTTONS | ✅ FIXED TYPO HERE
 local ESPBtn = Instance.new("TextButton")
-ESPBtnsize = UDim2.new(0, 85, 0, 30)
+ESPBtn.Size = UDim2.new(0, 85, 0, 30) -- Fixed: ESPBtnsize → ESPBtn.Size
 ESPBtn.Position = UDim2.new(0, 10, 0, 30)
 ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
 ESPBtn.Text = "ESP: OFF"
@@ -319,7 +319,7 @@ ESPBtn.Font = Enum.Font.GothamBold
 ESPBtn.TextScaled = true
 ESPBtn.Parent = Main
 Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-AddRainbowGlow(ESPBt, 2)
+AddRainbowGlow(ESPBtn, 2) -- Fixed: ESPBt → ESPBtn
 
 local YtBtn = Instance.new("TextButton")
 YtBtn.Size = UDim2.new(0, 95, 0, 30)
@@ -387,7 +387,7 @@ VolNumTextMain.Position = UDim2.new(0,85,0,65)
 VolNumTextMain.BackgroundTransparency = 1
 VolNumTextMain.Text = math.floor(MusicVolume*100).."%"
 VolNumTextMain.TextColor3 = Color3.new(1,1,1)
-VolNumTextMain.Font = Enum.Font.Gotham
+VolNumTextMain.Font = Enum.Font.GothamBold
 VolNumTextMain.TextScaled = true
 VolNumTextMain.TextXAlignment = Enum.TextXAlignment.Right
 VolNumTextMain.Parent = Main
@@ -534,7 +534,7 @@ RunService.Heartbeat:Connect(function(Delta)
     -- Rainbow effect
     Hue = (Hue + Delta * 0.5) % 1
     local Rainbow = Color3.fromHSV(Hue, 1, 1)
-    for _, e in pairs(GuiElements) do e.Color = Rainbow end
+    for _, e in ipairs(GuiElements) do e.Color = Rainbow end -- Fixed: ipairs for safety
     if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
     if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
 
@@ -543,13 +543,7 @@ RunService.Heartbeat:Connect(function(Delta)
     for _, Plr in pairs(Players:GetPlayers()) do
         if Plr == LocalPlayer then continue end
         local Char = Plr.Character
-        if not Char then
-            pcall(function()
-                if Char and Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                if Char and Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-            end)
-            continue
-        end
+        if not Char then continue end -- Fixed: Skip instead of accessing nil Char
         local Hum = Char:FindFirstChildOfClass("Humanoid")
         if not Hum or Hum.Health <= 0 then
             pcall(function()
