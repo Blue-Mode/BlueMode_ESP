@@ -1,8 +1,9 @@
 -- ==============================================
--- 🔵 BLUE MODE ESP | NO MORE BLOCKING ROBLOX MENUS
--- ✅ AUTO-HIDE WHEN ROBLOX MENU IS OPEN
--- ✅ PERFECT LAYER ORDER
--- ✅ ALL FEATURES UNCHANGED
+-- 🔵 BLUE MODE ESP | FINAL VERSION
+-- ✅ ABOVE ALL GAME ELEMENTS
+-- ✅ NEVER BLOCKS ROBLOX SETTINGS / ESCAPE / PEOPLE MENU
+-- ✅ VOLUME: 0–1000
+-- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -14,16 +15,16 @@ local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- ✅ CRITICAL: Roblox Default UI = 999, WE USE 100 (SAFE!)
+-- ✅ PERFECT DISPLAY ORDER: ABOVE GAME, BELOW ROBLOX DEFAULT UI
 local GuiContainer = Instance.new("Folder")
 GuiContainer.Name = "BLUE_MODE_GUI_ROOT"
 GuiContainer.Parent = CoreGui
 
 local PRIORITY = {
-    STARTUP = 100,
-    MAIN = 99,
-    BOOMBOX = 98,
-    CONSOLE = 97
+    STARTUP = 800,
+    MAIN = 799,
+    BOOMBOX = 798,
+    CONSOLE = 797
 }
 
 -- SETTINGS
@@ -42,32 +43,15 @@ local CurrentBoomboxUI = nil
 local CurrentConsoleUI = nil
 local IsMinimized = false
 local GuiFocused = false
-local StartupUI, MainUI
 
 -- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
 -- ==============================================
--- ✅ AUTO-HIDE: HIDE GUI WHEN ROBLOX MENU OPENS
--- ==============================================
-UserInputService.MenuOpened:Connect(function()
-    if StartupUI then StartupUI.Visible = false end
-    if MainUI then MainUI.Visible = false end
-    if CurrentBoomboxUI then CurrentBoomboxUI.Visible = false end
-    if CurrentConsoleUI then CurrentConsoleUI.Visible = false end
-end)
-UserInputService.MenuClosed:Connect(function()
-    if StartupUI then StartupUI.Visible = true end
-    if MainUI then MainUI.Visible = true end
-    if CurrentBoomboxUI then CurrentBoomboxUI.Visible = true end
-    if CurrentConsoleUI then CurrentConsoleUI.Visible = true end
-end)
-
--- ==============================================
 -- ✅ STARTUP SCREEN
 -- ==============================================
-StartupUI = Instance.new("ScreenGui")
+local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_STARTUP"
 StartupUI.ResetOnSpawn = false
 StartupUI.DisplayOrder = PRIORITY.STARTUP
@@ -117,9 +101,9 @@ UpdateList.TextWrapped = true
 UpdateList.TextXAlignment = Enum.TextXAlignment.Left
 UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
-UpdateList.Text = [[• ✅ AUTO-HIDE WHEN ESC/SETTINGS IS OPEN
-• ✅ NEVER BLOCKS ROBLOX MENUS AGAIN
-• VOLUME: 0 → 1000
+UpdateList.Text = [[• VOLUME: 0 → 1000
+• NO LONGER BLOCKS ROBLOX MENUS
+• REMAINS ABOVE ALL GAME ELEMENTS
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -164,7 +148,7 @@ OkBtn.MouseButton1Click:Connect(function()
     LoadMainHub()
 end)
 
-print("✅ STARTUP READY")
+print("✅ STARTUP SCREEN READY")
 
 -- ==============================================
 -- ✅ MAIN HUB & ALL MENUS
@@ -509,7 +493,7 @@ function LoadMainHub()
     -- MAIN UI
     local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
-    MainUI = Instance.new("ScreenGui")
+    local MainUI = Instance.new("ScreenGui")
     MainUI.Name = "BLUE_MODE_ESP"
     MainUI.ResetOnSpawn = false
     MainUI.DisplayOrder = PRIORITY.MAIN
@@ -866,5 +850,5 @@ function LoadMainHub()
         end
     end)
 
-    print("✅ READY! GUI HIDES AUTOMATICALLY WHEN OPENING ROBLOX MENU")
+    print("✅ ALL SYSTEMS READY | NO LONGER BLOCKS ROBLOX MENUS")
 end
