@@ -1,8 +1,8 @@
 -- ==============================================
 -- 🔵 BLUE MODE ESP | FINAL VERSION
--- ✅ ABOVE ALL GAME ELEMENTS
--- ✅ NEVER BLOCKS ROBLOX SETTINGS / ESCAPE / PEOPLE MENU
--- ✅ VOLUME: 0–1000
+-- ✅ IMAGES ADDED INSIDE STARTUP / BOOMBOX / CONSOLE GUI
+-- ✅ ALL BUTTONS & ORIGINAL FEATURES FULLY UNCHANGED
+-- ✅ VOLUME SLIDERS FULLY CONTAINED
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -14,6 +14,9 @@ local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
+
+-- ✅ CUSTOM IMAGE ASSET (ADDED INSIDE GUI ONLY)
+local CUSTOM_GUI_BG = "rbxassetid://101782008402770"
 
 -- ✅ PERFECT DISPLAY ORDER: ABOVE GAME, BELOW ROBLOX DEFAULT UI
 local GuiContainer = Instance.new("Folder")
@@ -49,7 +52,7 @@ local function SaveData(key, value) pcall(function() writefile(key..".txt", tost
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
 -- ==============================================
--- ✅ STARTUP SCREEN
+-- ✅ STARTUP SCREEN | IMAGE ADDED INSIDE GUI
 -- ==============================================
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_STARTUP"
@@ -66,9 +69,20 @@ StartupBox.Active = true
 StartupBox.Parent = StartupUI
 Instance.new("UICorner", StartupBox).CornerRadius = UDim.new(0, 18)
 
+-- ✅ CUSTOM IMAGE ADDED INSIDE STARTUP GUI
+local StartupGuiBg = Instance.new("ImageLabel")
+StartupGuiBg.Size = UDim2.new(1, 0, 1, 0)
+StartupGuiBg.Position = UDim2.new(0, 0, 0, 0)
+StartupGuiBg.BackgroundTransparency = 1
+StartupGuiBg.Image = CUSTOM_GUI_BG
+StartupGuiBg.ScaleType = Enum.ScaleType.Stretch
+StartupGuiBg.ZIndex = 1
+StartupGuiBg.Parent = StartupBox
+
 local StartupBorder = Instance.new("UIStroke")
 StartupBorder.Thickness = 5
 StartupBorder.LineJoinMode = Enum.LineJoinMode.Round
+StartupBorder.ZIndex = 3
 StartupBorder.Parent = StartupBox
 
 local StartupTitle = Instance.new("TextLabel")
@@ -79,6 +93,7 @@ StartupTitle.Font = Enum.Font.GothamBlack
 StartupTitle.TextScaled = true
 StartupTitle.Text = "🔵 BLUE MODE ESP"
 StartupTitle.TextColor3 = Color3.fromRGB(0, 190, 255)
+StartupTitle.ZIndex = 2
 StartupTitle.Parent = StartupBox
 
 local UpdateHeader = Instance.new("TextLabel")
@@ -89,6 +104,7 @@ UpdateHeader.Font = Enum.Font.GothamBold
 UpdateHeader.TextScaled = true
 UpdateHeader.Text = "📋 LATEST UPDATES:"
 UpdateHeader.TextColor3 = Color3.new(1,1,1)
+UpdateHeader.ZIndex = 2
 UpdateHeader.Parent = StartupBox
 
 local UpdateList = Instance.new("TextLabel")
@@ -101,6 +117,7 @@ UpdateList.TextWrapped = true
 UpdateList.TextXAlignment = Enum.TextXAlignment.Left
 UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
+UpdateList.ZIndex = 2
 UpdateList.Text = [[• VOLUME: 0 → 1000
 • NO LONGER BLOCKS ROBLOX MENUS
 • REMAINS ABOVE ALL GAME ELEMENTS
@@ -115,6 +132,7 @@ StartupTimerLabel.Font = Enum.Font.GothamBold
 StartupTimerLabel.TextScaled = true
 StartupTimerLabel.Text = "TIME REMAINING: 12:00:00"
 StartupTimerLabel.TextColor3 = Color3.fromRGB(80,255,120)
+StartupTimerLabel.ZIndex = 2
 StartupTimerLabel.Parent = StartupBox
 
 local OkBtn = Instance.new("TextButton")
@@ -126,6 +144,7 @@ OkBtn.TextScaled = true
 OkBtn.Text = "✓ OK / LOAD MAIN HUB"
 OkBtn.TextColor3 = Color3.new(1,1,1)
 OkBtn.AutoLocalize = false
+OkBtn.ZIndex = 2
 OkBtn.Parent = StartupBox
 Instance.new("UICorner", OkBtn).CornerRadius = UDim.new(0, 16)
 
@@ -240,7 +259,7 @@ function LoadMainHub()
         pcall(function() CurrentSound:Play() end)
     end
 
-    -- BOOMBOX MENU
+    -- BOOMBOX / MUSIC MENU | IMAGE ADDED INSIDE GUI
     local function ToggleBoomboxMenu()
         if BoomboxUI_Open then
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
@@ -266,6 +285,17 @@ function LoadMainHub()
         BoomFrame.Active = true
         BoomFrame.Parent = BoomUI
         Instance.new("UICorner", BoomFrame).CornerRadius = UDim.new(0,12)
+
+        -- ✅ CUSTOM IMAGE ADDED INSIDE BOOMBOX GUI
+        local BoomGuiBg = Instance.new("ImageLabel")
+        BoomGuiBg.Size = UDim2.new(1, 0, 1, 0)
+        BoomGuiBg.Position = UDim2.new(0, 0, 0, 0)
+        BoomGuiBg.BackgroundTransparency = 1
+        BoomGuiBg.Image = CUSTOM_GUI_BG
+        BoomGuiBg.ScaleType = Enum.ScaleType.Stretch
+        BoomGuiBg.ZIndex = 1
+        BoomGuiBg.Parent = BoomFrame
+
         AddRainbowGlow(BoomFrame,4)
 
         local CloseTop = Instance.new("TextButton")
@@ -276,6 +306,7 @@ function LoadMainHub()
         CloseTop.TextColor3 = Color3.new(1,1,1)
         CloseTop.Font = Enum.Font.GothamBold
         CloseTop.TextSize = 24
+        CloseTop.ZIndex = 2
         CloseTop.Parent = BoomFrame
         CloseTop.MouseButton1Click:Connect(function() ToggleBoomboxMenu() end)
 
@@ -287,6 +318,7 @@ function LoadMainHub()
         Title.TextColor3 = Color3.new(1,1,1)
         Title.Font = Enum.Font.GothamBold
         Title.TextScaled = true
+        Title.ZIndex = 2
         Title.Parent = BoomFrame
 
         local Input = Instance.new("TextBox")
@@ -297,6 +329,7 @@ function LoadMainHub()
         Input.TextColor3 = Color3.new(1,1,1)
         Input.Font = Enum.Font.Gotham
         Input.TextScaled = true
+        Input.ZIndex = 2
         Input.Parent = BoomFrame
         Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(Input,2)
@@ -309,6 +342,7 @@ function LoadMainHub()
         VolLabel.TextColor3 = Color3.new(1,1,1)
         VolLabel.Font = Enum.Font.GothamBold
         VolLabel.TextScaled = true
+        VolLabel.ZIndex = 2
         VolLabel.Parent = BoomFrame
 
         VolNumMenu = Instance.new("TextLabel")
@@ -319,6 +353,7 @@ function LoadMainHub()
         VolNumMenu.TextColor3 = Color3.new(1,1,1)
         VolNumMenu.Font = Enum.Font.GothamBold
         VolNumMenu.TextScaled = true
+        VolNumMenu.ZIndex = 2
         VolNumMenu.Parent = BoomFrame
 
         local VolBG = Instance.new("Frame")
@@ -326,6 +361,7 @@ function LoadMainHub()
         VolBG.Position = UDim2.new(0,20,0,145)
         VolBG.BackgroundColor3 = Color3.fromRGB(50,50,50)
         VolBG.Active = true
+        VolBG.ZIndex = 2
         VolBG.Parent = BoomFrame
         Instance.new("UICorner", VolBG).CornerRadius = UDim.new(0,12)
         AddRainbowGlow(VolBG,2)
@@ -333,6 +369,7 @@ function LoadMainHub()
         VolFillMenu = Instance.new("Frame")
         VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0)
         VolFillMenu.BackgroundColor3 = Color3.fromRGB(100,100,100)
+        VolFillMenu.ZIndex = 2
         VolFillMenu.Parent = VolBG
         Instance.new("UICorner", VolFillMenu).CornerRadius = UDim.new(0,12)
 
@@ -358,6 +395,7 @@ function LoadMainHub()
         PlayBtn.TextColor3 = Color3.new(1,1,1)
         PlayBtn.Font = Enum.Font.GothamBold
         PlayBtn.TextScaled = true
+        PlayBtn.ZIndex = 2
         PlayBtn.Parent = BoomFrame
         Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(PlayBtn,2)
@@ -370,6 +408,7 @@ function LoadMainHub()
         StopBtn.TextColor3 = Color3.new(1,1,1)
         StopBtn.Font = Enum.Font.GothamBold
         StopBtn.TextScaled = true
+        StopBtn.ZIndex = 2
         StopBtn.Parent = BoomFrame
         Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(StopBtn,2)
@@ -378,7 +417,7 @@ function LoadMainHub()
         StopBtn.MouseButton1Click:Connect(function() if CurrentSound then CurrentSound:Destroy() end end)
     end
 
-    -- CONSOLE MENU
+    -- CONSOLE MENU | IMAGE ADDED INSIDE GUI
     local function ToggleConsole()
         if ConsoleUI_Open then
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -404,6 +443,17 @@ function LoadMainHub()
         Frame.Active = true
         Frame.Parent = ConsoleUI
         Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
+
+        -- ✅ CUSTOM IMAGE ADDED INSIDE CONSOLE GUI
+        local ConsoleGuiBg = Instance.new("ImageLabel")
+        ConsoleGuiBg.Size = UDim2.new(1, 0, 1, 0)
+        ConsoleGuiBg.Position = UDim2.new(0, 0, 0, 0)
+        ConsoleGuiBg.BackgroundTransparency = 1
+        ConsoleGuiBg.Image = CUSTOM_GUI_BG
+        ConsoleGuiBg.ScaleType = Enum.ScaleType.Stretch
+        ConsoleGuiBg.ZIndex = 1
+        ConsoleGuiBg.Parent = Frame
+
         AddRainbowGlow(Frame,5)
 
         local CloseTop = Instance.new("TextButton")
@@ -414,6 +464,7 @@ function LoadMainHub()
         CloseTop.TextColor3 = Color3.new(1,1,1)
         CloseTop.Font = Enum.Font.GothamBold
         CloseTop.TextSize = 26
+        CloseTop.ZIndex = 2
         CloseTop.Parent = Frame
         CloseTop.MouseButton1Click:Connect(function() ToggleConsole() end)
 
@@ -426,6 +477,7 @@ function LoadMainHub()
         Title.Font = Enum.Font.GothamBold
         Title.TextScaled = true
         Title.TextXAlignment = Enum.TextXAlignment.Left
+        Title.ZIndex = 2
         Title.Parent = Frame
 
         local Output = Instance.new("TextLabel")
@@ -438,6 +490,7 @@ function LoadMainHub()
         Output.TextScaled = true
         Output.TextXAlignment = Enum.TextXAlignment.Left
         Output.TextWrapped = true
+        Output.ZIndex = 2
         Instance.new("UICorner", Output).CornerRadius = UDim.new(0,8)
         Output.Parent = Frame
 
@@ -450,6 +503,7 @@ function LoadMainHub()
         Input.Font = Enum.Font.Code
         Input.TextScaled = true
         Input.MultiLine = true
+        Input.ZIndex = 2
         Input.Parent = Frame
         Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(Input,2)
@@ -462,6 +516,7 @@ function LoadMainHub()
         ExecBtn.TextColor3 = Color3.new(1,1,1)
         ExecBtn.Font = Enum.Font.GothamBold
         ExecBtn.TextScaled = true
+        ExecBtn.ZIndex = 2
         ExecBtn.Parent = Frame
         Instance.new("UICorner", ExecBtn).CornerRadius = UDim.new(0,8)
 
@@ -473,6 +528,7 @@ function LoadMainHub()
         ClearBtn.TextColor3 = Color3.new(1,1,1)
         ClearBtn.Font = Enum.Font.GothamBold
         ClearBtn.TextScaled = true
+        ClearBtn.ZIndex = 2
         ClearBtn.Parent = Frame
         Instance.new("UICorner", ClearBtn).CornerRadius = UDim.new(0,8)
 
@@ -490,7 +546,7 @@ function LoadMainHub()
         ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
     end
 
-    -- MAIN UI
+    -- MAIN UI | FULLY UNCHANGED
     local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
     local MainUI = Instance.new("ScreenGui")
