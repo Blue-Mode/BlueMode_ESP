@@ -7,11 +7,11 @@ HubFrame.BackgroundColor3 = Color3.fromRGB(25,25,40)
 HubFrame.Visible = false
 HubFrame.Parent = ScreenGui
 
--- Background image (replace with your asset ID)
+-- Background image (your mountain background)
 local Bg = Instance.new("ImageLabel")
 Bg.Size = UDim2.new(1,0,1,0)
 Bg.Position = UDim2.new(0,0,0,0)
-Bg.Image = "rbxassetid://<YOUR_IMAGE_ID>" -- put your mountain background asset ID here
+Bg.Image = "rbxassetid://101782008402770" -- ✅ your asset ID
 Bg.ScaleType = Enum.ScaleType.Crop
 Bg.ZIndex = 0
 Bg.Parent = HubFrame
@@ -108,7 +108,7 @@ local function CreateCubeButton(name, pos, scriptLink)
     end)
 end
 
--- Universal cube buttons
+-- Ghost Hub Xx game buttons
 CreateCubeButton("Arsenal", UDim2.new(0,30,0,60), "https://raw.githubusercontent.com/xx-oboro/roblox/main/arsenal.lua")
 CreateCubeButton("Blox Fruits", UDim2.new(0,150,0,60), "https://raw.githubusercontent.com/ThatMG393/roblox-scripts/master/bloxfruit.luau")
 CreateCubeButton("Adopt Me", UDim2.new(0,270,0,60), "https://raw.githubusercontent.com/BloxZilla/AdoptMe/main/Keyless/Universal-NonSkid/Updated.lua")
