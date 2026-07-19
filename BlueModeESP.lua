@@ -1,30 +1,29 @@
--- ScreenGui + Hub Frame
+-- ScreenGui + Boombox Frame
 local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
-local HubFrame = Instance.new("Frame")
-HubFrame.Size = UDim2.new(0,450,0,550)
-HubFrame.Position = UDim2.new(0.5,-225,0.5,-275)
-HubFrame.BackgroundColor3 = Color3.fromRGB(25,25,40)
-HubFrame.Visible = false
-HubFrame.Parent = ScreenGui
+local BoomboxFrame = Instance.new("Frame")
+BoomboxFrame.Size = UDim2.new(0,400,0,350)
+BoomboxFrame.Position = UDim2.new(0.5,-200,0.5,-175)
+BoomboxFrame.BackgroundColor3 = Color3.fromRGB(25,25,40)
+BoomboxFrame.Parent = ScreenGui
 
--- Background image (your mountain background)
+-- Background image
 local Bg = Instance.new("ImageLabel")
 Bg.Size = UDim2.new(1,0,1,0)
 Bg.Position = UDim2.new(0,0,0,0)
-Bg.Image = "rbxassetid://101782008402770" -- ✅ your asset ID
+Bg.Image = "rbxassetid://101782008402770" -- ✅ mountain background
 Bg.ScaleType = Enum.ScaleType.Crop
 Bg.ZIndex = 0
-Bg.Parent = HubFrame
-HubFrame.BackgroundTransparency = 1
+Bg.Parent = BoomboxFrame
+BoomboxFrame.BackgroundTransparency = 1
 
 -- Rounded corners + rainbow outline
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0,12)
-UICorner.Parent = HubFrame
+UICorner.Parent = BoomboxFrame
 
 local UIStroke = Instance.new("UIStroke")
 UIStroke.Thickness = 3
-UIStroke.Parent = HubFrame
+UIStroke.Parent = BoomboxFrame
 
 -- Rainbow animation for outline
 task.spawn(function()
@@ -36,188 +35,155 @@ task.spawn(function()
     end
 end)
 
--- Header bar (draggable)
-local Header = Instance.new("TextLabel")
-Header.Size = UDim2.new(1,0,0,35)
-Header.Text = "BLUE MODE HUB | DRAG HERE"
-Header.BackgroundColor3 = Color3.fromRGB(40,40,70)
-Header.TextColor3 = Color3.new(1,1,1)
-Header.Font = Enum.Font.GothamBold
-Header.TextScaled = true
-Header.Parent = HubFrame
+-- Drag logic with lock toggle
+local UserInputService = game:GetService("UserInputService")
+local dragging, dragInput, dragStart, startPos
+local dragEnabled = true
 
--- Launcher cube button
-local Launcher = Instance.new("TextButton")
-Launcher.Size = UDim2.new(0,80,0,80)
-Launcher.Position = UDim2.new(0.5,-40,0,10)
-Launcher.Text = "BLUE MODE HUB"
-Launcher.Font = Enum.Font.GothamBold
-Launcher.TextScaled = true
-Launcher.Parent = ScreenGui
-
-local LaunchStroke = Instance.new("UIStroke")
-LaunchStroke.Thickness = 3
-LaunchStroke.Parent = Launcher
-
--- Rainbow text + outline animation
-task.spawn(function()
-    while Launcher.Parent do
-        for i = 0,1,0.01 do
-            local rainbow = Color3.fromHSV(i,1,1)
-            Launcher.TextColor3 = rainbow
-            LaunchStroke.Color = rainbow
-            task.wait(0.05)
-        end
-    end
-end)
-
--- Launcher logic
-Launcher.MouseButton1Click:Connect(function()
-    HubFrame.Visible = not HubFrame.Visible
-end)
-
--- Function to create cube buttons inside hub
-local function CreateCubeButton(name, pos, scriptLink)
-    local Btn = Instance.new("TextButton")
-    Btn.Size = UDim2.new(0,100,0,100)
-    Btn.Position = pos
-    Btn.Text = name
-    Btn.Font = Enum.Font.GothamBold
-    Btn.TextScaled = true
-    Btn.Parent = HubFrame
-
-    local BtnStroke = Instance.new("UIStroke")
-    BtnStroke.Thickness = 2
-    BtnStroke.Parent = Btn
-
-    -- Rainbow text + outline animation
-    task.spawn(function()
-        while Btn.Parent do
-            for i = 0,1,0.01 do
-                local rainbow = Color3.fromHSV(i,1,1)
-                Btn.TextColor3 = rainbow
-                BtnStroke.Color = rainbow
-                task.wait(0.05)
+BoomboxFrame.InputBegan:Connect(function(input)
+    if dragEnabled and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = BoomboxFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
             end
-        end
-    end)
-
-    -- Keyless loadstring logic
-    Btn.MouseButton1Click:Connect(function()
-        loadstring(game:HttpGet(scriptLink))()
-    end)
-end
-
--- Ghost Hub Xx game buttons
-CreateCubeButton("Arsenal", UDim2.new(0,30,0,60), "https://raw.githubusercontent.com/xx-oboro/roblox/main/arsenal.lua")
-CreateCubeButton("Blox Fruits", UDim2.new(0,150,0,60), "https://raw.githubusercontent.com/ThatMG393/roblox-scripts/master/bloxfruit.luau")
-CreateCubeButton("Adopt Me", UDim2.new(0,270,0,60), "https://raw.githubusercontent.com/BloxZilla/AdoptMe/main/Keyless/Universal-NonSkid/Updated.lua")
-CreateCubeButton("Brookhaven", UDim2.new(0,30,0,180), "https://raw.githubusercontent.com/Laelmano24/brookhaven-tool/main/src/main.luau")
-CreateCubeButton("Build a Boat", UDim2.new(0,150,0,180), "https://raw.githubusercontent.com/Alive-Debug/BABFT/main/babft.lua")
-
--- YouTube Button
-local YTBtn = Instance.new("TextButton")
-YTBtn.Size = UDim2.new(0,200,0,50)
-YTBtn.Position = UDim2.new(0.5,-100,1,-70)
-YTBtn.Text = "YouTube: BLUE_MODE"
-YTBtn.Font = Enum.Font.GothamBold
-YTBtn.TextScaled = true
-YTBtn.Parent = HubFrame
-
-local YTStroke = Instance.new("UIStroke")
-YTStroke.Thickness = 2
-YTStroke.Parent = YTBtn
-
--- Rainbow text + outline animation
-task.spawn(function()
-    while YTBtn.Parent do
-        for i = 0,1,0.01 do
-            local rainbow = Color3.fromHSV(i,1,1)
-            YTBtn.TextColor3 = rainbow
-            YTStroke.Color = rainbow
-            task.wait(0.05)
-        end
+        end)
     end
 end)
 
--- Copy YouTube link to clipboard
-YTBtn.MouseButton1Click:Connect(function()
-    setclipboard("https://youtube.com/@blue_mode?si=6xIZvTu6hZ9h3Zsw")
-    print("YouTube link copied to clipboard!")
+BoomboxFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
 end)
 
--- Special Rainbow ESP
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging and dragEnabled then
+        local delta = input.Position - dragStart
+        BoomboxFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
 
-local function EnableRainbowESP()
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-            -- Rainbow outline
-            local highlight = Instance.new("Highlight")
-            highlight.Name = "RainbowESP"
-            highlight.FillTransparency = 1
-            highlight.OutlineTransparency = 0
-            highlight.Parent = plr.Character
+-- Sound object
+local Sound = Instance.new("Sound")
+Sound.Parent = game:GetService("SoundService")
+Sound.Volume = 1
+Sound.Looped = true
+Sound.SoundId = "rbxassetid://1848354533" -- replace with your music ID
 
-            task.spawn(function()
-                while highlight.Parent do
-                    for i = 0,1,0.01 do
-                        highlight.OutlineColor3 = Color3.fromHSV(i,1,1)
-                        task.wait(0.05)
-                    end
-                end
-            end)
+-- Play Button
+local PlayBtn = Instance.new("TextButton")
+PlayBtn.Size = UDim2.new(0,120,0,50)
+PlayBtn.Position = UDim2.new(0,30,0,200)
+PlayBtn.Text = "PLAY"
+PlayBtn.Font = Enum.Font.GothamBold
+PlayBtn.TextScaled = true
+PlayBtn.Parent = BoomboxFrame
+PlayBtn.MouseButton1Click:Connect(function() Sound:Play() end)
 
-            -- Friend rainbow dot
-            if LocalPlayer:IsFriendsWith(plr.UserId) then
-                local dot = Instance.new("BillboardGui")
-                dot.Size = UDim2.new(0,20,0,20)
-                dot.AlwaysOnTop = true
-                dot.Parent = plr.Character:FindFirstChild("Head")
+-- Stop Button
+local StopBtn = Instance.new("TextButton")
+StopBtn.Size = UDim2.new(0,120,0,50)
+StopBtn.Position = UDim2.new(0,170,0,200)
+StopBtn.Text = "STOP"
+StopBtn.Font = Enum.Font.GothamBold
+StopBtn.TextScaled = true
+StopBtn.Parent = BoomboxFrame
+StopBtn.MouseButton1Click:Connect(function() Sound:Stop() end)
 
-                local circle = Instance.new("Frame")
-                circle.Size = UDim2.new(1,0,1,0)
-                circle.Parent = dot
-                Instance.new("UICorner", circle).CornerRadius = UDim.new(1,0)
+-- Volume TextBox
+local Slider = Instance.new("TextBox")
+Slider.Size = UDim2.new(0,120,0,50)
+Slider.Position = UDim2.new(0,310,0,200)
+Slider.Text = "Volume (1-1000)"
+Slider.Font = Enum.Font.GothamBold
+Slider.TextScaled = true
+Slider.Parent = BoomboxFrame
+Slider.FocusLost:Connect(function()
+    local val = tonumber(Slider.Text)
+    if val then
+        val = math.clamp(val,1,1000)
+        Sound.Volume = val/1000
+    end
+end)
 
-                task.spawn(function()
-                    while circle.Parent do
-                        for i = 0,1,0.01 do
-                            circle.BackgroundColor3 = Color3.fromHSV(i,1,1)
-                            task.wait(0.05)
-                        end
-                    end
-                end)
+-- Lock/Unlock Button
+local LockBtn = Instance.new("TextButton")
+LockBtn.Size = UDim2.new(0,120,0,40)
+LockBtn.Position = UDim2.new(0,30,0,260)
+LockBtn.Text = "LOCK DRAG"
+LockBtn.Font = Enum.Font.GothamBold
+LockBtn.TextScaled = true
+LockBtn.Parent = BoomboxFrame
+LockBtn.MouseButton1Click:Connect(function()
+    dragEnabled = not dragEnabled
+    LockBtn.Text = dragEnabled and "LOCK DRAG" or "UNLOCK DRAG"
+end)
+
+-- Minimize Button
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0,120,0,40)
+MinBtn.Position = UDim2.new(0,170,0,260)
+MinBtn.Text = "MINIMIZE"
+MinBtn.Font = Enum.Font.GothamBold
+MinBtn.TextScaled = true
+MinBtn.Parent = BoomboxFrame
+
+-- MiniIcon with your logo
+local MiniIcon = Instance.new("ImageButton")
+MiniIcon.Size = UDim2.new(0,80,0,80)
+MiniIcon.Position = UDim2.new(0,20,0,70)
+MiniIcon.Image = "rbxassetid://<YOUR_LOGO_ASSET_ID>" -- 🔹 replace with your logo asset ID
+MiniIcon.Visible = false
+MiniIcon.Parent = ScreenGui
+
+-- MiniIcon drag logic
+local draggingMini, dragInputMini, dragStartMini, startPosMini
+MiniIcon.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingMini = true
+        dragStartMini = input.Position
+        startPosMini = MiniIcon.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                draggingMini = false
             end
-        end
-    end
-end
-
--- ESP Button inside hub
-local ESPBtn = Instance.new("TextButton")
-ESPBtn.Size = UDim2.new(0,100,0,100)
-ESPBtn.Position = UDim2.new(0,270,0,180)
-ESPBtn.Text = "ESP"
-ESPBtn.Font = Enum.Font.GothamBold
-ESPBtn.TextScaled = true
-ESPBtn.Parent = HubFrame
-
-local ESPStroke = Instance.new("UIStroke")
-ESPStroke.Thickness = 2
-ESPStroke.Parent = ESPBtn
-
-task.spawn(function()
-    while ESPBtn.Parent do
-        for i = 0,1,0.01 do
-            local rainbow = Color3.fromHSV(i,1,1)
-            ESPBtn.TextColor3 = rainbow
-            ESPStroke.Color = rainbow
-            task.wait(0.05)
-        end
+        end)
     end
 end)
 
-ESPBtn.MouseButton1Click:Connect(function()
-    EnableRainbowESP()
+MiniIcon.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInputMini = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInputMini and draggingMini then
+        local delta = input.Position - dragStartMini
+        MiniIcon.Position = UDim2.new(
+            startPosMini.X.Scale,
+            startPosMini.X.Offset + delta.X,
+            startPosMini.Y.Scale,
+            startPosMini.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- Minimize logic
+MinBtn.MouseButton1Click:Connect(function()
+    BoomboxFrame.Visible = false
+    MiniIcon.Visible = true
+end)
+
+MiniIcon.MouseButton1Click:Connect(function()
+    BoomboxFrame.Visible = true
+    MiniIcon.Visible = false
 end)
