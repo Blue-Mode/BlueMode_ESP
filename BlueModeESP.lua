@@ -3,14 +3,15 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 local SoundService = game:GetService("SoundService")
+local UserInputService = game:GetService("UserInputService")
 
 -- State
 local HubOpen = false
 local HubUI = nil
 local CurrentSound = nil
-local MusicVolume = 500 -- default mid value
+local MusicVolume = 500
 
--- Rainbow outline helper
+-- Helpers
 local function AddRainbowGlow(target, thickness)
     local stroke = Instance.new("UIStroke")
     stroke.Thickness = thickness or 3
@@ -18,7 +19,6 @@ local function AddRainbowGlow(target, thickness)
     return stroke
 end
 
--- Console runner
 local function RunConsole(code)
     local func, err = loadstring(code)
     if func then
@@ -60,6 +60,7 @@ local function UpdateVolume(newVol)
     if CurrentSound then CurrentSound.Volume = MusicVolume end
 end
 
+-- Hub Frame
 local function CreateHub()
     HubUI = Instance.new("ScreenGui")
     HubUI.Name = "BLUE_MODE_HUB"
@@ -76,14 +77,6 @@ local function CreateHub()
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
     AddRainbowGlow(Frame,5)
 
-    local BgImage = Instance.new("ImageLabel")
-    BgImage.Size = UDim2.new(1,0,1,0)
-    BgImage.BackgroundTransparency = 1
-    BgImage.Image = "rbxassetid://YOUR_IMAGE_ID"
-    BgImage.ScaleType = Enum.ScaleType.Crop
-    BgImage.ZIndex = 0
-    BgImage.Parent = Frame
-
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1,0,0,40)
     Title.Text = "🌈 BLUE MODE HUB"
@@ -94,6 +87,7 @@ local function CreateHub()
     Title.Parent = Frame
     AddRainbowGlow(Title,3)
 
+    -- Part 6: Global Buttons
     local ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,120,0,40)
     ESPBtn.Position = UDim2.new(0,20,0,60)
@@ -130,6 +124,7 @@ local function CreateHub()
     AddRainbowGlow(StopBtn,2)
     StopBtn.MouseButton1Click:Connect(StopMusic)
 
+    -- Part 7: Volume Control + Commands + Robot
     local VolLabel = Instance.new("TextLabel")
     VolLabel.Size = UDim2.new(0,120,0,30)
     VolLabel.Position = UDim2.new(0,20,0,210)
@@ -179,7 +174,7 @@ local function CreateHub()
         print("AI Helper activated")
     end)
 
-    -- Arsenal Button
+    -- Part 8: Game Buttons
     local ArsenalBtn = Instance.new("TextButton")
     ArsenalBtn.Size = UDim2.new(0,120,0,40)
     ArsenalBtn.Position = UDim2.new(0,300,0,60)
@@ -190,7 +185,6 @@ local function CreateHub()
         RunConsole("print('Load Arsenal scripts here')")
     end)
 
-    -- Blox Fruits Button
     local BloxBtn = Instance.new("TextButton")
     BloxBtn.Size = UDim2.new(0,120,0,40)
     BloxBtn.Position = UDim2.new(0,300,0,110)
@@ -201,7 +195,6 @@ local function CreateHub()
         RunConsole("print('Load Blox Fruits scripts here')")
     end)
 
-    -- Adopt Me Button
     local AdoptBtn = Instance.new("TextButton")
     AdoptBtn.Size = UDim2.new(0,120,0,40)
     AdoptBtn.Position = UDim2.new(0,300,0,160)
@@ -212,7 +205,6 @@ local function CreateHub()
         RunConsole("print('Load Adopt Me scripts here')")
     end)
 
-    -- Brookhaven Button
     local BrookBtn = Instance.new("TextButton")
     BrookBtn.Size = UDim2.new(0,120,0,40)
     BrookBtn.Position = UDim2.new(0,300,0,210)
@@ -223,7 +215,7 @@ local function CreateHub()
         RunConsole("print('Load Brookhaven scripts here')")
     end)
 
-    -- Close Button
+    -- Part 9: Close/Delete + Minimize
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Size = UDim2.new(0,80,0,30)
     CloseBtn.Position = UDim2.new(1,-90,0,10)
@@ -253,7 +245,6 @@ local function CreateHub()
         HubOpen = false
     end)
 
-    -- Minimize Button
     local MinBtn = Instance.new("TextButton")
     MinBtn.Size = UDim2.new(0,80,0,30)
     MinBtn.Position = UDim2.new(1,-90,0,90)
@@ -265,7 +256,6 @@ local function CreateHub()
     MinBtn.Parent = Frame
     AddRainbowGlow(MinBtn,2)
 
-    -- Mini Icon when minimized
     local MiniIcon = Instance.new("TextButton")
     MiniIcon.Size = UDim2.new(0,60,0,30)
     MiniIcon.Position = UDim2.new(0,20,0,70)
@@ -278,7 +268,6 @@ local function CreateHub()
     MiniIcon.Parent = HubUI
     AddRainbowGlow(MiniIcon,2)
 
-    -- Minimize logic
     MinBtn.MouseButton1Click:Connect(function()
         Frame.Visible = false
         MiniIcon.Visible = true
@@ -289,7 +278,6 @@ local function CreateHub()
         MiniIcon.Visible = false
     end)
 
-    -- Make MiniIcon draggable
     local dragging, dragInput, dragStart, startPos
     MiniIcon.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -303,12 +291,14 @@ local function CreateHub()
             end)
         end
     end)
+
     MiniIcon.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement then
             dragInput = input
         end
     end)
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
+
+    UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             local delta = input.Position - dragStart
             MiniIcon.Position = UDim2.new(
@@ -321,7 +311,7 @@ local function CreateHub()
     end)
 end
 
--- Start Button
+-- Part 10: Start Button
 local StartBtn = Instance.new("TextButton")
 StartBtn.Size = UDim2.new(0,160,0,40)
 StartBtn.Position = UDim2.new(0,20,0,20)
@@ -342,7 +332,8 @@ StartBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Main Button (top of hub)
+-- Part 11: Main Info Panel
+local function AddInfoPanel(Frame)
     local MainBtn = Instance.new("TextButton")
     MainBtn.Size = UDim2.new(0,120,0,40)
     MainBtn.Position = UDim2.new(0,300,0,10)
@@ -354,7 +345,6 @@ end)
     MainBtn.Parent = Frame
     AddRainbowGlow(MainBtn,2)
 
-    -- Info Panel
     local InfoFrame = Instance.new("Frame")
     InfoFrame.Size = UDim2.new(0,400,0,200)
     InfoFrame.Position = UDim2.new(0.5,-200,0.5,-100)
@@ -373,7 +363,6 @@ end)
     InfoLabel.BackgroundTransparency = 1
     InfoLabel.Parent = InfoFrame
 
-    -- YouTube Link Button
     local YTBtn = Instance.new("TextButton")
     YTBtn.Size = UDim2.new(0,200,0,40)
     YTBtn.Position = UDim2.new(0.5,-100,0,60)
@@ -384,13 +373,11 @@ end)
     YTBtn.TextScaled = true
     YTBtn.Parent = InfoFrame
     AddRainbowGlow(YTBtn,2)
-
     YTBtn.MouseButton1Click:Connect(function()
         setclipboard("https://youtube.com/@blue_mode?si=Qj56WVOkuiVaoNL6")
         print("YouTube link copied to clipboard!")
     end)
 
-    -- Roblox Profile Button
     local ProfileBtn = Instance.new("TextButton")
     ProfileBtn.Size = UDim2.new(0,200,0,40)
     ProfileBtn.Position = UDim2.new(0.5,-100,0,110)
@@ -401,20 +388,17 @@ end)
     ProfileBtn.TextScaled = true
     ProfileBtn.Parent = InfoFrame
     AddRainbowGlow(ProfileBtn,2)
-
     ProfileBtn.MouseButton1Click:Connect(function()
         setclipboard("https://www.roblox.com/users/profile?username=dwaynekean015")
         print("Roblox profile link copied to clipboard!")
     end)
 
-    -- Toggle Info Panel
     MainBtn.MouseButton1Click:Connect(function()
         InfoFrame.Visible = not InfoFrame.Visible
     end)
+end
 
--- 🌈 Part 12: Music Save Slots
-
--- Functions to save and load music IDs
+-- Part 12: Music Save Slots
 local function SaveMusicSlot(slotName, musicId)
     if writefile then
         writefile(slotName..".txt", musicId)
@@ -434,100 +418,44 @@ local function LoadMusicSlot(slotName)
     end
 end
 
--- Add Save/Load buttons inside CreateHub()
 local function AddMusicSlots(Frame, VolBox)
-    -- Slot 1
-    local SaveBtn1 = Instance.new("TextButton")
-    SaveBtn1.Size = UDim2.new(0,120,0,30)
-    SaveBtn1.Position = UDim2.new(0,160,0,250)
-    SaveBtn1.Text = "Save Slot 1"
-    SaveBtn1.TextColor3 = Color3.new(1,1,1)
-    SaveBtn1.BackgroundColor3 = Color3.fromRGB(80,120,80)
-    SaveBtn1.Font = Enum.Font.GothamBold
-    SaveBtn1.TextScaled = true
-    SaveBtn1.Parent = Frame
-    AddRainbowGlow(SaveBtn1,2)
-    SaveBtn1.MouseButton1Click:Connect(function()
-        SaveMusicSlot("slot1", VolBox.Text)
-    end)
+    local function makeSlot(slot, yPos)
+        local SaveBtn = Instance.new("TextButton")
+        SaveBtn.Size = UDim2.new(0,120,0,30)
+        SaveBtn.Position = UDim2.new(0,160,0,yPos)
+        SaveBtn.Text = "Save Slot "..slot
+        SaveBtn.TextColor3 = Color3.new(1,1,1)
+        SaveBtn.BackgroundColor3 = Color3.fromRGB(80,120,80)
+        SaveBtn.Font = Enum.Font.GothamBold
+        SaveBtn.TextScaled = true
+        SaveBtn.Parent = Frame
+        AddRainbowGlow(SaveBtn,2)
+        SaveBtn.MouseButton1Click:Connect(function()
+            SaveMusicSlot("slot"..slot, VolBox.Text)
+        end)
 
-    local LoadBtn1 = Instance.new("TextButton")
-    LoadBtn1.Size = UDim2.new(0,120,0,30)
-    LoadBtn1.Position = UDim2.new(0,300,0,250)
-    LoadBtn1.Text = "Load Slot 1"
-    LoadBtn1.TextColor3 = Color3.new(1,1,1)
-    LoadBtn1.BackgroundColor3 = Color3.fromRGB(120,80,80)
-    LoadBtn1.Font = Enum.Font.GothamBold
-    LoadBtn1.TextScaled = true
-    LoadBtn1.Parent = Frame
-    AddRainbowGlow(LoadBtn1,2)
-    LoadBtn1.MouseButton1Click:Connect(function()
-        LoadMusicSlot("slot1")
-    end)
+        local LoadBtn = Instance.new("TextButton")
+        LoadBtn.Size = UDim2.new(0,120,0,30)
+        LoadBtn.Position = UDim2.new(0,300,0,yPos)
+        LoadBtn.Text = "Load Slot "..slot
+        LoadBtn.TextColor3 = Color3.new(1,1,1)
+        LoadBtn.BackgroundColor3 = Color3.fromRGB(120,80,80)
+        LoadBtn.Font = Enum.Font.GothamBold
+        LoadBtn.TextScaled = true
+        LoadBtn.Parent = Frame
+        AddRainbowGlow(LoadBtn,2)
+        LoadBtn.MouseButton1Click:Connect(function()
+            LoadMusicSlot("slot"..slot)
+        end)
+    end
 
-    -- Slot 2
-    local SaveBtn2 = Instance.new("TextButton")
-    SaveBtn2.Size = UDim2.new(0,120,0,30)
-    SaveBtn2.Position = UDim2.new(0,160,0,290)
-    SaveBtn2.Text = "Save Slot 2"
-    SaveBtn2.TextColor3 = Color3.new(1,1,1)
-    SaveBtn2.BackgroundColor3 = Color3.fromRGB(80,120,80)
-    SaveBtn2.Font = Enum.Font.GothamBold
-    SaveBtn2.TextScaled = true
-    SaveBtn2.Parent = Frame
-    AddRainbowGlow(SaveBtn2,2)
-    SaveBtn2.MouseButton1Click:Connect(function()
-        SaveMusicSlot("slot2", VolBox.Text)
-    end)
-
-    local LoadBtn2 = Instance.new("TextButton")
-    LoadBtn2.Size = UDim2.new(0,120,0,30)
-    LoadBtn2.Position = UDim2.new(0,300,0,290)
-    LoadBtn2.Text = "Load Slot 2"
-    LoadBtn2.TextColor3 = Color3.new(1,1,1)
-    LoadBtn2.BackgroundColor3 = Color3.fromRGB(120,80,80)
-    LoadBtn2.Font = Enum.Font.GothamBold
-    LoadBtn2.TextScaled = true
-    LoadBtn2.Parent = Frame
-    AddRainbowGlow(LoadBtn2,2)
-    LoadBtn2.MouseButton1Click:Connect(function()
-        LoadMusicSlot("slot2")
-    end)
-
-    -- Slot 3
-    local SaveBtn3 = Instance.new("TextButton")
-    SaveBtn3.Size = UDim2.new(0,120,0,30)
-    SaveBtn3.Position = UDim2.new(0,160,0,330)
-    SaveBtn3.Text = "Save Slot 3"
-    SaveBtn3.TextColor3 = Color3.new(1,1,1)
-    SaveBtn3.BackgroundColor3 = Color3.fromRGB(80,120,80)
-    SaveBtn3.Font = Enum.Font.GothamBold
-    SaveBtn3.TextScaled = true
-    SaveBtn3.Parent = Frame
-    AddRainbowGlow(SaveBtn3,2)
-    SaveBtn3.MouseButton1Click:Connect(function()
-        SaveMusicSlot("slot3", VolBox.Text)
-    end)
-
-    local LoadBtn3 = Instance.new("TextButton")
-    LoadBtn3.Size = UDim2.new(0,120,0,30)
-    LoadBtn3.Position = UDim2.new(0,300,0,330)
-    LoadBtn3.Text = "Load Slot 3"
-    LoadBtn3.TextColor3 = Color3.new(1,1,1)
-    LoadBtn3.BackgroundColor3 = Color3.fromRGB(120,80,80)
-    LoadBtn3.Font = Enum.Font.GothamBold
-    LoadBtn3.TextScaled = true
-    LoadBtn3.Parent = Frame
-    AddRainbowGlow(LoadBtn3,2)
-    LoadBtn3.MouseButton1Click:Connect(function()
-        LoadMusicSlot("slot3")
-    end)
+    makeSlot(1,250)
+    makeSlot(2,290)
+    makeSlot(3,330)
 end
 
--- 🌈 Part 13: Saved Music Viewer
-
+-- Part 13: Saved Music Viewer
 local function ShowSavedMusic(Frame)
-    -- Viewer Panel
     local ViewerFrame = Instance.new("Frame")
     ViewerFrame.Size = UDim2.new(0,400,0,180)
     ViewerFrame.Position = UDim2.new(0.5,-200,0.5,-90)
@@ -546,7 +474,6 @@ local function ShowSavedMusic(Frame)
     ViewerTitle.BackgroundTransparency = 1
     ViewerTitle.Parent = ViewerFrame
 
-    -- Slot Labels
     local Slot1Label = Instance.new("TextLabel")
     Slot1Label.Size = UDim2.new(1,0,0,30)
     Slot1Label.Position = UDim2.new(0,0,0,50)
@@ -564,7 +491,6 @@ local function ShowSavedMusic(Frame)
     Slot3Label.Position = UDim2.new(0,0,0,130)
     Slot3Label.Parent = ViewerFrame
 
-    -- Button to open viewer
     local ViewerBtn = Instance.new("TextButton")
     ViewerBtn.Size = UDim2.new(0,120,0,40)
     ViewerBtn.Position = UDim2.new(0,300,0,370)
@@ -577,23 +503,10 @@ local function ShowSavedMusic(Frame)
     AddRainbowGlow(ViewerBtn,2)
 
     ViewerBtn.MouseButton1Click:Connect(function()
-        -- Update labels with saved IDs
         if readfile and isfile then
-            if isfile("slot1.txt") then
-                Slot1Label.Text = "Slot 1: "..readfile("slot1.txt")
-            else
-                Slot1Label.Text = "Slot 1: [empty]"
-            end
-            if isfile("slot2.txt") then
-                Slot2Label.Text = "Slot 2: "..readfile("slot2.txt")
-            else
-                Slot2Label.Text = "Slot 2: [empty]"
-            end
-            if isfile("slot3.txt") then
-                Slot3Label.Text = "Slot 3: "..readfile("slot3.txt")
-            else
-                Slot3Label.Text = "Slot 3: [empty]"
-            end
+            Slot1Label.Text = isfile("slot1.txt") and ("Slot 1: "..readfile("slot1.txt")) or "Slot 1: [empty]"
+            Slot2Label.Text = isfile("slot2.txt") and ("Slot 2: "..readfile("slot2.txt")) or "Slot 2: [empty]"
+            Slot3Label.Text = isfile("slot3.txt") and ("Slot 3: "..readfile("slot3.txt")) or "Slot 3: [empty]"
         else
             Slot1Label.Text = "Executor does not support readfile"
             Slot2Label.Text = ""
@@ -601,4 +514,58 @@ local function ShowSavedMusic(Frame)
         end
         ViewerFrame.Visible = not ViewerFrame.Visible
     end)
+end
+
+-- Attach extra panels/features
+    AddInfoPanel(Frame)        -- Part 11
+    AddMusicSlots(Frame, VolBox) -- Part 12
+    ShowSavedMusic(Frame)      -- Part 13
+end
+
+-- ESP with rainbow outline + friend dot
+local function EnableESP()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            -- Rainbow outline
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "RainbowESP"
+            highlight.FillTransparency = 1
+            highlight.OutlineTransparency = 0
+            highlight.Parent = plr.Character
+
+            -- Animate rainbow outline
+            task.spawn(function()
+                while highlight.Parent do
+                    for i = 0, 1, 0.01 do
+                        highlight.OutlineColor3 = Color3.fromHSV(i, 1, 1)
+                        task.wait(0.05)
+                    end
+                end
+            end)
+
+            -- Rainbow dot for friends
+            if LocalPlayer:IsFriendsWith(plr.UserId) then
+                local dot = Instance.new("BillboardGui")
+                dot.Size = UDim2.new(0,20,0,20)
+                dot.AlwaysOnTop = true
+                dot.Parent = plr.Character.Head
+
+                local circle = Instance.new("Frame")
+                circle.Size = UDim2.new(1,0,1,0)
+                circle.BackgroundColor3 = Color3.new(1,0,0)
+                circle.Parent = dot
+                Instance.new("UICorner", circle).CornerRadius = UDim.new(1,0)
+
+                -- Animate rainbow dot
+                task.spawn(function()
+                    while circle.Parent do
+                        for i = 0, 1, 0.01 do
+                            circle.BackgroundColor3 = Color3.fromHSV(i, 1, 1)
+                            task.wait(0.05)
+                        end
+                    end
+                end)
+            end
+        end
+    end
 end
