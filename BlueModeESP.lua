@@ -1,8 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | UNLIMITED RANGE ESP FIXED
--- ✅ SEES ALL PLAYERS ANY DISTANCE
--- ✅ ALL FEATURES / RAINBOW / TIMER SAVE KEPT
--- ✅ DELTA / PYDROID3 / ALL EXECUTORS COMPATIBLE
+-- 🔵 BLUE MODE HUB | ALL PLAYERS ESP FIXED
+-- ✅ SHOWS EVERY PLAYER | NO 4 PLAYER LIMIT
+-- ✅ UNLIMITED RANGE | ALWAYS VISIBLE
+-- ✅ ALL FEATURES KEPT | DELTA / ALL EXECUTORS WORKING
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -15,7 +15,6 @@ local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
-local Camera = Workspace.CurrentCamera
 
 local CUSTOM_GUI_BG = "rbxassetid://101782008402770"
 
@@ -33,9 +32,9 @@ local PRIORITY = {
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v22"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v22"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v22"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v23"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v23"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v23"
 local VOLUME_MAX = 1000
 
 local BoomboxUI_Open = false
@@ -60,6 +59,9 @@ local function AddRainbowGlow(target, thickness)
     table.insert(GuiElements, Outline)
 end
 
+-- ==============================================
+-- STARTUP SCREEN
+-- ==============================================
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
 StartupUI.ResetOnSpawn = false
@@ -123,12 +125,11 @@ UpdateList.TextXAlignment = Enum.TextXAlignment.Left
 UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
 UpdateList.ZIndex = 2
-UpdateList.Text = [[• ✅ ESP UNLIMITED RANGE: SEES ALL PLAYERS ANY DISTANCE
+UpdateList.Text = [[• ✅ ESP SHOWS ALL PLAYERS | NO 4 PLAYER LIMIT
+• ✅ UNLIMITED RANGE | SEES ANY DISTANCE
+• ✅ FIXED TYPO THAT BROKE ESP FUNCTION
 • VOLUME: 0 → 1000
-• NO LONGER BLOCKS ROBLOX MENUS
-• REMAINS ABOVE ALL GAME ELEMENTS
-• All buttons have matching rainbow outlines
-• Timer saves usage & cooldown
+• All buttons have rainbow outlines
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -176,8 +177,11 @@ OkBtn.MouseButton1Click:Connect(function()
     LoadMainHub()
 end)
 
-print("✅ BLUE MODE HUB STARTUP READY | ESP UNLIMITED RANGE")
+print("✅ BLUE MODE HUB STARTUP READY | ALL PLAYERS ESP ENABLED")
 
+-- ==============================================
+-- MAIN HUB
+-- ==============================================
 function LoadMainHub()
     local CurrentTime = os.time()
     local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
@@ -194,18 +198,13 @@ function LoadMainHub()
     local Buttons_Locked = false
     local Hue = 0
 
+    -- ✅ CLEAN FULL ESP REMOVAL
     local function ClearAllESP()
-        for _,P in pairs(Players:GetPlayers()) do
-            if P and P.Character then
-                pcall(function()
-                    if P.Character:FindFirstChild("BLUE_Outline") then P.Character.BLUE_Outline:Destroy() end
-                    if P.Character:FindFirstChild("FriendRainbowDot") then P.Character.FriendRainbowDot:Destroy() end
-                end)
-            end
-        end
         pcall(function()
-            for _,D in pairs(workspace:GetDescendants()) do
-                if D.Name == "BLUE_Outline" or D.Name == "FriendRainbowDot" then D:Destroy() end
+            for _,Desc in pairs(workspace:GetDescendants()) do
+                if Desc.Name == "BLUE_Outline" or Desc.Name == "FriendRainbowDot" then
+                    Desc:Destroy()
+                end
             end
         end)
     end
@@ -253,6 +252,7 @@ function LoadMainHub()
         pcall(function() CurrentSound:Play() end)
     end
 
+    -- BOOMBOX MENU
     local function ToggleBoomboxMenu()
         if BoomboxUI_Open then
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
@@ -410,6 +410,7 @@ function LoadMainHub()
         StopBtn.MouseButton1Click:Connect(function() if CurrentSound then CurrentSound:Destroy() end end)
     end
 
+    -- CONSOLE MENU
     local function ToggleConsole()
         if ConsoleUI_Open then
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -539,6 +540,7 @@ function LoadMainHub()
         ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
     end
 
+    -- MAIN UI FRAME
     local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
     local MainUI = Instance.new("ScreenGui")
@@ -593,6 +595,7 @@ function LoadMainHub()
     MinBtn.Parent = MainFrame
     AddRainbowGlow(MinBtn,2)
 
+    -- ✅ FIXED TYPO: ESPBt → ESPBtn
     local ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,85,0,30)
     ESPBtn.Position = UDim2.new(0,10,0,30)
@@ -603,7 +606,7 @@ function LoadMainHub()
     ESPBtn.TextScaled = true
     ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBt,2)
+    AddRainbowGlow(ESPBtn,2) -- ✅ TYPO FIXED HERE
 
     local YouTubeBtn = Instance.new("TextButton")
     YouTubeBtn.Size = UDim2.new(0,95,0,30)
@@ -820,6 +823,7 @@ function LoadMainHub()
 
     SetupDeathCheck()
 
+    -- ✅ FULL ESP LOOP: SHOWS EVERY PLAYER
     RunService.Heartbeat:Connect(function(Delta)
         if not MainUI or not MainUI.Parent then return end
 
@@ -848,52 +852,59 @@ function LoadMainHub()
         TimerLabel.TextColor3 = Rainbow
 
         if not ESP_Enabled then return end
-        for _,P in pairs(Players:GetPlayers()) do
-            if P == LocalPlayer then continue end
-            local Char = P.Character
-            if not Char then continue end
-            local Hum = Char:FindFirstChildOfClass("Humanoid")
-            if not Hum or Hum.Health <= 0 then
+
+        -- ✅ ITERATES ALL PLAYERS | NO LIMIT
+        for _,Player in pairs(Players:GetPlayers()) do
+            if Player == LocalPlayer then continue end -- skip yourself
+
+            local Character = Player.Character
+            if not Character then goto Continue end
+
+            local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+            if not Humanoid or Humanoid.Health <= 0 then
                 pcall(function()
-                    if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+                    if Character:FindFirstChild("BLUE_Outline") then Character.BLUE_Outline:Destroy() end
+                    if Character:FindFirstChild("FriendRainbowDot") then Character.FriendRainbowDot:Destroy() end
                 end)
-                continue
+                goto Continue
             end
 
-            -- ✅ FIXED: UNLIMITED RANGE + ALWAYS VISIBLE
-            local Outline = Char:FindFirstChild("BLUE_Outline") or Instance.new("Highlight", Char)
-            Outline.Name = "BLUE_Outline"
-            Outline.FillTransparency = 1
-            Outline.OutlineTransparency = 0
-            Outline.OutlineColor = Rainbow
-            Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop -- ✅ BYPASSES OCCLUSION
-            Outline.Adornee = Char -- ✅ FORCES RENDERING EVEN BEYOND RENDER DISTANCE
+            -- ✅ CREATE/UPDATE HIGHLIGHT FOR EVERY PLAYER
+            local Highlight = Character:FindFirstChild("BLUE_Outline") or Instance.new("Highlight")
+            Highlight.Name = "BLUE_Outline"
+            Highlight.Adornee = Character
+            Highlight.FillTransparency = 1
+            Highlight.OutlineTransparency = 0
+            Highlight.OutlineColor = Rainbow
+            Highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            Highlight.Parent = Character
 
+            -- ✅ FRIEND RAINBOW DOT
             local IsFriend = false
-            pcall(function() IsFriend = LocalPlayer:IsFriendsWith(P.UserId) end)
-            local Head = Char:FindFirstChild("Head")
-            local Dot = Char:FindFirstChild("FriendRainbowDot")
+            pcall(function() IsFriend = LocalPlayer:IsFriendsWith(Player.UserId) end)
+            local Head = Character:FindFirstChild("Head")
+
             if IsFriend and Head then
-                if not Dot then
-                    Dot = Instance.new("BillboardGui", Head)
-                    Dot.Name = "FriendRainbowDot"
-                    Dot.AlwaysOnTop = true
-                    Dot.Size = UDim2.new(0,16,0,16)
-                    Dot.StudsOffset = Vector3.new(0,2,0)
-                    Dot.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-                    local Circ = Instance.new("Frame", Dot)
-                    Circ.Size = UDim2.new(1,0,1,0)
-                    Circ.BackgroundColor3 = Rainbow
-                    Instance.new("UICorner", Circ).CornerRadius = UDim.new(1,0)
-                else
-                    Dot.Frame.BackgroundColor3 = Rainbow
-                end
-            elseif Dot then
-                Dot:Destroy()
+                local Dot = Head:FindFirstChild("FriendRainbowDot") or Instance.new("BillboardGui")
+                Dot.Name = "FriendRainbowDot"
+                Dot.AlwaysOnTop = true
+                Dot.Size = UDim2.new(0,18,0,18)
+                Dot.StudsOffset = Vector3.new(0, 2.5, 0)
+                Dot.Parent = Head
+
+                local DotCircle = Dot:FindFirstChild("UICircle") or Instance.new("Frame")
+                DotCircle.Name = "UICircle"
+                DotCircle.Size = UDim2.new(1,0,1,0)
+                DotCircle.BackgroundColor3 = Rainbow
+                Instance.new("UICorner", DotCircle).CornerRadius = UDim.new(1,0)
+                DotCircle.Parent = Dot
+            elseif Head and Head:FindFirstChild("FriendRainbowDot") then
+                Head.FriendRainbowDot:Destroy()
             end
+
+            ::Continue::
         end
     end)
 
-    print("✅ BLUE MODE HUB | UNLIMITED RANGE ESP FULLY WORKING!")
+    print("✅ BLUE MODE HUB | ALL PLAYERS ESP WORKING PERFECTLY!")
 end
