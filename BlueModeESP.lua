@@ -1,8 +1,9 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | FULL VERSION
--- ✅ MUSIC + CONSOLE BUTTON: CUSTOM BACKGROUND ASSET
--- ✅ FULLY COMPLETE / NO TRUNCATION
--- ✅ CROSS-EXECUTOR COMPATIBLE
+-- 🔵 BLUE MODE HUB | FINAL VERSION
+-- ✅ MAIN GUI: ORIGINAL BLACK BACKGROUND PRESERVED
+-- ✅ MUSIC + CONSOLE BUTTONS: CUSTOM IMAGE BACKGROUND
+-- ✅ STARTUP SCREEN: CUSTOM IMAGE BACKGROUND
+-- ✅ ALL FEATURES FULLY PRESERVED
 -- ✅ CREATOR: Dwayne Kean / Blue_Mode
 -- ==============================================
 if getgenv().BlueModeHub_Loaded then return end
@@ -33,13 +34,13 @@ local SAVE_KEY_USED = "BlueModeHub_UsedTime_v19"
 local SAVE_KEY_COOLDOWN = "BlueModeHub_CooldownEnd_v19"
 local SAVE_KEY_VOLUME = "BlueModeHub_Volume_v19"
 local VOLUME_MAX = 1000
-local CUSTOM_BG_ASSET = "rbxassetid://101782008402770" -- Shared for both buttons
+local CUSTOM_BG_ASSET = "rbxassetid://101782008402770"
 
 -- ✅ DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
--- ✅ STARTUP SCREEN
+-- ✅ STARTUP SCREEN WITH CUSTOM BACKGROUND
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
 StartupUI.ResetOnSpawn = false
@@ -50,10 +51,20 @@ StartupUI.Parent = GuiContainer
 local StartupBox = Instance.new("Frame")
 StartupBox.Size = UDim2.new(0, 420, 0, 480)
 StartupBox.Position = UDim2.new(0.5, -210, 0.5, -240)
-StartupBox.BackgroundColor3 = Color3.fromRGB(10,12,18)
+StartupBox.BackgroundTransparency = 1 -- Remove solid color to show image
 StartupBox.Active = true
 StartupBox.Parent = StartupUI
 Instance.new("UICorner", StartupBox).CornerRadius = UDim.new(0, 18)
+
+-- ✅ CUSTOM IMAGE FOR STARTUP BOX BACKGROUND
+local StartupBg = Instance.new("ImageLabel")
+StartupBg.Size = UDim2.new(1,0,1,0)
+StartupBg.Position = UDim2.new(0,0,0,0)
+StartupBg.BackgroundTransparency = 1
+StartupBg.Image = CUSTOM_BG_ASSET
+StartupBg.ScaleType = Enum.ScaleType.Stretch
+StartupBg.ZIndex = 1
+StartupBg.Parent = StartupBox
 
 local StartupBorder = Instance.new("UIStroke")
 StartupBorder.Thickness = 5
@@ -68,6 +79,7 @@ StartupTitle.Font = Enum.Font.GothamBlack
 StartupTitle.TextScaled = true
 StartupTitle.Text = "🔵 BLUE MODE HUB"
 StartupTitle.TextColor3 = Color3.fromRGB(0, 190, 255)
+StartupTitle.ZIndex = 2
 StartupTitle.Parent = StartupBox
 
 local UpdateHeader = Instance.new("TextLabel")
@@ -78,6 +90,7 @@ UpdateHeader.Font = Enum.Font.GothamBold
 UpdateHeader.TextScaled = true
 UpdateHeader.Text = "📋 LATEST UPDATES:"
 UpdateHeader.TextColor3 = Color3.new(1,1,1)
+UpdateHeader.ZIndex = 2
 UpdateHeader.Parent = StartupBox
 
 local UpdateList = Instance.new("TextLabel")
@@ -90,10 +103,12 @@ UpdateList.TextWrapped = true
 UpdateList.TextXAlignment = Enum.TextXAlignment.Left
 UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
+UpdateList.ZIndex = 2
 UpdateList.Text = [[• VOLUME: 0 → 1000
 • NO LONGER BLOCKS ROBLOX MENUS
-• MUSIC + CONSOLE BUTTON: CUSTOM BACKGROUND
-• REMAINS ABOVE ALL GAME ELEMENTS
+• Music + Console Button: Custom Background Added
+• Startup Screen: Custom Background Added
+• MAIN GUI: Original Black Background Preserved
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -105,6 +120,7 @@ StartupTimerLabel.Font = Enum.Font.GothamBold
 StartupTimerLabel.TextScaled = true
 StartupTimerLabel.Text = "TIME REMAINING: 12:00:00"
 StartupTimerLabel.TextColor3 = Color3.fromRGB(80,255,120)
+StartupTimerLabel.ZIndex = 2
 StartupTimerLabel.Parent = StartupBox
 
 local OkBtn = Instance.new("TextButton")
@@ -116,6 +132,7 @@ OkBtn.TextScaled = true
 OkBtn.Text = "✓ OK / LOAD HUB"
 OkBtn.TextColor3 = Color3.new(1,1,1)
 OkBtn.AutoLocalize = false
+OkBtn.ZIndex = 2
 OkBtn.Parent = StartupBox
 Instance.new("UICorner", OkBtn).CornerRadius = UDim.new(0, 16)
 
@@ -447,7 +464,7 @@ function LoadMainHub()
         ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
     end
 
-    -- ✅ MAIN UI WITH CUSTOM BUTTON BACKGROUNDS
+    -- ✅ MAIN UI: ORIGINAL BLACK BACKGROUND FULLY PRESERVED
     local FULL_SIZE = UDim2.new(0,770,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
     local MainUI = Instance.new("ScreenGui")
@@ -460,7 +477,7 @@ function LoadMainHub()
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = FULL_SIZE
     MainFrame.Position = UDim2.new(0,20,0.5,-52)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25) -- ✅ ORIGINAL BLACK BACKGROUND KEPT
     MainFrame.Active = true
     MainFrame.ClipsDescendants = false
     MainFrame.Parent = MainUI
@@ -512,7 +529,7 @@ function LoadMainHub()
     ESPBtn.TextScaled = true
     ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBtn,2)
+    AddRainbowGlow(ESPBt,2)
 
     local YouTubeBtn = Instance.new("TextButton")
     YouTubeBtn.Size = UDim2.new(0,95,0,30)
@@ -526,7 +543,7 @@ function LoadMainHub()
     Instance.new("UICorner", YouTubeBtn).CornerRadius = UDim.new(0,6)
     AddRainbowGlow(YouTubeBtn,2)
 
-    -- ✅ MUSIC BUTTON WITH CUSTOM BACKGROUND
+    -- 🎵 MUSIC BUTTON WITH CUSTOM BACKGROUND
     local MusicBtn = Instance.new("TextButton")
     MusicBtn.Size = UDim2.new(0,90,0,30)
     MusicBtn.Position = UDim2.new(0,200,0,30)
@@ -549,7 +566,7 @@ function LoadMainHub()
     MusicBtnBg.ZIndex = 1
     MusicBtnBg.Parent = MusicBtn
 
-    -- ✅ CONSOLE BUTTON WITH SAME CUSTOM BACKGROUND
+    -- 💻 CONSOLE BUTTON WITH CUSTOM BACKGROUND
     local ConsoleBtn = Instance.new("TextButton")
     ConsoleBtn.Size = UDim2.new(0,100,0,30)
     ConsoleBtn.Position = UDim2.new(0,300,0,30)
@@ -622,7 +639,7 @@ function LoadMainHub()
         end
     end)
 
-    -- BUTTON CLICKS
+    -- BUTTON FUNCTIONS
     MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)
     ConsoleBtn.MouseButton1Click:Connect(ToggleConsole)
 
@@ -658,4 +675,3 @@ function LoadMainHub()
 
     print("✅ BLUE MODE HUB | FULLY LOADED SUCCESSFULLY")
 end
-
