@@ -2,6 +2,7 @@
 -- ESP Script | FULL RAINBOW GLOW AURA OUTLINES
 -- made by BLUE_MODE
 -- UNLOCK CODE: Blue_Mode192823
+-- Version: 2.0 | Fixed: 2026-07-19
 -- ==============================================
 
 if getgenv().BlueMode_Loaded then return end
@@ -15,6 +16,19 @@ local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
 
+-- ✅ EXECUTOR COMPATIBILITY FALLBACKS
+local function SafeWriteFile(key, val)
+    pcall(function() if writefile then writefile(key..".txt", tostring(val)) end end)
+end
+local function SafeReadFile(key, default)
+    local v = nil
+    pcall(function() if readfile then v = readfile(key..".txt") end end)
+    return tonumber(v) or default
+end
+local function SafeCopy(text)
+    pcall(function() if setclipboard then setclipboard(text) end end)
+end
+
 -- ⚙️ SETTINGS
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
@@ -25,24 +39,24 @@ local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v2"
 local SAVE_KEY_VOLUME = "BlueMode_Volume_v2"
 
 -- 🛡️ PERMANENT SAVE SYSTEM
-local function SaveData(key, value)
-    pcall(function() writefile(key..".txt", tostring(value)) end)
-end
-
-local function LoadData(key, default)
-    local val = nil
-    pcall(function() val = readfile(key..".txt") end)
-    return tonumber(val) or default
-end
+local SaveData = SafeWriteFile
+local LoadData = SafeReadFile
 
 -- 🧹 CLEAR ONLY ESP
 local function ClearESP()
     for _, Plr in pairs(Players:GetPlayers()) do
         if Plr and Plr.Character then
-            pcall(function() if Plr.Character:FindFirstChild("BLUE_Outline") then Plr.Character.BLUE_Outline:Destroy() end end)
-            pcall(function() if Plr.Character:FindFirstChild("FriendRainbowDot") then Plr.Character.FriendRainbowDot:Destroy() end end)
+            pcall(function()
+                if Plr.Character:FindFirstChild("BLUE_Outline") then Plr.Character.BLUE_Outline:Destroy() end
+                if Plr.Character:FindFirstChild("FriendRainbowDot") then Plr.Character.FriendRainbowDot:Destroy() end
+            end)
         end
     end
+    pcall(function()
+        for _, D in pairs(workspace:GetDescendants()) do
+            if D.Name == "BLUE_Outline" or D.Name == "FriendRainbowDot" then D:Destroy() end
+        end
+    end)
 end
 
 -- 🚫 COOLDOWN CHECK
@@ -56,26 +70,28 @@ end
 -- ⏳ LOAD SAVED SETTINGS
 local UsedTime = LoadData(SAVE_KEY_USED, 0)
 local LastCheck = os.time()
-local MusicVolume = LoadData(SAVE_KEY_VOLUME, 0.5)
+local MusicVolume = math.clamp(LoadData(SAVE_KEY_VOLUME, 0.5), 0, 1)
 
 -- 🎵 BOOMBOX + VOLUME SYSTEM
 local CurrentSound = nil
 local VolNumTextMain, VolFillMain
-local BoomFrame, VolFillMenu, VolNumMenu
+local VolFillMenu, VolNumMenu
 local GuiElements = {} -- Store all elements for rainbow glow
 
 local function AddRainbowGlow(target, thickness)
+    if not target then return end
     local Outline = Instance.new("UIStroke")
     Outline.Name = "RainbowAura"
     Outline.Thickness = thickness or 3
     Outline.Transparency = 0
+    Outline.LineJoinMode = Enum.LineJoinMode.Round
     Outline.Parent = target
     table.insert(GuiElements, Outline)
     return Outline
 end
 
 local function UpdateVolume(newVol)
-    MusicVolume = math.clamp(newVol, 0, 1)
+    MusicVolume = math.clamp(tonumber(newVol) or 0.5, 0, 1)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
     if CurrentSound then CurrentSound.Volume = MusicVolume end
     local percent = math.floor(MusicVolume * 100).."%"
@@ -106,16 +122,28 @@ local function OpenBoomboxMenu()
     BoomUI.Name = "BLUE_BOOMBOX_MENU"
     BoomUI.ResetOnSpawn = false
     BoomUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    BoomUI.DisplayOrder = 10000
+    BoomUI.DisplayOrder = 98
     BoomUI.Parent = CoreGui
 
-    BoomFrame = Instance.new("Frame")
+    local BoomFrame = Instance.new("Frame")
     BoomFrame.Size = UDim2.new(0, 320, 0, 250)
     BoomFrame.Position = UDim2.new(0.5, -160, 0.5, -125)
     BoomFrame.BackgroundColor3 = Color3.fromRGB(22,22,22)
+    BoomFrame.Active = true
     BoomFrame.Parent = BoomUI
     Instance.new("UICorner", BoomFrame).CornerRadius = UDim.new(0,12)
     AddRainbowGlow(BoomFrame, 4) -- Glow border
+
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Size = UDim2.new(0,30,0,30)
+    CloseBtn.Position = UDim2.new(1,-35,0,5)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(170,30,30)
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = Color3.new(1,1,1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 24
+    CloseBtn.Parent = BoomFrame
+    CloseBtn.MouseButton1Click:Connect(function() BoomUI:Destroy() end)
 
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1,0,0,40)
@@ -135,7 +163,6 @@ local function OpenBoomboxMenu()
     Input.TextColor3 = Color3.new(1,1,1)
     Input.Font = Enum.Font.Gotham
     Input.TextScaled = true
-    Input.ClearTextOnFocus = true
     Input.Parent = BoomFrame
     Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
     AddRainbowGlow(Input, 2)
@@ -166,6 +193,7 @@ local function OpenBoomboxMenu()
     VolBG.Size = UDim2.new(1,-40,0,24)
     VolBG.Position = UDim2.new(0,20,0,145)
     VolBG.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    VolBG.Active = true
     VolBG.Parent = BoomFrame
     Instance.new("UICorner", VolBG).CornerRadius = UDim.new(0,12)
     AddRainbowGlow(VolBG, 2)
@@ -214,15 +242,24 @@ local function OpenBoomboxMenu()
     Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0,8)
     AddRainbowGlow(StopBtn, 2)
 
-    PlayBtn.MouseButton1Click:Connect(function() if Input.Text ~= "" then LoadBoombox(Input.Text) end BoomUI:Destroy() end)
-    StopBtn.MouseButton1Click:Connect(function() if CurrentSound then pcall(function() CurrentSound:Stop() CurrentSound:Destroy() end) end BoomUI:Destroy() end)
+    PlayBtn.MouseButton1Click:Connect(function() if Input.Text ~= "" then LoadBoombox(Input.Text) end end)
+    StopBtn.MouseButton1Click:Connect(function() if CurrentSound then pcall(function() CurrentSound:Destroy() end) end end)
 end
+
+-- ✅ AUTO-HIDE ROBLOX MENU
+UserInputService.MenuOpened:Connect(function()
+    if UI then UI.Visible = false end
+end)
+UserInputService.MenuClosed:Connect(function()
+    if UI then UI.Visible = true end
+end)
 
 -- 🎮 MAIN UI
 local UI = Instance.new("ScreenGui")
 UI.Name = "BLUE_MODE_ESP"
 UI.ResetOnSpawn = false
 UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+UI.DisplayOrder = 99
 UI.Parent = CoreGui
 
 local MAIN_SIZE = UDim2.new(0, 570, 0, 105)
@@ -237,22 +274,17 @@ Main.Parent = UI
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,8)
 AddRainbowGlow(Main, 5) -- Main thick aura
 
-local DragBar = Instance.new("Frame")
+local DragBar = Instance.new("TextButton")
 DragBar.Size = UDim2.new(1, -25, 0, 22)
 DragBar.BackgroundColor3 = Color3.fromRGB(60,140,220)
 DragBar.Active = true
+DragBar.Text = "made by BLUE_MODE | DRAG HERE"
+DragBar.TextColor3 = Color3.new(1,1,1)
+DragBar.Font = Enum.Font.GothamBold
+DragBar.TextScaled = true
+DragBar.TextXAlignment = Enum.TextXAlignment.Left
 DragBar.Parent = Main
 AddRainbowGlow(DragBar, 2)
-
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -110, 1, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "made by BLUE_MODE | DRAG HERE"
-Title.TextColor3 = Color3.new(1,1,1)
-Title.Font = Enum.Font.GothamBold
-Title.TextScaled = true
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = DragBar
 
 local TimerLabel = Instance.new("TextLabel")
 TimerLabel.Size = UDim2.new(0, 100, 1, 0)
@@ -269,7 +301,7 @@ local MinBtn = Instance.new("TextButton")
 MinBtn.Size = UDim2.new(0, 22, 1, 0)
 MinBtn.Position = UDim2.new(1, -22, 0, 0)
 MinBtn.BackgroundColor3 = Color3.fromRGB(160,40,40)
-MinBtn.Text = "❌"
+MinBtn.Text = "➖"
 MinBtn.TextColor3 = Color3.new(1,1,1)
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.TextScaled = true
@@ -278,7 +310,7 @@ AddRainbowGlow(MinBtn, 2)
 
 -- BUTTONS
 local ESPBtn = Instance.new("TextButton")
-ESPBtn.Size = UDim2.new(0, 85, 0, 30)
+ESPBtnsize = UDim2.new(0, 85, 0, 30)
 ESPBtn.Position = UDim2.new(0, 10, 0, 30)
 ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
 ESPBtn.Text = "ESP: OFF"
@@ -287,7 +319,7 @@ ESPBtn.Font = Enum.Font.GothamBold
 ESPBtn.TextScaled = true
 ESPBtn.Parent = Main
 Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-AddRainbowGlow(ESPBtn, 2)
+AddRainbowGlow(ESPBt, 2)
 
 local YtBtn = Instance.new("TextButton")
 YtBtn.Size = UDim2.new(0, 95, 0, 30)
@@ -364,6 +396,7 @@ local VolBGMain = Instance.new("Frame")
 VolBGMain.Size = UDim2.new(0,150,0,18)
 VolBGMain.Position = UDim2.new(0,135,0,67)
 VolBGMain.BackgroundColor3 = Color3.fromRGB(50,50,50)
+VolBGMain.Active = true
 VolBGMain.Parent = Main
 Instance.new("UICorner", VolBGMain).CornerRadius = UDim.new(0,9)
 AddRainbowGlow(VolBGMain, 2)
@@ -384,7 +417,6 @@ end)
 UserInputService.InputChanged:Connect(function(i)
     if VolSliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
         local relPos = math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X) / VolBGMain.AbsoluteSize.X, 0, 1)
-        VolFillMain.Size = UDim2.new(relPos, 0, 1, 0)
         UpdateVolume(relPos)
     end
 end)
@@ -397,7 +429,7 @@ local IsSmall = false
 
 -- 🖱️ DRAG SYSTEM
 local Drag = {Active=false, SX=0, SY=0, PX=0, PY=0}
-local function StartDrag(input)
+DragBar.InputBegan:Connect(function(input)
     if Buttons_Locked then return end
     local valid = input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch
     if not valid then return end
@@ -406,9 +438,7 @@ local function StartDrag(input)
     Drag.SY = input.Position.Y
     Drag.PX = Main.Position.X.Offset
     Drag.PY = Main.Position.Y.Offset
-end
-DragBar.InputBegan:Connect(StartDrag)
-Main.InputBegan:Connect(StartDrag)
+end)
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then Drag.Active = false end
 end)
@@ -427,4 +457,139 @@ ESPBtn.MouseButton1Click:Connect(function()
     if not ESP_Enabled then ClearESP() end
 end)
 
-YtBtn.Mou
+YtBtn.MouseButton1Click:Connect(function()
+    SafeCopy(YOUTUBE_LINK)
+    YtBtn.Text = "✅ COPIED!"
+    task.wait(1.5)
+    YtBtn.Text = "📺 YOUTUBE"
+end)
+
+BoomBtn.MouseButton1Click:Connect(OpenBoomboxMenu)
+
+LockBtn.MouseButton1Click:Connect(function()
+    Buttons_Locked = not Buttons_Locked
+    LockBtn.Text = Buttons_Locked and "🔒 LOCKED" or "🔓 UNLOCKED"
+    LockBtn.BackgroundColor3 = Buttons_Locked and Color3.fromRGB(180,40,40) or Color3.fromRGB(50,50,50)
+end)
+
+MinBtn.MouseButton1Click:Connect(function()
+    IsSmall = not IsSmall
+    if IsSmall then
+        Main.Size = MIN_SIZE
+        ESPBtn.Visible = false
+        YtBtn.Visible = false
+        BoomBtn.Visible = false
+        LockBtn.Visible = false
+        DelBtn.Visible = false
+        VolLabelMain.Visible = false
+        VolNumTextMain.Visible = false
+        VolBGMain.Visible = false
+        DragBar.Text = ""
+        MinBtn.Text = "➕"
+    else
+        Main.Size = MAIN_SIZE
+        ESPBtn.Visible = true
+        YtBtn.Visible = true
+        BoomBtn.Visible = true
+        LockBtn.Visible = true
+        DelBtn.Visible = true
+        VolLabelMain.Visible = true
+        VolNumTextMain.Visible = true
+        VolBGMain.Visible = true
+        DragBar.Text = "made by BLUE_MODE | DRAG HERE"
+        MinBtn.Text = "➖"
+    end
+end)
+
+DelBtn.MouseButton1Click:Connect(function()
+    ClearESP()
+    pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
+    UI:Destroy()
+    getgenv().BlueMode_Loaded = nil
+end)
+
+-- 🚀 MAIN LOOP
+RunService.Heartbeat:Connect(function(Delta)
+    if not UI or not UI.Parent then return end
+
+    -- Update timer
+    local Now = os.time()
+    UsedTime = UsedTime + math.max(0, Now - LastCheck)
+    LastCheck = Now
+    SaveData(SAVE_KEY_USED, UsedTime)
+    local Remaining = math.max(0, USAGE_LIMIT - UsedTime)
+    local h = math.floor(Remaining/3600)
+    local m = math.floor((Remaining%3600)/60)
+    local s = Remaining%60
+    TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00:00", h, m, s)
+
+    -- Time's up
+    if Remaining <= 0 then
+        SaveData(SAVE_KEY_COOLDOWN, os.time() + COOLDOWN)
+        pcall(function() if delfile then delfile(SAVE_KEY_USED..".txt") end end)
+        DelBtn:Fire()
+        return
+    end
+
+    -- Rainbow effect
+    Hue = (Hue + Delta * 0.5) % 1
+    local Rainbow = Color3.fromHSV(Hue, 1, 1)
+    for _, e in pairs(GuiElements) do e.Color = Rainbow end
+    if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
+    if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
+
+    -- ESP
+    if not ESP_Enabled then return end
+    for _, Plr in pairs(Players:GetPlayers()) do
+        if Plr == LocalPlayer then continue end
+        local Char = Plr.Character
+        if not Char then
+            pcall(function()
+                if Char and Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
+                if Char and Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+            end)
+            continue
+        end
+        local Hum = Char:FindFirstChildOfClass("Humanoid")
+        if not Hum or Hum.Health <= 0 then
+            pcall(function()
+                if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
+                if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+            end)
+            continue
+        end
+
+        -- Outline
+        local Outline = Char:FindFirstChild("BLUE_Outline") or Instance.new("Highlight", Char)
+        Outline.Name = "BLUE_Outline"
+        Outline.FillTransparency = 1
+        Outline.OutlineTransparency = 0
+        Outline.OutlineColor = Rainbow
+        Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+
+        -- Friend dot
+        local IsFriend = false
+        pcall(function() IsFriend = LocalPlayer:IsFriendsWith(Plr.UserId) end)
+        local Head = Char:FindFirstChild("Head")
+        local Dot = Char:FindFirstChild("FriendRainbowDot")
+        if IsFriend and Head then
+            if not Dot then
+                Dot = Instance.new("BillboardGui", Head)
+                Dot.Name = "FriendRainbowDot"
+                Dot.AlwaysOnTop = true
+                Dot.Size = UDim2.new(0,16,0,16)
+                Dot.StudsOffset = Vector3.new(0,2,0)
+                local Circ = Instance.new("Frame", Dot)
+                Circ.Size = UDim2.new(1,0,1,0)
+                Circ.BackgroundColor3 = Rainbow
+                Instance.new("UICorner", Circ).CornerRadius = UDim.new(1,0)
+            else
+                Dot.Frame.BackgroundColor3 = Rainbow
+            end
+        elseif Dot then
+            Dot:Destroy()
+        end
+    end
+end)
+
+print("✅ BLUE MODE ESP LOADED SUCCESSFULLY!")
