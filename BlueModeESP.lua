@@ -192,6 +192,25 @@ BrookBtn.MouseButton1Click:Connect(function()
     RunConsole("print('Load Brookhaven scripts here')")
 end)
 
+-- Build a Boat for Treasure Button
+local BoatBtn = Instance.new("TextButton")
+BoatBtn.Size = UDim2.new(0,120,0,40)
+BoatBtn.Position = UDim2.new(0,300,0,260) -- adjust position if needed
+BoatBtn.Text = "Build a Boat"
+BoatBtn.TextColor3 = Color3.new(1,1,1)
+BoatBtn.BackgroundColor3 = Color3.fromRGB(80,140,200)
+BoatBtn.Font = Enum.Font.GothamBold
+BoatBtn.TextScaled = true
+BoatBtn.Parent = Frame
+AddRainbowGlow(BoatBtn,2)
+
+BoatBtn.MouseButton1Click:Connect(function()
+    RunConsole([[
+        -- Auto Farm Build a Boat script loader
+        loadstring(game:HttpGet("https://pastebin.com/raw/YOUR_SCRIPT_ID"))()
+    ]])
+end)
+
 UserInputService.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
         local delta = input.Position - dragStart
