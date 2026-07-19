@@ -1,213 +1,223 @@
--- Part 1: Setup
-local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-Frame.Size = UDim2.new(0,400,0,500)
-Frame.Position = UDim2.new(0.5,-200,0.5,-250)
-Frame.BackgroundColor3 = Color3.fromRGB(40,40,60)
-Frame.Parent = ScreenGui
+-- ScreenGui + Hub Frame
+local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+local HubFrame = Instance.new("Frame")
+HubFrame.Size = UDim2.new(0,450,0,550)
+HubFrame.Position = UDim2.new(0.5,-225,0.5,-275)
+HubFrame.BackgroundColor3 = Color3.fromRGB(25,25,40)
+HubFrame.Visible = false
+HubFrame.Parent = ScreenGui
 
--- Part 2: Rainbow Glow Helper
-function AddRainbowGlow(btn, speed)
-    spawn(function()
-        while true do
-            for i = 0, 255, speed do
-                btn.BackgroundColor3 = Color3.fromHSV(i/255,1,1)
-                wait()
+-- Background image (replace with your asset ID)
+local Bg = Instance.new("ImageLabel")
+Bg.Size = UDim2.new(1,0,1,0)
+Bg.Position = UDim2.new(0,0,0,0)
+Bg.Image = "rbxassetid://<YOUR_IMAGE_ID>" -- put your mountain background asset ID here
+Bg.ScaleType = Enum.ScaleType.Crop
+Bg.ZIndex = 0
+Bg.Parent = HubFrame
+HubFrame.BackgroundTransparency = 1
+
+-- Rounded corners + rainbow outline
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0,12)
+UICorner.Parent = HubFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 3
+UIStroke.Parent = HubFrame
+
+-- Rainbow animation for outline
+task.spawn(function()
+    while UIStroke.Parent do
+        for i = 0,1,0.01 do
+            UIStroke.Color = Color3.fromHSV(i,1,1)
+            task.wait(0.05)
+        end
+    end
+end)
+
+-- Header bar (draggable)
+local Header = Instance.new("TextLabel")
+Header.Size = UDim2.new(1,0,0,35)
+Header.Text = "BLUE MODE HUB | DRAG HERE"
+Header.BackgroundColor3 = Color3.fromRGB(40,40,70)
+Header.TextColor3 = Color3.new(1,1,1)
+Header.Font = Enum.Font.GothamBold
+Header.TextScaled = true
+Header.Parent = HubFrame
+
+-- Launcher cube button
+local Launcher = Instance.new("TextButton")
+Launcher.Size = UDim2.new(0,80,0,80)
+Launcher.Position = UDim2.new(0.5,-40,0,10)
+Launcher.Text = "BLUE MODE HUB"
+Launcher.Font = Enum.Font.GothamBold
+Launcher.TextScaled = true
+Launcher.Parent = ScreenGui
+
+local LaunchStroke = Instance.new("UIStroke")
+LaunchStroke.Thickness = 3
+LaunchStroke.Parent = Launcher
+
+-- Rainbow text + outline animation
+task.spawn(function()
+    while Launcher.Parent do
+        for i = 0,1,0.01 do
+            local rainbow = Color3.fromHSV(i,1,1)
+            Launcher.TextColor3 = rainbow
+            LaunchStroke.Color = rainbow
+            task.wait(0.05)
+        end
+    end
+end)
+
+-- Launcher logic
+Launcher.MouseButton1Click:Connect(function()
+    HubFrame.Visible = not HubFrame.Visible
+end)
+
+-- Function to create cube buttons inside hub
+local function CreateCubeButton(name, pos, scriptLink)
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(0,100,0,100)
+    Btn.Position = pos
+    Btn.Text = name
+    Btn.Font = Enum.Font.GothamBold
+    Btn.TextScaled = true
+    Btn.Parent = HubFrame
+
+    local BtnStroke = Instance.new("UIStroke")
+    BtnStroke.Thickness = 2
+    BtnStroke.Parent = Btn
+
+    -- Rainbow text + outline animation
+    task.spawn(function()
+        while Btn.Parent do
+            for i = 0,1,0.01 do
+                local rainbow = Color3.fromHSV(i,1,1)
+                Btn.TextColor3 = rainbow
+                BtnStroke.Color = rainbow
+                task.wait(0.05)
             end
         end
     end)
+
+    -- Keyless loadstring logic
+    Btn.MouseButton1Click:Connect(function()
+        loadstring(game:HttpGet(scriptLink))()
+    end)
 end
 
--- Part 3: Console Runner (executor-safe + keyless)
-function RunConsole(code)
-    local safeLoadstring = loadstring or function() return function() end end
-    local success, err = pcall(function()
-        local func = safeLoadstring(code)
-        if func then
-            func()
-        else
-            warn("⚠️ Executor does not support loadstring.")
+-- Universal cube buttons
+CreateCubeButton("Arsenal", UDim2.new(0,30,0,60), "https://raw.githubusercontent.com/xx-oboro/roblox/main/arsenal.lua")
+CreateCubeButton("Blox Fruits", UDim2.new(0,150,0,60), "https://raw.githubusercontent.com/ThatMG393/roblox-scripts/master/bloxfruit.luau")
+CreateCubeButton("Adopt Me", UDim2.new(0,270,0,60), "https://raw.githubusercontent.com/BloxZilla/AdoptMe/main/Keyless/Universal-NonSkid/Updated.lua")
+CreateCubeButton("Brookhaven", UDim2.new(0,30,0,180), "https://raw.githubusercontent.com/Laelmano24/brookhaven-tool/main/src/main.luau")
+CreateCubeButton("Build a Boat", UDim2.new(0,150,0,180), "https://raw.githubusercontent.com/Alive-Debug/BABFT/main/babft.lua")
+
+-- YouTube Button
+local YTBtn = Instance.new("TextButton")
+YTBtn.Size = UDim2.new(0,200,0,50)
+YTBtn.Position = UDim2.new(0.5,-100,1,-70)
+YTBtn.Text = "YouTube: BLUE_MODE"
+YTBtn.Font = Enum.Font.GothamBold
+YTBtn.TextScaled = true
+YTBtn.Parent = HubFrame
+
+local YTStroke = Instance.new("UIStroke")
+YTStroke.Thickness = 2
+YTStroke.Parent = YTBtn
+
+-- Rainbow text + outline animation
+task.spawn(function()
+    while YTBtn.Parent do
+        for i = 0,1,0.01 do
+            local rainbow = Color3.fromHSV(i,1,1)
+            YTBtn.TextColor3 = rainbow
+            YTStroke.Color = rainbow
+            task.wait(0.05)
         end
-    end)
-    if not success then
-        warn("⚠️ Console failed: ".. tostring(err))
     end
-end
-
--- Part 4: ESP Placeholder
-function EnableESP() print("ESP Enabled") end
-
--- Part 5: Music Placeholders
-function PlayMusic(id) print("Play music ID: "..id) end
-function StopMusic() print("Stop music") end
-
--- Part 6: Arsenal Button
-local ArsenalBtn = Instance.new("TextButton")
-ArsenalBtn.Size = UDim2.new(0,120,0,40)
-ArsenalBtn.Position = UDim2.new(0,300,0,60)
-ArsenalBtn.Text = "Arsenal"
-ArsenalBtn.Parent = Frame
-AddRainbowGlow(ArsenalBtn,2)
-ArsenalBtn.MouseButton1Click:Connect(function()
-    RunConsole("loadstring(game:HttpGet('https://raw.githubusercontent.com/xx-oboro/roblox/main/arsenal.lua'))()")
 end)
 
--- Part 7: Blox Fruits Button
-local BloxBtn = Instance.new("TextButton")
-BloxBtn.Size = UDim2.new(0,120,0,40)
-BloxBtn.Position = UDim2.new(0,300,0,110)
-BloxBtn.Text = "Blox Fruits"
-BloxBtn.Parent = Frame
-AddRainbowGlow(BloxBtn,2)
-BloxBtn.MouseButton1Click:Connect(function()
-    RunConsole("loadstring(game:HttpGet('https://raw.githubusercontent.com/ThatMG393/roblox-scripts/master/bloxfruit.luau'))()")
+-- Copy YouTube link to clipboard
+YTBtn.MouseButton1Click:Connect(function()
+    setclipboard("https://youtube.com/@blue_mode?si=6xIZvTu6hZ9h3Zsw")
+    print("YouTube link copied to clipboard!")
 end)
 
--- Part 8: Adopt Me Button
-local AdoptBtn = Instance.new("TextButton")
-AdoptBtn.Size = UDim2.new(0,120,0,40)
-AdoptBtn.Position = UDim2.new(0,300,0,160)
-AdoptBtn.Text = "Adopt Me"
-AdoptBtn.Parent = Frame
-AddRainbowGlow(AdoptBtn,2)
-AdoptBtn.MouseButton1Click:Connect(function()
-    RunConsole("loadstring(game:HttpGet('https://raw.githubusercontent.com/BloxZilla/AdoptMe/main/Keyless/Universal-NonSkid/Updated.lua'))()")
-end)
+-- Special Rainbow ESP
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Part 9: Brookhaven Button
-local BrookBtn = Instance.new("TextButton")
-BrookBtn.Size = UDim2.new(0,120,0,40)
-BrookBtn.Position = UDim2.new(0,300,0,210)
-BrookBtn.Text = "Brookhaven"
-BrookBtn.Parent = Frame
-AddRainbowGlow(BrookBtn,2)
-BrookBtn.MouseButton1Click:Connect(function()
-    RunConsole("loadstring(game:HttpGet('https://raw.githubusercontent.com/Laelmano24/brookhaven-tool/main/src/main.luau'))()")
-end)
+local function EnableRainbowESP()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            -- Rainbow outline
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "RainbowESP"
+            highlight.FillTransparency = 1
+            highlight.OutlineTransparency = 0
+            highlight.Parent = plr.Character
 
--- Part 10: Build a Boat Button
-local BoatBtn = Instance.new("TextButton")
-BoatBtn.Size = UDim2.new(0,120,0,40)
-BoatBtn.Position = UDim2.new(0,300,0,260)
-BoatBtn.Text = "Build a Boat"
-BoatBtn.Parent = Frame
-AddRainbowGlow(BoatBtn,2)
-BoatBtn.MouseButton1Click:Connect(function()
-    RunConsole("loadstring(game:HttpGet('https://raw.githubusercontent.com/Alive-Debug/BABFT/main/babft.lua'))()")
-end)
+            task.spawn(function()
+                while highlight.Parent do
+                    for i = 0,1,0.01 do
+                        highlight.OutlineColor3 = Color3.fromHSV(i,1,1)
+                        task.wait(0.05)
+                    end
+                end
+            end)
 
--- Start Button (always visible)
-local StartBtn = Instance.new("TextButton")
-StartBtn.Size = UDim2.new(0,150,0,50)
-StartBtn.Position = UDim2.new(0.5,-75,0,10)
-StartBtn.Text = "Start BLUE MODE HUB"
-StartBtn.Parent = Frame
-AddRainbowGlow(StartBtn,3)
-StartBtn.MouseButton1Click:Connect(function()
-    Frame.Visible = true
-    print("Hub Started")
-end)
+            -- Friend rainbow dot
+            if LocalPlayer:IsFriendsWith(plr.UserId) then
+                local dot = Instance.new("BillboardGui")
+                dot.Size = UDim2.new(0,20,0,20)
+                dot.AlwaysOnTop = true
+                dot.Parent = plr.Character:FindFirstChild("Head")
 
--- Part 11: Info Panel
-function AddInfoPanel(frame)
-    local InfoLabel = Instance.new("TextLabel")
-    InfoLabel.Size = UDim2.new(0,380,0,30)
-    InfoLabel.Position = UDim2.new(0,10,0,320)
-    InfoLabel.Text = "Blue Mode Hub v1.0 - Keyless"
-    InfoLabel.TextColor3 = Color3.new(1,1,1)
-    InfoLabel.BackgroundTransparency = 1
-    InfoLabel.Font = Enum.Font.GothamBold
-    InfoLabel.TextScaled = true
-    InfoLabel.Parent = frame
-end
+                local circle = Instance.new("Frame")
+                circle.Size = UDim2.new(1,0,1,0)
+                circle.Parent = dot
+                Instance.new("UICorner", circle).CornerRadius = UDim.new(1,0)
 
--- Part 12: Music Slots
-function AddMusicSlots(frame)
-    local MusicBtn = Instance.new("TextButton")
-    MusicBtn.Size = UDim2.new(0,120,0,40)
-    MusicBtn.Position = UDim2.new(0,20,0,360)
-    MusicBtn.Text = "Play Music"
-    MusicBtn.Parent = frame
-    AddRainbowGlow(MusicBtn,2)
-    MusicBtn.MouseButton1Click:Connect(function()
-        PlayMusic("1234567890") -- replace with a Roblox audio ID
-    end)
-
-    local StopBtn = Instance.new("TextButton")
-    StopBtn.Size = UDim2.new(0,120,0,40)
-    StopBtn.Position = UDim2.new(0,160,0,360)
-    StopBtn.Text = "Stop Music"
-    StopBtn.Parent = frame
-    AddRainbowGlow(StopBtn,2)
-    StopBtn.MouseButton1Click:Connect(function()
-        StopMusic()
-    end)
-end
-
--- Part 13: Saved Music Viewer
-function ShowSavedMusic(frame)
-    local SavedLabel = Instance.new("TextLabel")
-    SavedLabel.Size = UDim2.new(0,380,0,30)
-    SavedLabel.Position = UDim2.new(0,10,0,410)
-    SavedLabel.Text = "Saved Music: None yet"
-    SavedLabel.TextColor3 = Color3.new(1,1,1)
-    SavedLabel.BackgroundTransparency = 1
-    SavedLabel.Font = Enum.Font.Gotham
-    SavedLabel.TextScaled = true
-    SavedLabel.Parent = frame
-end
-
--- Part 14: Rainbow ESP Upgrade
-function RainbowESP() print("🌈 Rainbow ESP Activated") end
-
--- Part 15: ESP Toggle
-function ToggleESP()
-    EnableESP()
-    print("ESP Toggled On/Off")
-end
-
--- Part 16: Draggable Start Button
-local UIS = game:GetService("UserInputService")
-local dragging, dragInput, dragStart, startPos
-
-StartBtn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = StartBtn.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
+                task.spawn(function()
+                    while circle.Parent do
+                        for i = 0,1,0.01 do
+                            circle.BackgroundColor3 = Color3.fromHSV(i,1,1)
+                            task.wait(0.05)
+                        end
+                    end
+                end)
             end
-        end)
+        end
+    end
+end
+
+-- ESP Button inside hub
+local ESPBtn = Instance.new("TextButton")
+ESPBtn.Size = UDim2.new(0,100,0,100)
+ESPBtn.Position = UDim2.new(0,270,0,180)
+ESPBtn.Text = "ESP"
+ESPBtn.Font = Enum.Font.GothamBold
+ESPBtn.TextScaled = true
+ESPBtn.Parent = HubFrame
+
+local ESPStroke = Instance.new("UIStroke")
+ESPStroke.Thickness = 2
+ESPStroke.Parent = ESPBtn
+
+task.spawn(function()
+    while ESPBtn.Parent do
+        for i = 0,1,0.01 do
+            local rainbow = Color3.fromHSV(i,1,1)
+            ESPBtn.TextColor3 = rainbow
+            ESPStroke.Color = rainbow
+            task.wait(0.05)
+        end
     end
 end)
 
-StartBtn.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
+ESPBtn.MouseButton1Click:Connect(function()
+    EnableRainbowESP()
 end)
-
-UIS.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        StartBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-                                      startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
--- Part 17: Cutscene Hooks
-function PlayCutscene() print("🎬 Cutscene Played") end
-
--- Part 18: Mission Placeholder
-function LoadMission(id) print("🚀 Mission "..id.." Loaded") end
-
--- Part 19: Attach Panels
-AddInfoPanel(Frame)
-AddMusicSlots(Frame)
-ShowSavedMusic(Frame)
-
--- Part 20: Final Glue
-print("🌈 BLUE MODE HUB fully loaded and ready!")
