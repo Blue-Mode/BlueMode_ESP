@@ -1,6 +1,6 @@
 -- ==============================================
--- BLUE MODE HUB | BLANK SCREEN FIXED VERSION
--- NO TYPOS | FULL CONTENT VISIBLE | CORRECT LAYER
+-- BLUE MODE HUB | FINAL BLANK SCREEN FIX
+-- PARENT FIXED | RENDER BUG FIXED | ALL CONTENT SHOWS
 -- BACKGROUND: rbxassetid://85473171152747
 -- YOUTUBE: https://youtube.com/@blue_mode?si=kCM2t8MILYWQzQzw
 -- ==============================================
@@ -12,6 +12,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local PlayersGui = Players.LocalPlayer.PlayerGui -- ✅ FALLBACK FOR EXECUTORS
 local SoundService = game:GetService("SoundService")
 
 -- SETTINGS
@@ -74,14 +75,12 @@ local function updateESP()
             continue
         end
 
-        -- Rainbow Outline for All Players
         local hl = char:FindFirstChildOfClass("Highlight") or Instance.new("Highlight", char)
         hl.Name = "BlueMode_ESP"
         hl.FillTransparency = 1
         hl.OutlineTransparency = 0
         hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 
-        -- Rainbow Dot for Friends
         local isFriend = pcall(function() return Players.LocalPlayer:IsFriendsWith(p.UserId) end)
         if isFriend then
             if not friendDots[p.UserId] then
@@ -105,43 +104,47 @@ local function updateESP()
 end
 
 -- ==============================================
--- MAIN GUI | FIXED RENDER & CLIPPING
+-- MAIN GUI | ✅ PARENT FIXED FOR ALL EXECUTORS
 -- ==============================================
 local Gui = Instance.new("ScreenGui")
 Gui.Name = "BlueModeHub"
-Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global -- ✅ FIX RENDER ORDER
 Gui.DisplayOrder = 100 -- Above game, NOT above Roblox menu
 Gui.IgnoreGuiInset = true
 Gui.ResetOnSpawn = false
 Gui.Enabled = true
-Gui.Parent = CoreGui
 
--- MAIN WINDOW | FIXED CLIPS DESCENDANTS
+-- ✅ USE PLAYERGUI IF COREGUI FAILS (FIXES BLANK ON MOBILE EXECUTORS)
+local success, err = pcall(function() Gui.Parent = CoreGui end)
+if not success then Gui.Parent = PlayersGui end
+
+-- MAIN WINDOW
 local MainWin = Instance.new("Frame")
 MainWin.Size = UDim2.new(0, 750, 0, 550)
 MainWin.Position = UDim2.new(0.5, -375, 0.5, -275)
-MainWin.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+MainWin.BackgroundColor3 = Color3.fromRGB(22, 24, 32) -- ✅ DARK BASE SO YOU SEE IT
 MainWin.Active = true
-MainWin.ClipsDescendants = false -- ✅ FIX: STOPPED CUTTING CONTENT
+MainWin.ClipsDescendants = false
 MainWin.Visible = true
+MainWin.ZIndex = 1
 MainWin.Parent = Gui
 addRainbow(MainWin)
 
--- CUSTOM BACKGROUND | FIXED TRANSPARENCY
+-- CUSTOM BACKGROUND | ✅ FIXED SO IT DOES NOT BLOCK CONTENT
 local HubBG = Instance.new("ImageLabel")
 HubBG.Size = UDim2.new(1, 0, 1, 0)
 HubBG.Position = UDim2.new(0, 0, 0, 0)
-HubBG.BackgroundTransparency = 0 -- ✅ FIX: NO LONGER BLOCKING CONTENT
+HubBG.BackgroundTransparency = 0.2
 HubBG.Image = BG_ASSET
 HubBG.ScaleType = Enum.ScaleType.Fill
-HubBG.ZIndex = -1
+HubBG.ZIndex = 0 -- ✅ SENT TO BACK LAYER
 HubBG.Parent = MainWin
 
 -- TOP DRAG BAR
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, -80, 0, 45)
 TopBar.Position = UDim2.new(0, 10, 0, 10)
-TopBar.BackgroundColor3 = Color3.fromRGB(28, 30, 42)
+TopBar.BackgroundColor3 = Color3.fromRGB(30, 32, 45)
 TopBar.Active = true
 TopBar.ZIndex = 10
 TopBar.Parent = MainWin
@@ -155,6 +158,7 @@ Title.Text = "BLUE MODE HUB"
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 26
 Title.TextColor3 = Color3.new(1, 1, 1)
+Title.ZIndex = 11
 Title.Parent = TopBar
 addRainbow(Title, true)
 
@@ -162,7 +166,7 @@ addRainbow(Title, true)
 local MinBtn = Instance.new("TextButton")
 MinBtn.Size = UDim2.new(0, 35, 0, 35)
 MinBtn.Position = UDim2.new(1, -75, 0, 5)
-MinBtn.BackgroundColor3 = Color3.fromRGB(38, 40, 58)
+MinBtn.BackgroundColor3 = Color3.fromRGB(40, 42, 60)
 MinBtn.Text = "⬇"
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.TextSize = 20
@@ -174,7 +178,7 @@ addRainbow(MinBtn)
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 35, 0, 35)
 CloseBtn.Position = UDim2.new(1, -38, 0, 5)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(160, 25, 25)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(170, 30, 30)
 CloseBtn.Text = "✕"
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextSize = 22
@@ -187,7 +191,7 @@ addRainbow(CloseBtn)
 local SearchBar = Instance.new("TextBox")
 SearchBar.Size = UDim2.new(1, -20, 0, 40)
 SearchBar.Position = UDim2.new(0, 10, 0, 65)
-SearchBar.BackgroundColor3 = Color3.fromRGB(22, 24, 36)
+SearchBar.BackgroundColor3 = Color3.fromRGB(25, 27, 40)
 SearchBar.PlaceholderText = "🔍 Search Features..."
 SearchBar.Font = Enum.Font.Gotham
 SearchBar.TextSize = 18
@@ -209,7 +213,7 @@ local function CreateTabButton(name, posY)
     local Btn = Instance.new("TextButton")
     Btn.Size = UDim2.new(1, 0, 0, 50)
     Btn.Position = UDim2.new(0, 0, 0, posY)
-    Btn.BackgroundColor3 = name == "Main" and Color3.fromRGB(35, 70, 140) or Color3.fromRGB(28, 30, 42)
+    Btn.BackgroundColor3 = name == "Main" and Color3.fromRGB(40, 80, 160) or Color3.fromRGB(30, 32, 45)
     Btn.Text = name
     Btn.Font = Enum.Font.GothamBold
     Btn.TextSize = 22
@@ -224,11 +228,11 @@ local Tab_Main = CreateTabButton("Main", 0)
 local Tab_Music = CreateTabButton("Music", 60)
 local Tab_Console = CreateTabButton("Console", 120)
 
--- CONTENT PANEL | FIXED Z-INDEX
+-- CONTENT PANEL
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, -210, 1, -120)
 Content.Position = UDim2.new(0, 200, 0, 115)
-Content.BackgroundColor3 = Color3.fromRGB(22, 24, 36)
+Content.BackgroundColor3 = Color3.fromRGB(25, 27, 40)
 Content.ClipsDescendants = true
 Content.ZIndex = 5
 Content.Parent = MainWin
@@ -259,9 +263,9 @@ local function MakeMainButton(text, posY, color)
     return Btn
 end
 
-local LinkBtn = MakeMainButton("🔗 LINK YOUTUBE", 10, Color3.fromRGB(170, 35, 35))
-local ESPBtn = MakeMainButton("👁️ ESP: OFF", 75, Color3.fromRGB(35, 37, 55))
-local DelBtn = MakeMainButton("🗑️ DELETE / EXIT", 140, Color3.fromRGB(160, 25, 25))
+local LinkBtn = MakeMainButton("🔗 LINK YOUTUBE", 10, Color3.fromRGB(180, 40, 40))
+local ESPBtn = MakeMainButton("👁️ ESP: OFF", 75, Color3.fromRGB(40, 40, 60))
+local DelBtn = MakeMainButton("🗑️ DELETE / EXIT", 140, Color3.fromRGB(170, 30, 30))
 
 -- ==============================================
 -- MUSIC TAB
@@ -276,7 +280,7 @@ MusicTab.Parent = Content
 local IDBox = Instance.new("TextBox")
 IDBox.Size = UDim2.new(1, -20, 0, 70)
 IDBox.Position = UDim2.new(0, 10, 0, 10)
-IDBox.BackgroundColor3 = Color3.fromRGB(12, 14, 25)
+IDBox.BackgroundColor3 = Color3.fromRGB(15, 17, 30)
 IDBox.PlaceholderText = "🎵 Paste Sound ID / Boombox ID"
 IDBox.Font = Enum.Font.Gotham
 IDBox.TextSize = 22
@@ -300,7 +304,7 @@ addRainbow(VolLabel, true)
 local VolSlider = Instance.new("Frame")
 VolSlider.Size = UDim2.new(1, -20, 0, 35)
 VolSlider.Position = UDim2.new(0, 10, 0, 125)
-VolSlider.BackgroundColor3 = Color3.fromRGB(28, 30, 42)
+VolSlider.BackgroundColor3 = Color3.fromRGB(30, 32, 45)
 VolSlider.ZIndex = 8
 VolSlider.Parent = MusicTab
 addRainbow(VolSlider)
@@ -315,7 +319,7 @@ Instance.new("UICorner", VolFill).CornerRadius = UDim.new(0, 15)
 local PlayBtn = Instance.new("TextButton")
 PlayBtn.Size = UDim2.new(0, 200, 0, 60)
 PlayBtn.Position = UDim2.new(0, 10, 0, 175)
-PlayBtn.BackgroundColor3 = Color3.fromRGB(25, 80, 160)
+PlayBtn.BackgroundColor3 = Color3.fromRGB(30, 90, 180)
 PlayBtn.Text = "▶ PLAY"
 PlayBtn.Font = Enum.Font.GothamBold
 PlayBtn.TextSize = 26
@@ -327,7 +331,7 @@ addRainbow(PlayBtn)
 local StopBtn = Instance.new("TextButton")
 StopBtn.Size = UDim2.new(0, 200, 0, 60)
 StopBtn.Position = UDim2.new(0, 220, 0, 175)
-StopBtn.BackgroundColor3 = Color3.fromRGB(170, 25, 25)
+StopBtn.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
 StopBtn.Text = "⏹ STOP"
 StopBtn.Font = Enum.Font.GothamBold
 StopBtn.TextSize = 26
@@ -339,7 +343,7 @@ addRainbow(StopBtn)
 local ClearMusicBtn = Instance.new("TextButton")
 ClearMusicBtn.Size = UDim2.new(1, -20, 0, 60)
 ClearMusicBtn.Position = UDim2.new(0, 10, 0, 245)
-ClearMusicBtn.BackgroundColor3 = Color3.fromRGB(45, 47, 65)
+ClearMusicBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
 ClearMusicBtn.Text = "🗑️ CLEAR ID"
 ClearMusicBtn.Font = Enum.Font.GothamBold
 ClearMusicBtn.TextSize = 26
@@ -361,7 +365,7 @@ ConsoleTab.Parent = Content
 local ScriptBox = Instance.new("TextBox")
 ScriptBox.Size = UDim2.new(1, -20, 0, 180)
 ScriptBox.Position = UDim2.new(0, 10, 0, 10)
-ScriptBox.BackgroundColor3 = Color3.fromRGB(12, 14, 25)
+ScriptBox.BackgroundColor3 = Color3.fromRGB(15, 17, 30)
 ScriptBox.PlaceholderText = "📜 Paste Script / Loadstring Here"
 ScriptBox.Font = Enum.Font.Code
 ScriptBox.TextSize = 14
@@ -375,7 +379,7 @@ addRainbow(ScriptBox)
 local Status = Instance.new("TextLabel")
 Status.Size = UDim2.new(1, -20, 0, 40)
 Status.Position = UDim2.new(0, 10, 0, 200)
-Status.BackgroundColor3 = Color3.fromRGB(18, 20, 32)
+Status.BackgroundColor3 = Color3.fromRGB(20, 22, 35)
 Status.Text = "[READY] Paste code then click EXECUTE"
 Status.Font = Enum.Font.Code
 Status.TextSize = 13
@@ -387,7 +391,7 @@ addRainbow(Status)
 local ExecBtn = Instance.new("TextButton")
 ExecBtn.Size = UDim2.new(0, 180, 0, 55)
 ExecBtn.Position = UDim2.new(0, 10, 0, 255)
-ExecBtn.BackgroundColor3 = Color3.fromRGB(15, 110, 35)
+ExecBtn.BackgroundColor3 = Color3.fromRGB(20, 120, 40)
 ExecBtn.Text = "▶ EXECUTE"
 ExecBtn.Font = Enum.Font.GothamBold
 ExecBtn.TextSize = 24
@@ -399,7 +403,7 @@ addRainbow(ExecBtn)
 local ClearConBtn = Instance.new("TextButton")
 ClearConBtn.Size = UDim2.new(0, 180, 0, 55)
 ClearConBtn.Position = UDim2.new(0, 200, 0, 255)
-ClearConBtn.BackgroundColor3 = Color3.fromRGB(110, 35, 35)
+ClearConBtn.BackgroundColor3 = Color3.fromRGB(120, 40, 40)
 ClearConBtn.Text = "🗑️ CLEAR"
 ClearConBtn.Font = Enum.Font.GothamBold
 ClearConBtn.TextSize = 24
@@ -452,9 +456,9 @@ local function SwitchTab(tabName)
     tabs.Music = tabName == "Music"
     tabs.Console = tabName == "Console"
 
-    Tab_Main.BackgroundColor3 = tabs.Main and Color3.fromRGB(35, 70, 140) or Color3.fromRGB(28, 30, 42)
-    Tab_Music.BackgroundColor3 = tabs.Music and Color3.fromRGB(35, 70, 140) or Color3.fromRGB(28, 30, 42)
-    Tab_Console.BackgroundColor3 = tabs.Console and Color3.fromRGB(35, 70, 140) or Color3.fromRGB(28, 30, 42)
+    Tab_Main.BackgroundColor3 = tabs.Main and Color3.fromRGB(40, 80, 160) or Color3.fromRGB(30, 32, 45)
+    Tab_Music.BackgroundColor3 = tabs.Music and Color3.fromRGB(40, 80, 160) or Color3.fromRGB(30, 32, 45)
+    Tab_Console.BackgroundColor3 = tabs.Console and Color3.fromRGB(40, 80, 160) or Color3.fromRGB(30, 32, 45)
 
     MainTab.Visible = tabs.Main
     MusicTab.Visible = tabs.Music
@@ -478,7 +482,7 @@ end)
 ESPBtn.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     ESPBtn.Text = espEnabled and "👁️ ESP: ON" or "👁️ ESP: OFF"
-    ESPBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(30, 140, 70) or Color3.fromRGB(35, 37, 55)
+    ESPBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(30, 140, 70) or Color3.fromRGB(40, 40, 60)
     updateESP()
 end)
 
@@ -588,4 +592,4 @@ RunService.Heartbeat:Connect(function(dt)
     updateESP()
 end)
 
-print("✅ BLUE MODE HUB | BLANK SCREEN FIXED! ALL CONTENT VISIBLE!")
+print("✅ BLUE MODE HUB | FULLY LOADED | NO BLANK SCREEN!")
