@@ -79,7 +79,7 @@ local function CreateHub()
     local BgImage = Instance.new("ImageLabel")
     BgImage.Size = UDim2.new(1,0,1,0)
     BgImage.BackgroundTransparency = 1
-    BgImage.Image = "rbxassetid://YOUR_IMAGE_ID" -- mountain background asset ID
+    BgImage.Image = "rbxassetid://YOUR_IMAGE_ID"
     BgImage.ScaleType = Enum.ScaleType.Crop
     BgImage.ZIndex = 0
     BgImage.Parent = Frame
@@ -94,7 +94,6 @@ local function CreateHub()
     Title.Parent = Frame
     AddRainbowGlow(Title,3)
 
-    -- ESP Button
     local ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,120,0,40)
     ESPBtn.Position = UDim2.new(0,20,0,60)
@@ -103,7 +102,6 @@ local function CreateHub()
     AddRainbowGlow(ESPBtn,2)
     ESPBtn.MouseButton1Click:Connect(EnableESP)
 
-    -- Console Button
     local ConsoleBtn = Instance.new("TextButton")
     ConsoleBtn.Size = UDim2.new(0,120,0,40)
     ConsoleBtn.Position = UDim2.new(0,20,0,110)
@@ -114,7 +112,6 @@ local function CreateHub()
         RunConsole("print('Hello from BLUE MODE HUB console!')")
     end)
 
-    -- Music Button
     local MusicBtn = Instance.new("TextButton")
     MusicBtn.Size = UDim2.new(0,120,0,40)
     MusicBtn.Position = UDim2.new(0,20,0,160)
@@ -122,7 +119,7 @@ local function CreateHub()
     MusicBtn.Parent = Frame
     AddRainbowGlow(MusicBtn,2)
     MusicBtn.MouseButton1Click:Connect(function()
-        PlayMusic("1848354536") -- example ID
+        PlayMusic("1848354536")
     end)
 
     local StopBtn = Instance.new("TextButton")
@@ -161,7 +158,6 @@ local function CreateHub()
         VolBox.Text = tostring(MusicVolume)
     end)
 
-    -- Commands Button
     local CommandBtn = Instance.new("TextButton")
     CommandBtn.Size = UDim2.new(0,120,0,40)
     CommandBtn.Position = UDim2.new(0,20,0,260)
@@ -173,7 +169,6 @@ local function CreateHub()
         print("Fly/InfYield placeholder")
     end)
 
-    -- Robot Button
     local RobotBtn = Instance.new("TextButton")
     RobotBtn.Size = UDim2.new(0,120,0,40)
     RobotBtn.Position = UDim2.new(0,20,0,310)
@@ -416,3 +411,194 @@ end)
     MainBtn.MouseButton1Click:Connect(function()
         InfoFrame.Visible = not InfoFrame.Visible
     end)
+
+-- 🌈 Part 12: Music Save Slots
+
+-- Functions to save and load music IDs
+local function SaveMusicSlot(slotName, musicId)
+    if writefile then
+        writefile(slotName..".txt", musicId)
+        print("Saved music ID "..musicId.." to "..slotName)
+    else
+        warn("Executor does not support writefile")
+    end
+end
+
+local function LoadMusicSlot(slotName)
+    if readfile and isfile and isfile(slotName..".txt") then
+        local id = readfile(slotName..".txt")
+        PlayMusic(id)
+        print("Loaded music ID "..id.." from "..slotName)
+    else
+        warn("Executor does not support readfile or slot not found")
+    end
+end
+
+-- Add Save/Load buttons inside CreateHub()
+local function AddMusicSlots(Frame, VolBox)
+    -- Slot 1
+    local SaveBtn1 = Instance.new("TextButton")
+    SaveBtn1.Size = UDim2.new(0,120,0,30)
+    SaveBtn1.Position = UDim2.new(0,160,0,250)
+    SaveBtn1.Text = "Save Slot 1"
+    SaveBtn1.TextColor3 = Color3.new(1,1,1)
+    SaveBtn1.BackgroundColor3 = Color3.fromRGB(80,120,80)
+    SaveBtn1.Font = Enum.Font.GothamBold
+    SaveBtn1.TextScaled = true
+    SaveBtn1.Parent = Frame
+    AddRainbowGlow(SaveBtn1,2)
+    SaveBtn1.MouseButton1Click:Connect(function()
+        SaveMusicSlot("slot1", VolBox.Text)
+    end)
+
+    local LoadBtn1 = Instance.new("TextButton")
+    LoadBtn1.Size = UDim2.new(0,120,0,30)
+    LoadBtn1.Position = UDim2.new(0,300,0,250)
+    LoadBtn1.Text = "Load Slot 1"
+    LoadBtn1.TextColor3 = Color3.new(1,1,1)
+    LoadBtn1.BackgroundColor3 = Color3.fromRGB(120,80,80)
+    LoadBtn1.Font = Enum.Font.GothamBold
+    LoadBtn1.TextScaled = true
+    LoadBtn1.Parent = Frame
+    AddRainbowGlow(LoadBtn1,2)
+    LoadBtn1.MouseButton1Click:Connect(function()
+        LoadMusicSlot("slot1")
+    end)
+
+    -- Slot 2
+    local SaveBtn2 = Instance.new("TextButton")
+    SaveBtn2.Size = UDim2.new(0,120,0,30)
+    SaveBtn2.Position = UDim2.new(0,160,0,290)
+    SaveBtn2.Text = "Save Slot 2"
+    SaveBtn2.TextColor3 = Color3.new(1,1,1)
+    SaveBtn2.BackgroundColor3 = Color3.fromRGB(80,120,80)
+    SaveBtn2.Font = Enum.Font.GothamBold
+    SaveBtn2.TextScaled = true
+    SaveBtn2.Parent = Frame
+    AddRainbowGlow(SaveBtn2,2)
+    SaveBtn2.MouseButton1Click:Connect(function()
+        SaveMusicSlot("slot2", VolBox.Text)
+    end)
+
+    local LoadBtn2 = Instance.new("TextButton")
+    LoadBtn2.Size = UDim2.new(0,120,0,30)
+    LoadBtn2.Position = UDim2.new(0,300,0,290)
+    LoadBtn2.Text = "Load Slot 2"
+    LoadBtn2.TextColor3 = Color3.new(1,1,1)
+    LoadBtn2.BackgroundColor3 = Color3.fromRGB(120,80,80)
+    LoadBtn2.Font = Enum.Font.GothamBold
+    LoadBtn2.TextScaled = true
+    LoadBtn2.Parent = Frame
+    AddRainbowGlow(LoadBtn2,2)
+    LoadBtn2.MouseButton1Click:Connect(function()
+        LoadMusicSlot("slot2")
+    end)
+
+    -- Slot 3
+    local SaveBtn3 = Instance.new("TextButton")
+    SaveBtn3.Size = UDim2.new(0,120,0,30)
+    SaveBtn3.Position = UDim2.new(0,160,0,330)
+    SaveBtn3.Text = "Save Slot 3"
+    SaveBtn3.TextColor3 = Color3.new(1,1,1)
+    SaveBtn3.BackgroundColor3 = Color3.fromRGB(80,120,80)
+    SaveBtn3.Font = Enum.Font.GothamBold
+    SaveBtn3.TextScaled = true
+    SaveBtn3.Parent = Frame
+    AddRainbowGlow(SaveBtn3,2)
+    SaveBtn3.MouseButton1Click:Connect(function()
+        SaveMusicSlot("slot3", VolBox.Text)
+    end)
+
+    local LoadBtn3 = Instance.new("TextButton")
+    LoadBtn3.Size = UDim2.new(0,120,0,30)
+    LoadBtn3.Position = UDim2.new(0,300,0,330)
+    LoadBtn3.Text = "Load Slot 3"
+    LoadBtn3.TextColor3 = Color3.new(1,1,1)
+    LoadBtn3.BackgroundColor3 = Color3.fromRGB(120,80,80)
+    LoadBtn3.Font = Enum.Font.GothamBold
+    LoadBtn3.TextScaled = true
+    LoadBtn3.Parent = Frame
+    AddRainbowGlow(LoadBtn3,2)
+    LoadBtn3.MouseButton1Click:Connect(function()
+        LoadMusicSlot("slot3")
+    end)
+end
+
+-- 🌈 Part 13: Saved Music Viewer
+
+local function ShowSavedMusic(Frame)
+    -- Viewer Panel
+    local ViewerFrame = Instance.new("Frame")
+    ViewerFrame.Size = UDim2.new(0,400,0,180)
+    ViewerFrame.Position = UDim2.new(0.5,-200,0.5,-90)
+    ViewerFrame.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    ViewerFrame.Visible = false
+    ViewerFrame.Parent = HubUI
+    Instance.new("UICorner", ViewerFrame).CornerRadius = UDim.new(0,12)
+    AddRainbowGlow(ViewerFrame,3)
+
+    local ViewerTitle = Instance.new("TextLabel")
+    ViewerTitle.Size = UDim2.new(1,0,0,40)
+    ViewerTitle.Text = "🎵 Saved Music Slots"
+    ViewerTitle.TextColor3 = Color3.new(1,1,1)
+    ViewerTitle.Font = Enum.Font.GothamBold
+    ViewerTitle.TextScaled = true
+    ViewerTitle.BackgroundTransparency = 1
+    ViewerTitle.Parent = ViewerFrame
+
+    -- Slot Labels
+    local Slot1Label = Instance.new("TextLabel")
+    Slot1Label.Size = UDim2.new(1,0,0,30)
+    Slot1Label.Position = UDim2.new(0,0,0,50)
+    Slot1Label.TextColor3 = Color3.new(1,1,1)
+    Slot1Label.Font = Enum.Font.Code
+    Slot1Label.TextScaled = true
+    Slot1Label.BackgroundTransparency = 1
+    Slot1Label.Parent = ViewerFrame
+
+    local Slot2Label = Slot1Label:Clone()
+    Slot2Label.Position = UDim2.new(0,0,0,90)
+    Slot2Label.Parent = ViewerFrame
+
+    local Slot3Label = Slot1Label:Clone()
+    Slot3Label.Position = UDim2.new(0,0,0,130)
+    Slot3Label.Parent = ViewerFrame
+
+    -- Button to open viewer
+    local ViewerBtn = Instance.new("TextButton")
+    ViewerBtn.Size = UDim2.new(0,120,0,40)
+    ViewerBtn.Position = UDim2.new(0,300,0,370)
+    ViewerBtn.Text = "View Saved IDs"
+    ViewerBtn.TextColor3 = Color3.new(1,1,1)
+    ViewerBtn.BackgroundColor3 = Color3.fromRGB(100,100,180)
+    ViewerBtn.Font = Enum.Font.GothamBold
+    ViewerBtn.TextScaled = true
+    ViewerBtn.Parent = Frame
+    AddRainbowGlow(ViewerBtn,2)
+
+    ViewerBtn.MouseButton1Click:Connect(function()
+        -- Update labels with saved IDs
+        if readfile and isfile then
+            if isfile("slot1.txt") then
+                Slot1Label.Text = "Slot 1: "..readfile("slot1.txt")
+            else
+                Slot1Label.Text = "Slot 1: [empty]"
+            end
+            if isfile("slot2.txt") then
+                Slot2Label.Text = "Slot 2: "..readfile("slot2.txt")
+            else
+                Slot2Label.Text = "Slot 2: [empty]"
+            end
+            if isfile("slot3.txt") then
+                Slot3Label.Text = "Slot 3: "..readfile("slot3.txt")
+            else
+                Slot3Label.Text = "Slot 3: [empty]"
+            end
+        else
+            Slot1Label.Text = "Executor does not support readfile"
+            Slot2Label.Text = ""
+            Slot3Label.Text = ""
+        end
+        ViewerFrame.Visible = not ViewerFrame.Visible
+    end)
+end
