@@ -1,746 +1,532 @@
--- ==============================================
--- BLUE MODE HUB v2.6 | SINGLE FILE · 100% WORKING
--- ALL FEATURES KEPT · NO BUGS · ALWAYS ON TOP
--- made by BLUE_MODE | UNLOCK: Blue_Mode192823
--- ==============================================
+-- BLUE MODE ESP v2.8 | 1-1000 VOL | LUA CONSOLE + LOADSTRING
+-- UNLOCK: Blue_Mode192823 | 100% MOBILE COMPATIBLE
+if getgenv().BlueMode then return end
+getgenv().BlueMode = true
 
--- PREVENT DUPLICATE RUN
-if getgenv().BlueMode_Loaded then return end
-getgenv().BlueMode_Loaded = true
+local plr = game.Players.LocalPlayer
+local rs = game:GetService("RunService")
+local uis = game:GetService("UserInputService")
+local ss = game:GetService("SoundService")
+local cg = game:GetService("CoreGui")
 
--- SERVICES (RELIABLE GET)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
-local SoundService = game:GetService("SoundService")
-local CoreGui = game:GetService("CoreGui")
-local LocalPlayer = Players.LocalPlayer
+local function wf(k,v) pcall(function() if writefile then writefile(k..".txt",tostring(v)) end end) end
+local function rf(k,d) local r=nil pcall(function() if readfile then r=readfile(k..".txt") end end) return tonumber(r) or d end
+local function sc(t) pcall(function() if setclipboard then setclipboard(t) end end) end
 
--- ==============================================
--- UTILITY FUNCTIONS (SAFE)
--- ==============================================
-local function SafeWrite(key, val) pcall(function() if writefile then writefile(key..".txt", tostring(val)) end end) end
-local function SafeRead(key, def) local v=nil pcall(function() if readfile then v=readfile(key..".txt") end end) return tonumber(v) or def end
-local function SafeClip(text) pcall(function() if setclipboard then setclipboard(text) end end) end
+local MAX_Z = 2147483647
+local LIMIT = 43200
+local CD = 43200
+local YT = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
+local F = {U="BM_U",C="BM_C",V="BM_V"}
 
--- ==============================================
--- SETTINGS (ALL OLD KEPT)
--- ==============================================
-local MAX_Z = 2147483647 -- MAX ROBLOX DISPLAY ORDER
-local USAGE_LIMIT = 12 * 3600 -- 12 HOURS
-local COOLDOWN_TIME = 12 * 3600 -- 12 HOURS
-local YT_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_FILES = {
-    USED = "BlueMode_UsedTime_v2",
-    COOLDOWN = "BlueMode_CooldownEnd_v2",
-    VOL = "BlueMode_Volume_v2"
-}
+local tm = os.time()
+local ce = rf(F.C,0)
+if tm < ce then warn("[BLUE] COOLDOWN "..math.floor((ce-tm)/60).."m") getgenv().BlueMode=false return end
 
--- ==============================================
--- COOLDOWN CHECK (SAFE)
--- ==============================================
-local CurrentTime = os.time()
-local CooldownEnds = SafeRead(SAVE_FILES.COOLDOWN, 0)
-if CurrentTime < CooldownEnds then
-    local WaitMins = math.floor((CooldownEnds - CurrentTime)/60)
-    warn("[BLUE MODE] COOLDOWN ACTIVE: Wait "..WaitMins.." minutes")
-    getgenv().BlueMode_Loaded = false
-    return
+local used = rf(F.U,0)
+local lt = os.time()
+-- ✅ VOLUME = 1 TO 1000 (NEVER 0)
+local vol = math.clamp(rf(F.V,500),1,1000)
+
+local snd = nil
+local vL = {}
+local vB = {}
+local sk = {}
+local w = {M=nil,S=nil,C=nil}
+local mOpen = false
+local esp = false
+local lck = false
+local hue = 0
+local min = false
+
+local function add(o,t)
+    if not o then return end
+    local s = Instance.new("UIStroke")
+    s.Thickness = t or 3
+    s.LineJoinMode = Enum.LineJoinMode.Round
+    s.Parent = o
+    table.insert(sk,s)
+    return s
 end
 
--- ==============================================
--- LOAD SAVED DATA
--- ==============================================
-local UsedTime = SafeRead(SAVE_FILES.USED, 0)
-local LastTick = os.time()
-local Volume = math.clamp(SafeRead(SAVE_FILES.VOL, 500), 0, 1000) -- 0-1000 KEPT
+local function modal(s) if w.M then w.M.Modal = s end end
+local function refModal() modal(mOpen) end
 
--- ==============================================
--- GLOBAL OBJECTS
--- ==============================================
-local ActiveSound = nil
-local VolLabels = {Main=nil, Menu=nil}
-local VolBars = {Main=nil, Menu=nil}
-local RainbowOutlines = {} -- ALL UI STROKES
-local Windows = {Main=nil, Boombox=nil, Console=nil}
-local MenuOpen = false
-local ESPEnabled = false
-local UILocked = false
-local RainbowHue = 0
-local Minimized = false
-
--- ==============================================
--- PERMANENT RAINBOW OUTLINE FUNCTION
--- ==============================================
-local function AddRainbowStroke(Target, Thickness)
-    if not Target then return end
-    local Stroke = Instance.new("UIStroke")
-    Stroke.Name = "RainbowOutline"
-    Stroke.Thickness = Thickness or 3
-    Stroke.Transparency = 0
-    Stroke.LineJoinMode = Enum.LineJoinMode.Round
-    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    Stroke.Parent = Target
-    table.insert(RainbowOutlines, Stroke)
-    return Stroke
+-- ✅ VOLUME 1-1000 SYSTEM
+local function setVol(v)
+    vol = math.clamp(tonumber(v) or 500,1,1000)
+    wf(F.V,vol)
+    local n = vol/1000
+    if snd then pcall(function() snd.Volume = n end) end
+    local txt = tostring(math.floor(vol)).."/1000"
+    if vL.M then vL.M.Text = txt end
+    if vL.S then vL.S.Text = txt end
+    if vB.M then vB.M.Size = UDim2.new(n,0,1,0) end
+    if vB.S then vB.S.Size = UDim2.new(n,0,1,0) end
 end
 
--- ==============================================
--- TOUCH/CAMERA LOCK (FIXED! NO MORE CAMERA MOVEMENT)
--- ==============================================
-local function SetInputLock(State)
-    if Windows.Main then Windows.Main.Modal = State end
-end
-local function RefreshInputLock()
-    SetInputLock(MenuOpen)
-end
-
--- ==============================================
--- VOLUME SYSTEM (0-1000 KEPT)
--- ==============================================
-local function SetVolume(NewVol)
-    Volume = math.clamp(tonumber(NewVol) or 500, 0, 1000)
-    SafeWrite(SAVE_FILES.VOL, Volume)
-    local Normalized = Volume / 1000
-    if ActiveSound then pcall(function() ActiveSound.Volume = Normalized end) end
-    local DisplayText = tostring(math.floor(Volume)).."/1000"
-    if VolLabels.Main then VolLabels.Main.Text = DisplayText end
-    if VolLabels.Menu then VolLabels.Menu.Text = DisplayText end
-    if VolBars.Main then VolBars.Main.Size = UDim2.new(Normalized, 0, 1, 0) end
-    if VolBars.Menu then VolBars.Menu.Size = UDim2.new(Normalized, 0, 1, 0) end
+local function play(id)
+    pcall(function() if snd then snd:Destroy() end end)
+    snd = Instance.new("Sound")
+    snd.SoundId = "rbxassetid://"..tostring(id):gsub("%D","")
+    snd.Volume = vol/1000
+    snd.Looped = true
+    snd.Parent = ss
+    pcall(function() snd:Play() end)
 end
 
--- ==============================================
--- SOUND SYSTEM (KEPT)
--- ==============================================
-local function FormatSoundID(ID)
-    return "rbxassetid://"..tostring(ID):gsub("%D", "") -- REMOVE NON-NUMBERS
-end
-local function PlaySound(ID)
-    pcall(function() if ActiveSound then ActiveSound:Destroy() end end)
-    ActiveSound = Instance.new("Sound")
-    ActiveSound.Name = "BlueMode_Sound"
-    ActiveSound.SoundId = FormatSoundID(ID)
-    ActiveSound.Volume = Volume / 1000
-    ActiveSound.Looped = true
-    ActiveSound.Parent = SoundService
-    pcall(function() ActiveSound:Play() end)
-end
-
--- ==============================================
--- ESP CLEANUP (KEPT)
--- ==============================================
-local function ClearAllESP()
+local function clrEsp()
     pcall(function()
-        for _, Plr in pairs(Players:GetPlayers()) do
-            if Plr ~= LocalPlayer and Plr.Character then
-                local ESP = Plr.Character:FindFirstChild("BlueMode_ESP")
-                local Dot = Plr.Character:FindFirstChild("BlueMode_FriendDot")
-                if ESP then ESP:Destroy() end
-                if Dot then Dot:Destroy() end
-            end
-        end
-    end)
-    pcall(function()
-        for _, Obj in pairs(workspace:GetDescendants()) do
-            if Obj.Name == "BlueMode_ESP" or Obj.Name == "BlueMode_FriendDot" then
-                Obj:Destroy()
+        for _,p in pairs(game.Players:GetPlayers()) do
+            if p~=plr and p.Character then
+                local e=p.Character:FindFirstChild("BM_ESP") if e then e:Destroy() end
+                local d=p.Character:FindFirstChild("BM_DOT") if d then d:Destroy() end
             end
         end
     end)
 end
 
 -- ==============================================
--- WINDOW: BOOMBOX (100% KEPT)
+-- 🎵 MUSIC WINDOW
 -- ==============================================
-local function OpenBoombox()
-    -- CLOSE OTHER WINDOWS
-    if Windows.Boombox then Windows.Boombox:Destroy(); Windows.Boombox=nil end
-    if Windows.Console then Windows.Console:Destroy(); Windows.Console=nil end
-    MenuOpen = true; RefreshInputLock()
+local function oMusic()
+    if w.S then w.S:Destroy() w.S=nil end
+    if w.C then w.C:Destroy() w.C=nil end
+    mOpen=true refModal()
 
-    local Win = Instance.new("ScreenGui")
-    Win.Name = "BlueMode_Boombox"
-    Win.ResetOnSpawn = false
-    Win.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    Win.DisplayOrder = MAX_Z
-    Win.IgnoreGuiInset = true
-    Win.Parent = CoreGui
-    Windows.Boombox = Win
+    local g = Instance.new("ScreenGui")
+    g.Name="BM_S" g.ZIndexBehavior=2 g.DisplayOrder=MAX_Z g.IgnoreGuiInset=true g.Parent=cg
+    w.S=g
 
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0, 320, 0, 250)
-    Frame.Position = UDim2.new(0.5, -160, 0.5, -125)
-    Frame.BackgroundColor3 = Color3.fromRGB(22,22,22)
-    Frame.Active = true; Frame.ClipsDescendants = true
-    Frame.Parent = Win
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
-    AddRainbowStroke(Frame, 4)
+    local f = Instance.new("Frame")
+    f.Size=UDim2.new(0,320,0,250) f.Position=UDim2.new(0.5,-160,0.5,-125)
+    f.BackgroundColor3=Color3.new(0.08,0.08,0.08) f.Active=true f.Parent=g
+    Instance.new("UICorner",f).CornerRadius=UDim.new(0,12) add(f,4)
 
-    -- CLOSE BUTTON
-    local Close = Instance.new("TextButton")
-    Close.Size = UDim2.new(0,30,0,30); Close.Position = UDim2.new(1,-35,0,5)
-    Close.BackgroundColor3 = Color3.fromRGB(170,30,30); Close.Text = "✕"
-    Close.TextColor3 = Color3.new(1,1,1); Close.Font = Enum.Font.GothamBold; Close.TextSize = 24
-    Close.Parent = Frame; AddRainbowStroke(Close,2)
-    Close.MouseButton1Click:Connect(function()
-        Win:Destroy(); Windows.Boombox=nil
-        MenuOpen = (Windows.Console ~= nil); RefreshInputLock()
-    end)
+    local x = Instance.new("TextButton")
+    x.Size=UDim2.new(0,30,0,30) x.Position=UDim2.new(1,-35,0,5)
+    x.BackgroundColor3=Color3.new(0.66,0.12,0.12) x.Text="✕"
+    x.TextColor3=Color3.new(1,1,1) x.Font=Enum.Font.GothamBold x.TextSize=24
+    x.Parent=f add(x,2)
+    x.MouseButton1Click:Connect(function() g:Destroy() w.S=nil mOpen=(w.C~=nil) refModal() end)
 
-    -- TITLE
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,0,0,40); Title.Position = UDim2.new(0,0,0,8)
-    Title.BackgroundTransparency = 1; Title.Text = "🎵 BOOMBOX · 0-1000 VOL"
-    Title.Font = Enum.Font.GothamBold; Title.TextColor3 = Color3.new(1,1,1); Title.TextScaled = true
-    Title.Parent = Frame
+    local t = Instance.new("TextLabel")
+    t.Size=UDim2.new(1,0,0,40) t.Position=UDim2.new(0,0,0,8)
+    t.BackgroundTransparency=1 t.Text="🎵 BOOMBOX · 1-1000 VOL"
+    t.Font=Enum.Font.GothamBold t.TextColor3=Color3.new(1,1,1) t.TextScaled=true t.Parent=f
 
-    -- SOUND ID INPUT
-    local IDInput = Instance.new("TextBox")
-    IDInput.Size = UDim2.new(1,-40,0,45); IDInput.Position = UDim2.new(0,20,0,55)
-    IDInput.BackgroundColor3 = Color3.fromRGB(35,35,35)
-    IDInput.PlaceholderText = "PASTE SOUND ID HERE (NUMBERS ONLY)"
-    IDInput.TextColor3 = Color3.new(1,1,1); IDInput.Font = Enum.Font.Gotham; IDInput.TextScaled = true
-    IDInput.Parent = Frame; Instance.new("UICorner", IDInput).CornerRadius = UDim.new(0,8)
-    AddRainbowStroke(IDInput,2)
+    local id = Instance.new("TextBox")
+    id.Size=UDim2.new(1,-40,0,45) id.Position=UDim2.new(0,20,0,55)
+    id.BackgroundColor3=Color3.new(0.14,0.14,0.14)
+    id.PlaceholderText="PASTE SOUND ID"
+    id.TextColor3=Color3.new(1,1,1) id.Font=Enum.Font.Gotham id.TextScaled=true
+    id.Parent=f Instance.new("UICorner",id).CornerRadius=UDim.new(0,8) add(id,2)
 
-    -- VOLUME LABELS
-    local VolText = Instance.new("TextLabel")
-    VolText.Size = UDim2.new(0,120,0,30); VolText.Position = UDim2.new(0,20,0,110)
-    VolText.BackgroundTransparency = 1; VolText.Text = "🔊 VOLUME:"
-    VolText.Font = Enum.Font.GothamBold; VolText.TextColor3 = Color3.new(1,1,1); VolText.TextScaled = true; VolText.TextXAlignment = Enum.TextXAlignment.Left
-    VolText.Parent = Frame
+    local vt = Instance.new("TextLabel")
+    vt.Size=UDim2.new(0,120,0,30) vt.Position=UDim2.new(0,20,0,110)
+    vt.BackgroundTransparency=1 vt.Text="🔊 VOLUME:"
+    vt.Font=Enum.Font.GothamBold vt.TextColor3=Color3.new(1,1,1) vt.TextScaled=true vt.TextXAlignment=0 vt.Parent=f
 
-    VolLabels.Menu = Instance.new("TextLabel")
-    VolLabels.Menu.Size = UDim2.new(0,80,0,30); VolLabels.Menu.Position = UDim2.new(1,-100,0,110)
-    VolLabels.Menu.BackgroundTransparency = 1; VolLabels.Menu.Text = tostring(math.floor(Volume)).."/1000"
-    VolLabels.Menu.Font = Enum.Font.GothamBold; VolLabels.Menu.TextColor3 = Color3.new(1,1,1); VolLabels.Menu.TextScaled = true; VolLabels.Menu.TextXAlignment = Enum.TextXAlignment.Right
-    VolLabels.Menu.Parent = Frame
+    vL.S = Instance.new("TextLabel")
+    vL.S.Size=UDim2.new(0,80,0,30) vL.S.Position=UDim2.new(1,-100,0,110)
+    vL.S.BackgroundTransparency=1 vL.S.Text=tostring(math.floor(vol)).."/1000"
+    vL.S.Font=Enum.Font.GothamBold vL.S.TextColor3=Color3.new(1,1,1) vL.S.TextScaled=true vL.S.TextXAlignment=2 vL.S.Parent=f
 
-    -- VOLUME SLIDER
-    local SliderBG = Instance.new("Frame")
-    SliderBG.Size = UDim2.new(1,-40,0,24); SliderBG.Position = UDim2.new(0,20,0,145)
-    SliderBG.BackgroundColor3 = Color3.fromRGB(50,50,50); SliderBG.Active = true; SliderBG.ClipsDescendants = true
-    SliderBG.Parent = Frame; Instance.new("UICorner", SliderBG).CornerRadius = UDim.new(0,12)
-    AddRainbowStroke(SliderBG,2)
+    local sb = Instance.new("Frame")
+    sb.Size=UDim2.new(1,-40,0,24) sb.Position=UDim2.new(0,20,0,145)
+    sb.BackgroundColor3=Color3.new(0.2,0.2,0.2) sb.Active=true
+    sb.Parent=f Instance.new("UICorner",sb).CornerRadius=UDim.new(0,12) add(sb,2)
 
-    VolBars.Menu = Instance.new("Frame")
-    VolBars.Menu.Size = UDim2.new(Volume/1000,0,1,0)
-    VolBars.Menu.BackgroundColor3 = Color3.fromRGB(100,100,100)
-    VolBars.Menu.Parent = SliderBG; Instance.new("UICorner", VolBars.Menu).CornerRadius = UDim.new(0,12)
+    vB.S = Instance.new("Frame")
+    vB.S.Size=UDim2.new(vol/1000,0,1,0)
+    vB.S.BackgroundColor3=Color3.new(0.4,0.4,0.4)
+    vB.S.Parent=sb Instance.new("UICorner",vB.S).CornerRadius=UDim.new(0,12)
 
-    -- SLIDER LOGIC (FIXED INPUT DETECTION)
-    local Sliding = false
-    local function UpdateSlider(Input)
-        local AbsX = SliderBG.AbsolutePosition.X
-        local AbsW = SliderBG.AbsoluteSize.X
-        local Percent = math.clamp((Input.Position.X - AbsX) / AbsW, 0, 1)
-        SetVolume(Percent * 1000)
+    local sl=false
+    local function upd(i)
+        local p = math.clamp((i.Position.X-sb.AbsolutePosition.X)/sb.AbsoluteSize.X,0,1)
+        -- ✅ 1 TO 1000
+        setVol((p*999)+1)
     end
-
-    SliderBG.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-            Sliding = true; SetInputLock(true); UpdateSlider(Input)
+    sb.InputBegan:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+            sl=true modal(true) upd(i)
         end
     end)
-    UIS.InputChanged:Connect(function(Input)
-        if Sliding and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
-            UpdateSlider(Input)
-        end
+    uis.InputChanged:Connect(function(i)
+        if sl and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then upd(i) end
     end)
-    UIS.InputEnded:Connect(function(Input)
-        if Sliding and (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
-            Sliding = false; task.wait(0.05); RefreshInputLock()
+    uis.InputEnded:Connect(function(i)
+        if sl and (i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch) then
+            sl=false wait(0.05) refModal()
         end
     end)
 
-    -- PLAY BUTTON
-    local PlayBtn = Instance.new("TextButton")
-    PlayBtn.Size = UDim2.new(0,130,0,40); PlayBtn.Position = UDim2.new(0,20,0,190)
-    PlayBtn.BackgroundColor3 = Color3.fromRGB(25,140,255); PlayBtn.Text = "▶ PLAY SOUND"
-    PlayBtn.TextColor3 = Color3.new(1,1,1); PlayBtn.Font = Enum.Font.GothamBold; PlayBtn.TextScaled = true
-    PlayBtn.Parent = Frame; Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0,8)
-    AddRainbowStroke(PlayBtn,2)
-    PlayBtn.MouseButton1Click:Connect(function()
-        if IDInput.Text ~= "" then PlaySound(IDInput.Text) end
-    end)
+    local pb = Instance.new("TextButton")
+    pb.Size=UDim2.new(0,130,0,40) pb.Position=UDim2.new(0,20,0,190)
+    pb.BackgroundColor3=Color3.new(0.1,0.55,1) pb.Text="▶ PLAY"
+    pb.TextColor3=Color3.new(1,1,1) pb.Font=Enum.Font.GothamBold pb.TextScaled=true
+    pb.Parent=f Instance.new("UICorner",pb).CornerRadius=UDim.new(0,8) add(pb,2)
+    pb.MouseButton1Click:Connect(function() if id.Text~="" then play(id.Text) end end)
 
-    -- STOP BUTTON
-    local StopBtn = Instance.new("TextButton")
-    StopBtn.Size = UDim2.new(0,130,0,40); StopBtn.Position = UDim2.new(0,170,0,190)
-    StopBtn.BackgroundColor3 = Color3.fromRGB(200,30,30); StopBtn.Text = "⏹ STOP"
-    StopBtn.TextColor3 = Color3.new(1,1,1); StopBtn.Font = Enum.Font.GothamBold; StopBtn.TextScaled = true
-    StopBtn.Parent = Frame; Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0,8)
-    AddRainbowStroke(StopBtn,2)
-    StopBtn.MouseButton1Click:Connect(function()
-        pcall(function() if ActiveSound then ActiveSound:Destroy() end end)
-    end)
+    local sB = Instance.new("TextButton")
+    sB.Size=UDim2.new(0,130,0,40) sB.Position=UDim2.new(0,170,0,190)
+    sB.BackgroundColor3=Color3.new(0.78,0.12,0.12) sB.Text="⏹ STOP"
+    sB.TextColor3=Color3.new(1,1,1) sB.Font=Enum.Font.GothamBold sB.TextScaled=true
+    sB.Parent=f Instance.new("UICorner",sB).CornerRadius=UDim.new(0,8) add(sB,2)
+    sB.MouseButton1Click:Connect(function() pcall(function() if snd then snd:Destroy() end end) end)
 end
 
 -- ==============================================
--- WINDOW: CONSOLE (100% KEPT)
+-- 💻 CONSOLE: LUA + LOADSTRING (ANY SCRIPT)
 -- ==============================================
-local function ToggleConsole()
-    if Windows.Console then
-        Windows.Console:Destroy(); Windows.Console=nil
-        MenuOpen = (Windows.Boombox ~= nil); RefreshInputLock()
-        return
-    end
-    if Windows.Boombox then Windows.Boombox:Destroy(); Windows.Boombox=nil end
-    MenuOpen = true; RefreshInputLock()
+local function tCon()
+    if w.C then w.C:Destroy() w.C=nil mOpen=(w.S~=nil) refModal() return end
+    if w.S then w.S:Destroy() w.S=nil end
+    mOpen=true refModal()
 
-    local Win = Instance.new("ScreenGui")
-    Win.Name = "BlueMode_Console"
-    Win.ResetOnSpawn = false
-    Win.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    Win.DisplayOrder = MAX_Z
-    Win.IgnoreGuiInset = true
-    Win.Parent = CoreGui
-    Windows.Console = Win
+    local g = Instance.new("ScreenGui")
+    g.Name="BM_C" g.ZIndexBehavior=2 g.DisplayOrder=MAX_Z g.IgnoreGuiInset=true g.Parent=cg
+    w.C=g
 
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0,350,0,320); Frame.Position = UDim2.new(0.5,-175,0.5,-160)
-    Frame.BackgroundColor3 = Color3.fromRGB(22,22,22); Frame.Active = true; Frame.ClipsDescendants = true
-    Frame.Parent = Win; Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
-    AddRainbowStroke(Frame,4)
+    local f = Instance.new("Frame")
+    f.Size=UDim2.new(0,380,0,350) f.Position=UDim2.new(0.5,-190,0.5,-175)
+    f.BackgroundColor3=Color3.new(0.08,0.08,0.08) f.Active=true f.Parent=g
+    Instance.new("UICorner",f).CornerRadius=UDim.new(0,12) add(f,4)
 
-    -- CLOSE
-    local Close = Instance.new("TextButton")
-    Close.Size = UDim2.new(0,30,0,30); Close.Position = UDim2.new(1,-35,0,5)
-    Close.BackgroundColor3 = Color3.fromRGB(170,30,30); Close.Text = "✕"
-    Close.TextColor3 = Color3.new(1,1,1); Close.Font = Enum.Font.GothamBold; Close.TextSize = 24
-    Close.Parent = Frame; AddRainbowStroke(Close,2)
-    Close.MouseButton1Click:Connect(function()
-        Win:Destroy(); Windows.Console=nil
-        MenuOpen = (Windows.Boombox ~= nil); RefreshInputLock()
-    end)
+    local x = Instance.new("TextButton")
+    x.Size=UDim2.new(0,30,0,30) x.Position=UDim2.new(1,-35,0,5)
+    x.BackgroundColor3=Color3.new(0.66,0.12,0.12) x.Text="✕"
+    x.TextColor3=Color3.new(1,1,1) x.Font=Enum.Font.GothamBold x.TextSize=24
+    x.Parent=f add(x,2)
+    x.MouseButton1Click:Connect(function() g:Destroy() w.C=nil mOpen=(w.S~=nil) refModal() end)
 
-    -- TITLE
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,0,0,35); Title.Position = UDim2.new(0,0,0,8)
-    Title.BackgroundTransparency = 1; Title.Text = "💻 SCRIPT EXECUTOR"
-    Title.Font = Enum.Font.GothamBold; Title.TextColor3 = Color3.new(1,1,1); Title.TextScaled = true
-    Title.Parent = Frame
+    local t = Instance.new("TextLabel")
+    t.Size=UDim2.new(1,0,0,35) t.Position=UDim2.new(0,0,0,8)
+    t.BackgroundTransparency=1 t.Text="💻 LUA CONSOLE · LOADSTRING"
+    t.Font=Enum.Font.GothamBold t.TextColor3=Color3.new(1,1,1) t.TextScaled=true t.Parent=f
 
-    -- CODE BOX
-    local CodeBox = Instance.new("TextBox")
-    CodeBox.Size = UDim2.new(1,-30,0,170); CodeBox.Position = UDim2.new(0,15,0,50)
-    CodeBox.BackgroundColor3 = Color3.fromRGB(30,30,30); CodeBox.PlaceholderText = "PASTE SCRIPT CODE HERE..."
-    CodeBox.TextColor3 = Color3.new(1,1,1); CodeBox.Font = Enum.Font.Code; CodeBox.TextWrapped = true; CodeBox.MultiLine = true
-    CodeBox.Parent = Frame; Instance.new("UICorner", CodeBox).CornerRadius = UDim.new(0,8)
-    AddRainbowStroke(CodeBox,2)
+    -- ✅ CODE BOX (PASTE ANY LUA SCRIPT / LOADSTRING HERE)
+    local cb = Instance.new("TextBox")
+    cb.Size=UDim2.new(1,-30,0,180) cb.Position=UDim2.new(0,15,0,50)
+    cb.BackgroundColor3=Color3.new(0.12,0.12,0.12)
+    cb.PlaceholderText = [[PASTE ANY LUA SCRIPT OR LOADSTRING HERE
+Examples:
+  loadstring(game:HttpGet("URL"))()
+  print("Hello World")
+  game.Players.LocalPlayer.Character:Destroy()]]
+    cb.TextColor3=Color3.new(1,1,1) cb.Font=Enum.Font.Code
+    cb.TextSize=12 cb.TextWrapped=true cb.MultiLine=true cb.ClearTextOnFocus=false
+    cb.Parent=f Instance.new("UICorner",cb).CornerRadius=UDim.new(0,8) add(cb,2)
 
-    -- LOG BOX
-    local LogBox = Instance.new("TextBox")
-    LogBox.Size = UDim2.new(1,-30,0,50); LogBox.Position = UDim2.new(0,15,0,230)
-    LogBox.BackgroundColor3 = Color3.fromRGB(25,25,25); LogBox.Text = "[CONSOLE] Ready to execute"
-    LogBox.TextColor3 = Color3.new(1,1,1); LogBox.Font = Enum.Font.Code; LogBox.ReadOnly = true; LogBox.TextWrapped = true; LogBox.MultiLine = true
-    LogBox.Parent = Frame; Instance.new("UICorner", LogBox).CornerRadius = UDim.new(0,8)
-    AddRainbowStroke(LogBox,2)
+    -- LOG
+    local lg = Instance.new("TextBox")
+    lg.Size=UDim2.new(1,-30,0,50) lg.Position=UDim2.new(0,15,0,240)
+    lg.BackgroundColor3=Color3.new(0.1,0.1,0.1)
+    lg.Text="[READY] Paste Lua script and click EXECUTE"
+    lg.TextColor3=Color3.new(0.3,1,0.4) lg.Font=Enum.Font.Code lg.TextSize=11
+    lg.ReadOnly=true lg.TextWrapped=true lg.MultiLine=true
+    lg.Parent=f Instance.new("UICorner",lg).CornerRadius=UDim.new(0,8) add(lg,2)
 
-    -- EXECUTE
-    local ExeBtn = Instance.new("TextButton")
-    ExeBtn.Size = UDim2.new(0,90,0,30); ExeBtn.Position = UDim2.new(0,15,0,290)
-    ExeBtn.BackgroundColor3 = Color3.fromRGB(20,120,20); ExeBtn.Text = "▶ EXECUTE"
-    ExeBtn.TextColor3 = Color3.new(1,1,1); ExeBtn.Font = Enum.Font.GothamBold; ExeBtn.TextScaled = true
-    ExeBtn.Parent = Frame; Instance.new("UICorner", ExeBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowStroke(ExeBtn,2)
-    ExeBtn.MouseButton1Click:Connect(function()
-        if CodeBox.Text == "" then LogBox.Text = "[ERROR] No code entered" return end
-        local Success, Err = pcall(loadstring or load, CodeBox.Text)
-        LogBox.Text = Success and "[SUCCESS] Script ran without errors" or "[ERROR] "..tostring(Err)
+    -- ✅ EXECUTE BUTTON (RUNS ANY LUA / LOADSTRING)
+    local ex = Instance.new("TextButton")
+    ex.Size=UDim2.new(0,100,0,32) ex.Position=UDim2.new(0,15,0,300)
+    ex.BackgroundColor3=Color3.new(0.08,0.6,0.15) ex.Text="▶ EXECUTE"
+    ex.TextColor3=Color3.new(1,1,1) ex.Font=Enum.Font.GothamBold ex.TextScaled=true
+    ex.Parent=f Instance.new("UICorner",ex).CornerRadius=UDim.new(0,6) add(ex,2)
+    ex.MouseButton1Click:Connect(function()
+        local code = cb.Text
+        if code:gsub("%s","") == "" then
+            lg.TextColor3=Color3.new(1,0.3,0.3)
+            lg.Text = "[ERROR] No code entered"
+            return
+        end
+        -- ✅ RUN ANY LUA SCRIPT OR LOADSTRING
+        local fn, err = loadstring(code)
+        if not fn then
+            lg.TextColor3=Color3.new(1,0.3,0.3)
+            lg.Text = "[SYNTAX ERROR] "..tostring(err)
+            return
+        end
+        local ok, runErr = pcall(fn)
+        if ok then
+            lg.TextColor3=Color3.new(0.3,1,0.4)
+            lg.Text = "[SUCCESS] Script executed!"
+        else
+            lg.TextColor3=Color3.new(1,0.3,0.3)
+            lg.Text = "[RUNTIME ERROR] "..tostring(runErr)
+        end
     end)
 
     -- CLEAR
-    local ClrBtn = Instance.new("TextButton")
-    ClrBtn.Size = UDim2.new(0,90,0,30); ClrBtn.Position = UDim2.new(0,120,0,290)
-    ClrBtn.BackgroundColor3 = Color3.fromRGB(150,80,20); ClrBtn.Text = "🗑️ CLEAR"
-    ClrBtn.TextColor3 = Color3.new(1,1,1); ClrBtn.Font = Enum.Font.GothamBold; ClrBtn.TextScaled = true
-    ClrBtn.Parent = Frame; Instance.new("UICorner", ClrBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowStroke(ClrBtn,2)
-    ClrBtn.MouseButton1Click:Connect(function() CodeBox.Text=""; LogBox.Text="[CONSOLE] Cleared" end)
+    local cl = Instance.new("TextButton")
+    cl.Size=UDim2.new(0,100,0,32) cl.Position=UDim2.new(0,125,0,300)
+    cl.BackgroundColor3=Color3.new(0.6,0.35,0.08) cl.Text="🗑️ CLEAR"
+    cl.TextColor3=Color3.new(1,1,1) cl.Font=Enum.Font.GothamBold cl.TextScaled=true
+    cl.Parent=f Instance.new("UICorner",cl).CornerRadius=UDim.new(0,6) add(cl,2)
+    cl.MouseButton1Click:Connect(function() cb.Text="" lg.Text="[CLEARED]" lg.TextColor3=Color3.new(1,1,1) end)
 
-    -- CLOSE BTN
-    local ClsBtn = Instance.new("TextButton")
-    ClsBtn.Size = UDim2.new(0,90,0,30); ClsBtn.Position = UDim2.new(0,225,0,290)
-    ClsBtn.BackgroundColor3 = Color3.fromRGB(140,20,20); ClsBtn.Text = "✖ CLOSE"
-    ClsBtn.TextColor3 = Color3.new(1,1,1); ClsBtn.Font = Enum.Font.GothamBold; ClsBtn.TextScaled = true
-    ClsBtn.Parent = Frame; Instance.new("UICorner", ClsBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowStroke(ClsBtn,2)
-    ClsBtn.MouseButton1Click:Connect(function()
-        Win:Destroy(); Windows.Console=nil
-        MenuOpen = (Windows.Boombox ~= nil); RefreshInputLock()
-    end)
+    -- CLOSE
+    local cx = Instance.new("TextButton")
+    cx.Size=UDim2.new(0,100,0,32) cx.Position=UDim2.new(0,235,0,300)
+    cx.BackgroundColor3=Color3.new(0.55,0.08,0.08) cx.Text="✖ CLOSE"
+    cx.TextColor3=Color3.new(1,1,1) cx.Font=Enum.Font.GothamBold cx.TextScaled=true
+    cx.Parent=f Instance.new("UICorner",cx).CornerRadius=UDim.new(0,6) add(cx,2)
+    cx.MouseButton1Click:Connect(function() g:Destroy() w.C=nil mOpen=(w.S~=nil) refModal() end)
 end
 
 -- ==============================================
--- MAIN UI WINDOW (ALWAYS ON TOP · 100% KEPT)
+-- 🎮 MAIN UI
 -- ==============================================
-local function BuildMainUI()
-    local Win = Instance.new("ScreenGui")
-    Win.Name = "BlueMode_Main"
-    Win.ResetOnSpawn = false
-    Win.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    Win.DisplayOrder = MAX_Z
-    Win.IgnoreGuiInset = true
-    Win.Modal = false
-    Win.Parent = CoreGui
-    Windows.Main = Win
+local function build()
+    local g = Instance.new("ScreenGui")
+    g.Name="BM_MAIN" g.ZIndexBehavior=2 g.DisplayOrder=MAX_Z g.IgnoreGuiInset=true g.Modal=false g.Parent=cg
+    w.M=g
 
-    -- AUTO-REFRESH ALWAYS ON TOP (GAMES CANNOT OVERRIDE)
-    task.spawn(function()
-        while Win and Win.Parent do
+    -- Always on top refresh
+    coroutine.wrap(function()
+        while g and g.Parent do
             pcall(function()
-                Win.DisplayOrder = MAX_Z
-                if Windows.Boombox then Windows.Boombox.DisplayOrder = MAX_Z end
-                if Windows.Console then Windows.Console.DisplayOrder = MAX_Z end
+                g.DisplayOrder=MAX_Z
+                if w.S then w.S.DisplayOrder=MAX_Z end
+                if w.C then w.C.DisplayOrder=MAX_Z end
             end)
-            task.wait(1)
+            wait(1)
         end
+    end)()
+
+    uis.MenuOpened:Connect(function()
+        g.Visible=false if w.S then w.S.Visible=false end if w.C then w.C.Visible=false end
+    end)
+    uis.MenuClosed:Connect(function()
+        g.Visible=true if w.S then w.S.Visible=true end if w.C then w.C.Visible=true end
     end)
 
-    -- AUTO-HIDE ON ROBLOX MENU
-    UIS.MenuOpened:Connect(function()
-        Win.Visible = false
-        if Windows.Boombox then Windows.Boombox.Visible = false end
-        if Windows.Console then Windows.Console.Visible = false end
-    end)
-    UIS.MenuClosed:Connect(function()
-        Win.Visible = true
-        if Windows.Boombox then Windows.Boombox.Visible = true end
-        if Windows.Console then Windows.Console.Visible = true end
-    end)
-
-    -- MAIN FRAME
-    local NORMAL_SIZE = UDim2.new(0,660,0,105)
-    local MINI_SIZE = UDim2.new(0,50,0,50)
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Name = "MainFrame"
-    MainFrame.Size = NORMAL_SIZE; MainFrame.Position = UDim2.new(0,20,0.5,-52)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    MainFrame.Active = true; MainFrame.ClipsDescendants = false; MainFrame.ZIndex = 10
-    MainFrame.Parent = Win
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
-    AddRainbowStroke(MainFrame, 5) -- MAIN RAINBOW
+    local NORM = UDim2.new(0,680,0,105)
+    local SMOL = UDim2.new(0,50,0,50)
+    local mf = Instance.new("Frame")
+    mf.Size=NORM mf.Position=UDim2.new(0,20,0.5,-52)
+    mf.BackgroundColor3=Color3.new(0.1,0.1,0.1) mf.Active=true mf.ZIndex=10
+    mf.Parent=g Instance.new("UICorner",mf).CornerRadius=UDim.new(0,8) add(mf,5)
 
     -- DRAG BAR
-    local DragBar = Instance.new("TextButton")
-    DragBar.Size = UDim2.new(1,-25,0,22); DragBar.BackgroundColor3 = Color3.fromRGB(60,140,220)
-    DragBar.Active = true; DragBar.Text = "MADE BY BLUE_MODE | DRAG TO MOVE"
-    DragBar.TextColor3 = Color3.new(1,1,1); DragBar.Font = Enum.Font.GothamBold; DragBar.TextScaled = true; DragBar.TextXAlignment = Enum.TextXAlignment.Left
-    DragBar.Parent = MainFrame; AddRainbowStroke(DragBar,2)
+    local db = Instance.new("TextButton")
+    db.Size=UDim2.new(1,-25,0,22) db.BackgroundColor3=Color3.new(0.24,0.55,0.86)
+    db.Active=true db.Text="BLUE MODE ESP | DRAG ME"
+    db.TextColor3=Color3.new(1,1,1) db.Font=Enum.Font.GothamBold db.TextScaled=true db.TextXAlignment=0
+    db.Parent=mf add(db,2)
 
     -- TIMER
-    local Timer = Instance.new("TextLabel")
-    Timer.Size = UDim2.new(0,100,1,0); Timer.Position = UDim2.new(1,-105,0,0)
-    Timer.BackgroundTransparency = 1; Timer.Text = "12:00:00 / 12:00:00"
-    Timer.Font = Enum.Font.GothamBold; Timer.TextScaled = true; Timer.TextXAlignment = Enum.TextXAlignment.Right
-    Timer.Parent = DragBar
+    local tm = Instance.new("TextLabel")
+    tm.Size=UDim2.new(0,100,1,0) tm.Position=UDim2.new(1,-105,0,0)
+    tm.BackgroundTransparency=1 tm.Text="12:00:00"
+    tm.Font=Enum.Font.GothamBold tm.TextScaled=true tm.TextXAlignment=2 tm.Parent=db
 
-    -- MINIMIZE BTN
-    local MiniBtn = Instance.new("TextButton")
-    MiniBtn.Size = UDim2.new(0,22,1,0); MiniBtn.Position = UDim2.new(1,-22,0,0)
-    MiniBtn.BackgroundColor3 = Color3.fromRGB(160,40,40); MiniBtn.Text = "➖"
-    MiniBtn.TextColor3 = Color3.new(1,1,1); MiniBtn.Font = Enum.Font.GothamBold; MiniBtn.TextScaled = true
-    MiniBtn.Parent = MainFrame; AddRainbowStroke(MiniBtn,2)
+    -- MIN BTN
+    local mb = Instance.new("TextButton")
+    mb.Size=UDim2.new(0,22,1,0) mb.Position=UDim2.new(1,-22,0,0)
+    mb.BackgroundColor3=Color3.new(0.63,0.16,0.16) mb.Text="➖"
+    mb.TextColor3=Color3.new(1,1,1) mb.Font=Enum.Font.GothamBold mb.TextScaled=true
+    mb.Parent=mf add(mb,2)
 
-    -- ==============================================
-    -- ALL 6 MAIN BUTTONS (100% KEPT)
-    -- ==============================================
-    local BtnSize = UDim2.new(0,85,0,30)
-    local BtnY = 30
-
-    -- 1. ESP BTN
-    local ESPBtn = Instance.new("TextButton")
-    ESPBtn.Size = BtnSize; ESPBtn.Position = UDim2.new(0,10,0,BtnY)
-    ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40); ESPBtn.Text = "ESP: OFF"
-    ESPBtn.TextColor3 = Color3.new(1,1,1); ESPBtn.Font = Enum.Font.GothamBold; ESPBtn.TextScaled = true
-    ESPBtn.Parent = MainFrame; Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowStroke(ESPBtn,2)
-
-    -- 2. YOUTUBE BTN
-    local YTBtn = Instance.new("TextButton")
-    YTBtn.Size = UDim2.new(0,95,0,30); YTBtn.Position = UDim2.new(0,105,0,BtnY)
-    YTBtn.BackgroundColor3 = Color3.fromRGB(200,30,30); YTBtn.Text = "📺 YOUTUBE"
-    YTBtn.TextColor3 = Color3.new(1,1,1); YTBtn.Font = Enum.Font.GothamBold; YTBtn.TextScaled = true
-    YTBtn.Parent = MainFrame; Instance.new("UICorner", YTBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowStroke(YTBtn,2)
-
-    -- 3. BOOMBOX BTN
-    local BoomBtn = Instance.new("TextButton")
-    BoomBtn.Size = UDim2.new(0,90,0,30); BoomBtn.Position = UDim2.new(0,210,0,BtnY)
-    BoomBtn.BackgroundColor3 = Color3.fromRGB(40,80,160); BoomBtn.Text = "🎵 MUSIC"
-    BoomBtn.TextColor3 = Color3.new(1,1,1); BoomBtn.Font = Enum.Font.GothamBold; BoomBtn.TextScaled = true
-    BoomBtn.Parent = MainFrame; Instance.new("UICorner", BoomBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowStroke(BoomBtn,2)
-
-    -- 4. CONSOLE BTN
-    local ConBtn = Instance.new("TextButton")
-    ConBtn.Size = UDim2.new(0,95,0,30); ConBtn.Position = UDim2.new(0,310,0,BtnY)
-    ConBtn.BackgroundColor3 = Color3.fromRGB(30,100,90); ConBtn.Text = "💻 CONSOLE"
-    ConBtn.TextColor3 = Color3.new(1,1,1); ConBtn.Font = Enum.Font.GothamBold; ConBtn.TextScaled = true
-    ConBtn.Parent = MainFrame; Instance.new("UICorner", ConBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowStroke(ConBtn,2)
-
-    -- 5. LOCK BTN
-    local LockBtn = Instance.new("TextButton")
-    LockBtn.Size = UDim2.new(0,90,0,30); LockBtn.Position = UDim2.new(0,415,0,BtnY)
-    LockBtn.BackgroundColor3 = Color3.fromRGB(50,50,50); LockBtn.Text = "🔓 UNLOCKED"
-    LockBtn.TextColor3 = Color3.new(1,1,1); LockBtn.Font = Enum.Font.GothamBold; LockBtn.TextScaled = true
-    LockBtn.Parent = MainFrame; Instance.new("UICorner", LockBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowStroke(LockBtn,2)
-
-    -- 6. EXIT BTN
-    local ExitBtn = Instance.new("TextButton")
-    ExitBtn.Size = UDim2.new(0,90,0,30); ExitBtn.Position = UDim2.new(0,515,0,BtnY)
-    ExitBtn.BackgroundColor3 = Color3.fromRGB(140,20,20); ExitBtn.Text = "🗑️ EXIT"
-    ExitBtn.TextColor3 = Color3.new(1,1,1); ExitBtn.Font = Enum.Font.GothamBold; ExitBtn.TextScaled = true
-    ExitBtn.Parent = MainFrame; Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowStroke(ExitBtn,2)
-
-    -- ==============================================
-    -- MAIN VOLUME SLIDER (0-1000 · KEPT)
-    -- ==============================================
-    local VolText = Instance.new("TextLabel")
-    VolText.Size = UDim2.new(0,70,0,25); VolText.Position = UDim2.new(0,10,0,65)
-    VolText.BackgroundTransparency = 1; VolText.Text = "🔊 VOL:"
-    VolText.Font = Enum.Font.Gotham; VolText.TextColor3 = Color3.new(1,1,1); VolText.TextScaled = true; VolText.TextXAlignment = Enum.TextXAlignment.Left
-    VolText.Parent = MainFrame
-
-    VolLabels.Main = Instance.new("TextLabel")
-    VolLabels.Main.Size = UDim2.new(0,55,0,25); VolLabels.Main.Position = UDim2.new(0,80,0,65)
-    VolLabels.Main.BackgroundTransparency = 1; VolLabels.Main.Text = tostring(math.floor(Volume)).."/1000"
-    VolLabels.Main.Font = Enum.Font.GothamBold; VolLabels.Main.TextColor3 = Color3.new(1,1,1); VolLabels.Main.TextScaled = true; VolLabels.Main.TextXAlignment = Enum.TextXAlignment.Right
-    VolLabels.Main.Parent = MainFrame
-
-    local SliderBG = Instance.new("Frame")
-    SliderBG.Size = UDim2.new(0,150,0,18); SliderBG.Position = UDim2.new(0,140,0,67)
-    SliderBG.BackgroundColor3 = Color3.fromRGB(50,50,50); SliderBG.Active = true; SliderBG.ClipsDescendants = true; SliderBG.ZIndex = 15
-    SliderBG.Parent = MainFrame; Instance.new("UICorner", SliderBG).CornerRadius = UDim.new(0,9)
-    AddRainbowStroke(SliderBG,2)
-
-    VolBars.Main = Instance.new("Frame")
-    VolBars.Main.Size = UDim2.new(Volume/1000,0,1,0)
-    VolBars.Main.BackgroundColor3 = Color3.fromRGB(100,100,100)
-    VolBars.Main.Parent = SliderBG; Instance.new("UICorner", VolBars.Main).CornerRadius = UDim.new(0,9)
-
-    -- MAIN SLIDER LOGIC (FIXED)
-    local MainSliding = false
-    local function UpdateMainSlider(Input)
-        local AbsX = SliderBG.AbsolutePosition.X
-        local AbsW = SliderBG.AbsoluteSize.X
-        local Percent = math.clamp((Input.Position.X - AbsX) / AbsW, 0, 1)
-        SetVolume(Percent * 1000)
+    -- ALL 6 BUTTONS
+    local function btn(sz,pos,bg,txt)
+        local b = Instance.new("TextButton")
+        b.Size=sz b.Position=pos b.BackgroundColor3=bg
+        b.Text=txt b.TextColor3=Color3.new(1,1,1)
+        b.Font=Enum.Font.GothamBold b.TextScaled=true
+        b.Parent=mf Instance.new("UICorner",b).CornerRadius=UDim.new(0,6) add(b,2)
+        return b
     end
-    SliderBG.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-            MainSliding = true; SetInputLock(true); UpdateMainSlider(Input)
+
+    local bEsp = btn(UDim2.new(0,85,0,30),UDim2.new(0,10,0,30),Color3.new(0.16,0.16,0.16),"ESP: OFF")
+    local bYt  = btn(UDim2.new(0,95,0,30),UDim2.new(0,105,0,30),Color3.new(0.78,0.12,0.12),"📺 YT")
+    local bMu  = btn(UDim2.new(0,90,0,30),UDim2.new(0,210,0,30),Color3.new(0.16,0.31,0.63),"🎵 MUSIC")
+    local bCn  = btn(UDim2.new(0,95,0,30),UDim2.new(0,310,0,30),Color3.new(0.12,0.39,0.35),"💻 CONSOLE")
+    local bLk  = btn(UDim2.new(0,90,0,30),UDim2.new(0,415,0,30),Color3.new(0.2,0.2,0.2),"🔓 UNLOCK")
+    local bEx  = btn(UDim2.new(0,90,0,30),UDim2.new(0,515,0,30),Color3.new(0.55,0.08,0.08),"🗑️ EXIT")
+
+    -- MAIN VOLUME SLIDER (1-1000)
+    local vt = Instance.new("TextLabel")
+    vt.Size=UDim2.new(0,40,0,25) vt.Position=UDim2.new(0,10,0,65)
+    vt.BackgroundTransparency=1 vt.Text="🔊"
+    vt.Font=Enum.Font.Gotham vt.TextColor3=Color3.new(1,1,1) vt.TextScaled=true vt.Parent=mf
+
+    vL.M = Instance.new("TextLabel")
+    vL.M.Size=UDim2.new(0,60,0,25) vL.M.Position=UDim2.new(0,45,0,65)
+    vL.M.BackgroundTransparency=1 vL.M.Text=tostring(math.floor(vol)).."/1000"
+    vL.M.Font=Enum.Font.GothamBold vL.M.TextColor3=Color3.new(1,1,1) vL.M.TextScaled=true vL.M.TextXAlignment=0 vL.M.Parent=mf
+
+    local vs = Instance.new("Frame")
+    vs.Size=UDim2.new(0,160,0,18) vs.Position=UDim2.new(0,110,0,68)
+    vs.BackgroundColor3=Color3.new(0.2,0.2,0.2) vs.Active=true vs.ZIndex=15
+    vs.Parent=mf Instance.new("UICorner",vs).CornerRadius=UDim.new(0,9) add(vs,2)
+
+    vB.M = Instance.new("Frame")
+    vB.M.Size=UDim2.new(vol/1000,0,1,0)
+    vB.M.BackgroundColor3=Color3.new(0.4,0.4,0.4)
+    vB.M.Parent=vs Instance.new("UICorner",vB.M).CornerRadius=UDim.new(0,9)
+
+    local msl=false
+    local function mupd(i)
+        local p = math.clamp((i.Position.X-vs.AbsolutePosition.X)/vs.AbsoluteSize.X,0,1)
+        setVol((p*999)+1)
+    end
+    vs.InputBegan:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+            msl=true modal(true) mupd(i)
         end
     end)
-    UIS.InputChanged:Connect(function(Input)
-        if MainSliding and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
-            UpdateMainSlider(Input)
-        end
+    uis.InputChanged:Connect(function(i)
+        if msl and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then mupd(i) end
     end)
-    UIS.InputEnded:Connect(function(Input)
-        if MainSliding and (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
-            MainSliding = false; task.wait(0.05); RefreshInputLock()
-        end
-    end)
-
-    -- ==============================================
-    -- DRAG SYSTEM (FIXED · NO CAMERA MOVE)
-    -- ==============================================
-    local Dragging = false
-    local DragStart = Vector2.new()
-    local FrameStart = Vector2.new()
-
-    DragBar.InputBegan:Connect(function(Input)
-        if UILocked then return end
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-            Dragging = true
-            DragStart = Vector2.new(Input.Position.X, Input.Position.Y)
-            FrameStart = Vector2.new(MainFrame.Position.X.Offset, MainFrame.Position.Y.Offset)
-            SetInputLock(true)
-        end
-    end)
-    UIS.InputChanged:Connect(function(Input)
-        if not Dragging or UILocked then return end
-        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
-            local Delta = Vector2.new(Input.Position.X, Input.Position.Y) - DragStart
-            MainFrame.Position = UDim2.new(0, FrameStart.X + Delta.X, 0, FrameStart.Y + Delta.Y)
-        end
-    end)
-    UIS.InputEnded:Connect(function(Input)
-        if Dragging and (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
-            Dragging = false; task.wait(0.05); RefreshInputLock()
+    uis.InputEnded:Connect(function(i)
+        if msl and (i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch) then
+            msl=false wait(0.05) refModal()
         end
     end)
 
-    -- ==============================================
-    -- ALL BUTTON ACTIONS (100% KEPT)
-    -- ==============================================
-    -- ESP TOGGLE
-    ESPBtn.MouseButton1Click:Connect(function()
-        ESPEnabled = not ESPEnabled
-        ESPBtn.Text = ESPEnabled and "ESP: ON" or "ESP: OFF"
-        ESPBtn.BackgroundColor3 = ESPEnabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        if not ESPEnabled then ClearAllESP() end
+    -- DRAG SYSTEM
+    local dr=false local ds=Vector2.new() local fs=Vector2.new()
+    db.InputBegan:Connect(function(i)
+        if lck then return end
+        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+            dr=true ds=Vector2.new(i.Position.X,i.Position.Y)
+            fs=Vector2.new(mf.Position.X.Offset,mf.Position.Y.Offset)
+            modal(true)
+        end
+    end)
+    uis.InputChanged:Connect(function(i)
+        if not dr or lck then return end
+        if i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch then
+            local d = Vector2.new(i.Position.X,i.Position.Y)-ds
+            mf.Position=UDim2.new(0,fs.X+d.X,0,fs.Y+d.Y)
+        end
+    end)
+    uis.InputEnded:Connect(function(i)
+        if dr and (i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch) then
+            dr=false wait(0.05) refModal()
+        end
     end)
 
-    -- YOUTUBE COPY
-    YTBtn.MouseButton1Click:Connect(function()
-        SafeClip(YT_LINK)
-        YTBtn.Text = "✅ COPIED!"
-        task.wait(1.5); YTBtn.Text = "📺 YOUTUBE"
+    -- BUTTON ACTIONS
+    bEsp.MouseButton1Click:Connect(function()
+        esp=not esp
+        bEsp.Text=esp and "ESP: ON" or "ESP: OFF"
+        bEsp.BackgroundColor3=esp and Color3.new(0.1,0.47,0.1) or Color3.new(0.16,0.16,0.16)
+        if not esp then clrEsp() end
     end)
 
-    -- BOOMBOX OPEN
-    BoomBtn.MouseButton1Click:Connect(OpenBoombox)
-
-    -- CONSOLE TOGGLE
-    ConBtn.MouseButton1Click:Connect(ToggleConsole)
-
-    -- LOCK TOGGLE
-    LockBtn.MouseButton1Click:Connect(function()
-        UILocked = not UILocked
-        LockBtn.Text = UILocked and "🔒 LOCKED" or "🔓 UNLOCKED"
-        LockBtn.BackgroundColor3 = UILocked and Color3.fromRGB(180,40,40) or Color3.fromRGB(50,50,50)
+    bYt.MouseButton1Click:Connect(function()
+        sc(YT) bYt.Text="✅ COPIED" wait(1.5) bYt.Text="📺 YT"
     end)
 
-    -- MINIMIZE TOGGLE
-    MiniBtn.MouseButton1Click:Connect(function()
-        Minimized = not Minimized
-        if Minimized then
-            MainFrame.Size = MINI_SIZE
-            ESPBtn.Visible=false; YTBtn.Visible=false; BoomBtn.Visible=false
-            ConBtn.Visible=false; LockBtn.Visible=false; ExitBtn.Visible=false
-            VolText.Visible=false; VolLabels.Main.Visible=false; SliderBG.Visible=false
-            DragBar.Text = ""; MiniBtn.Text = "➕"
+    bMu.MouseButton1Click:Connect(oMusic)
+    bCn.MouseButton1Click:Connect(tCon)
+
+    bLk.MouseButton1Click:Connect(function()
+        lck=not lck
+        bLk.Text=lck and "🔒 LOCKED" or "🔓 UNLOCK"
+        bLk.BackgroundColor3=lck and Color3.new(0.7,0.16,0.16) or Color3.new(0.2,0.2,0.2)
+    end)
+
+    mb.MouseButton1Click:Connect(function()
+        min=not min
+        if min then
+            mf.Size=SMOL
+            bEsp.Visible=false bYt.Visible=false bMu.Visible=false
+            bCn.Visible=false bLk.Visible=false bEx.Visible=false
+            vt.Visible=false vL.M.Visible=false vs.Visible=false
+            db.Text="" mb.Text="➕"
         else
-            MainFrame.Size = NORMAL_SIZE
-            ESPBtn.Visible=true; YTBtn.Visible=true; BoomBtn.Visible=true
-            ConBtn.Visible=true; LockBtn.Visible=true; ExitBtn.Visible=true
-            VolText.Visible=true; VolLabels.Main.Visible=true; SliderBG.Visible=true
-            DragBar.Text = "MADE BY BLUE_MODE | DRAG TO MOVE"; MiniBtn.Text = "➖"
+            mf.Size=NORM
+            bEsp.Visible=true bYt.Visible=true bMu.Visible=true
+            bCn.Visible=true bLk.Visible=true bEx.Visible=true
+            vt.Visible=true vL.M.Visible=true vs.Visible=true
+            db.Text="BLUE MODE ESP | DRAG ME" mb.Text="➖"
         end
     end)
 
-    -- EXIT SCRIPT
-    ExitBtn.MouseButton1Click:Connect(function()
-        ClearAllESP()
-        pcall(function() if ActiveSound then ActiveSound:Destroy() end end)
-        if Windows.Boombox then Windows.Boombox:Destroy() end
-        if Windows.Console then Windows.Console:Destroy() end
-        Win:Destroy()
-        getgenv().BlueMode_Loaded = false
+    bEx.MouseButton1Click:Connect(function()
+        clrEsp()
+        pcall(function() if snd then snd:Destroy() end end)
+        if w.S then w.S:Destroy() end if w.C then w.C:Destroy() end
+        g:Destroy() getgenv().BlueMode=false
     end)
 
-    -- ==============================================
-    -- MAIN HEARTBEAT LOOP (SAFE · ERROR PROTECTED)
-    -- ==============================================
-    RunService.Heartbeat:Connect(function(DeltaTime)
-        -- PROTECT LOOP FROM CRASHING
-        local Success, Err = pcall(function()
-            if not Win or not Win.Parent then return end
+    -- MAIN LOOP
+    rs.Heartbeat:Connect(function(dt)
+        pcall(function()
+            if not g or not g.Parent then return end
 
-            -- 1. UPDATE USAGE TIMER
-            local Now = os.time()
-            UsedTime += math.max(0, Now - LastTick); LastTick = Now
-            SafeWrite(SAVE_FILES.USED, UsedTime)
-            local Remaining = math.max(0, USAGE_LIMIT - UsedTime)
-            Timer.Text = string.format("%02d:%02d:%02d / 12:00:00",
-                math.floor(Remaining/3600),
-                math.floor((Remaining%3600)/60),
-                Remaining%60
-            )
-            -- AUTO-EXIT WHEN TIME RUNS OUT
-            if Remaining <= 0 then
-                SafeWrite(SAVE_FILES.COOLDOWN, os.time() + COOLDOWN_TIME)
-                pcall(function() if delfile then delfile(SAVE_FILES.USED..".txt") end end)
-                ExitBtn:Fire()
-                return
+            -- TIMER
+            local n = os.time()
+            used = used + math.max(0,n-lt); lt = n
+            wf(F.U,used)
+            local rem = math.max(0,LIMIT-used)
+            tm.Text = string.format("%02d:%02d:%02d",math.floor(rem/3600),math.floor((rem%3600)/60),rem%60)
+            if rem<=0 then
+                wf(F.C,os.time()+CD)
+                bEx:Fire() return
             end
 
-            -- 2. PERMANENT RAINBOW ANIMATION (ALL UI)
-            RainbowHue = (RainbowHue + (DeltaTime * 0.5)) % 1
-            local RainbowColor = Color3.fromHSV(RainbowHue, 1, 1)
-            -- UPDATE ALL OUTLINES
-            for _, Stroke in ipairs(RainbowOutlines) do
-                pcall(function() Stroke.Color = RainbowColor end)
-            end
-            -- UPDATE VOLUME BARS
-            if VolBars.Main then pcall(function() VolBars.Main.BackgroundColor3 = RainbowColor end) end
-            if VolBars.Menu then pcall(function() VolBars.Menu.BackgroundColor3 = RainbowColor end) end
-            -- UPDATE TIMER TEXT
-            pcall(function() Timer.TextColor3 = RainbowColor end)
+            -- ✅ PERMANENT RAINBOW (ALL UI)
+            hue = (hue + (dt*0.5)) % 1
+            local rc = Color3.fromHSV(hue,1,1)
+            for _,s in pairs(sk) do s.Color = rc end
+            if vB.M then vB.M.BackgroundColor3 = rc end
+            if vB.S then vB.S.BackgroundColor3 = rc end
+            tm.TextColor3 = rc
 
-            -- 3. ESP SYSTEM (RAINBOW OUTLINES + FRIEND DOT)
-            if not ESPEnabled then return end
-            for _, Plr in pairs(Players:GetPlayers()) do
-                if Plr == LocalPlayer then continue end
-                local Char = Plr.Character
-                if not Char then continue end
-                local Hum = Char:FindFirstChildOfClass("Humanoid")
-                -- CLEANUP DEAD PLAYERS
-                if not Hum or Hum.Health <= 0 then
-                    pcall(function()
-                        local E = Char:FindFirstChild("BlueMode_ESP") if E then E:Destroy() end
-                        local D = Char:FindFirstChild("BlueMode_FriendDot") if D then D:Destroy() end
-                    end)
+            -- ESP + FRIEND DOT
+            if not esp then return end
+            for _,p in pairs(game.Players:GetPlayers()) do
+                if p==plr then continue end
+                local c = p.Character
+                if not c then continue end
+                local h = c:FindFirstChildOfClass("Humanoid")
+                if not h or h.Health<=0 then
+                    local e=c:FindFirstChild("BM_ESP") if e then e:Destroy() end
+                    local d=c:FindFirstChild("BM_DOT") if d then d:Destroy() end
                     continue
                 end
 
-                -- PLAYER ESP OUTLINE
-                local ESP = Char:FindFirstChild("BlueMode_ESP")
-                if not ESP then
-                    ESP = Instance.new("Highlight")
-                    ESP.Name = "BlueMode_ESP"
-                    ESP.FillTransparency = 1
-                    ESP.OutlineTransparency = 0
-                    ESP.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                    ESP.Parent = Char
+                local e = c:FindFirstChild("BM_ESP")
+                if not e then
+                    e = Instance.new("Highlight")
+                    e.Name="BM_ESP" e.FillTransparency=1 e.OutlineTransparency=0
+                    e.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop
+                    e.Parent=c
                 end
-                pcall(function() ESP.OutlineColor = RainbowColor end)
+                e.OutlineColor = rc
 
-                -- FRIEND DOT ABOVE HEAD
-                local IsFriend = false
-                pcall(function() IsFriend = LocalPlayer:IsFriendsWith(Plr.UserId) end)
-                local Head = Char:FindFirstChild("Head")
-                local Dot = Char:FindFirstChild("BlueMode_FriendDot")
-
-                if IsFriend and Head then
-                    if not Dot then
-                        Dot = Instance.new("BillboardGui")
-                        Dot.Name = "BlueMode_FriendDot"
-                        Dot.AlwaysOnTop = true
-                        Dot.Size = UDim2.new(0,18,0,18)
-                        Dot.StudsOffset = Vector3.new(0,3,0)
-                        Dot.Adornee = Head
-                        Dot.Parent = Char
-                        local Circle = Instance.new("Frame", Dot)
-                        Circle.Size = UDim2.new(1,0,1,0)
-                        Instance.new("UICorner", Circle).CornerRadius = UDim.new(1,0)
+                -- FRIEND DOT
+                local fr=false pcall(function() fr=plr:IsFriendsWith(p.UserId) end)
+                local hd = c:FindFirstChild("Head")
+                local dot = c:FindFirstChild("BM_DOT")
+                if fr and hd then
+                    if not dot then
+                        dot = Instance.new("BillboardGui")
+                        dot.Name="BM_DOT" dot.AlwaysOnTop=true
+                        dot.Size=UDim2.new(0,16,0,16) dot.StudsOffset=Vector3.new(0,3,0)
+                        dot.Adornee=hd dot.Parent=c
+                        local ci=Instance.new("Frame",dot)
+                        ci.Size=UDim2.new(1,0,1,0)
+                        Instance.new("UICorner",ci).CornerRadius=UDim.new(1,0)
                     end
-                    pcall(function() Dot.Frame.BackgroundColor3 = RainbowColor end)
-                elseif Dot then
-                    pcall(function() Dot:Destroy() end)
-                end
+                    dot.Frame.BackgroundColor3 = rc
+                elseif dot then dot:Destroy() end
             end
         end)
-        -- LOG ANY ERRORS SILENTLY (NO CRASH)
-        if not Success then warn("[BLUE MODE LOOP ERROR]", Err) end
     end)
 end
 
--- ==============================================
--- START THE SCRIPT!
--- ==============================================
-local StartSuccess, StartErr = pcall(BuildMainUI)
-if StartSuccess then
-    print("✅ BLUE MODE ESP v2.6 LOADED SUCCESSFULLY!")
-    print("✅ FEATURES: Permanent Rainbow · Always On Top · No Camera Move · Console · 0-1000 Volume · ESP · Friend Dot")
+-- RUN
+local ok,err = pcall(build)
+if ok then
+    print("✅ BLUE MODE v2.8 LOADED!")
+    print("✅ 1-1000 VOL | LUA CONSOLE + LOADSTRING | RAINBOW | ESP")
 else
-    warn("❌ BLUE MODE FAILED TO LOAD:", StartErr)
-    getgenv().BlueMode_Loaded = false
+    warn("❌ FAILED:",err)
+    getgenv().BlueMode=false
 end
