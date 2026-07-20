@@ -1,9 +1,9 @@
 -- ==============================================
 -- 🔵 BLUE MODE HUB | SIZE MATCHED PERFECTLY
--- ✅ FPS/PING EXACT SAME SIZE AS VOLUME BAR
+-- ✅ FPS and PING update
 -- ✅ ESP TEXT FULL RAINBOW + OUTLINE
 -- ✅ ESP BTN: RED=OFF / GREEN=ON
--- ✅ NO FEATURES REMOVED
+-- ✅ MADE BY DWAYNEKEAN/ BLUE_MODE
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
