@@ -944,6 +944,95 @@ function LoadMainHub()
     end)
 end
 
+-- ==============================================
+-- 🔵 STARTUP WELCOME SCREEN + FEATURE LIST
+-- ==============================================
+local StartupUI = Instance.new("ScreenGui")
+StartupUI.Name = "BLUE_MODE_STARTUP"
+StartupUI.ResetOnSpawn = false
+StartupUI.DisplayOrder = 1000
+StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+StartupUI.Parent = GuiContainer
+
+local StartupFrame = Instance.new("Frame")
+StartupFrame.Size = UDim2.new(0, 520, 0, 580)
+StartupFrame.Position = UDim2.new(0.5, -260, 0.5, -290)
+StartupFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+StartupFrame.Parent = StartupUI
+Instance.new("UICorner", StartupFrame).CornerRadius = UDim.new(0, 16)
+AddRainbowGlow(StartupFrame, 6)
+
+local StartupBg = Instance.new("ImageLabel")
+StartupBg.Size = UDim2.new(1,0,1,0)
+StartupBg.BackgroundTransparency = 1
+StartupBg.Image = CUSTOM_GUI_BG
+StartupBg.ScaleType = Enum.ScaleType.Stretch
+StartupBg.Parent = StartupFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -40, 0, 50)
+Title.Position = UDim2.new(0, 20, 0, 20)
+Title.BackgroundTransparency = 1
+Title.Text = "🔵 BLUE MODE HUB"
+Title.TextColor3 = Color3.fromRGB(80, 180, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextScaled = true
+Title.Parent = StartupFrame
+
+local SubTitle = Instance.new("TextLabel")
+SubTitle.Size = UDim2.new(1, -40, 0, 30)
+SubTitle.Position = UDim2.new(0, 20, 0, 75)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Text = "Made by Dwaynekean015 | Fully Fixed Version"
+SubTitle.TextColor3 = Color3.fromRGB(170, 170, 170)
+SubTitle.Font = Enum.Font.Gotham
+SubTitle.TextScaled = true
+SubTitle.Parent = StartupFrame
+
+local FeatureList = Instance.new("TextLabel")
+FeatureList.Size = UDim2.new(1, -40, 0, 360)
+FeatureList.Position = UDim2.new(0, 20, 0, 120)
+FeatureList.BackgroundTransparency = 1
+FeatureList.Text = [[📋 FULL FEATURE LIST:
+✅ Renamed correctly: Blue Mode HUB
+✅ Owner: Gold outline + Floating Crown
+✅ Friends: Purple outline + Rainbow dot
+✅ Others: Bright blue outline
+✅ Real-time FPS Counter
+✅ Round Trip Ping + Server Ping
+✅ 12-Hour Timer (Auto-saves progress)
+✅ Rainbow borders + Rainbow volume bars
+✅ Drag, Lock & Minimize GUI
+✅ Boombox: Any ID | Volume 0–1000
+✅ Built-in Script Console
+✅ Exit with double confirmation
+✅ Works on Delta / All Executors
+]]
+FeatureList.TextColor3 = Color3.new(1,1,1)
+FeatureList.Font = Enum.Font.Gotham
+FeatureList.TextScaled = true
+FeatureList.TextXAlignment = Enum.TextXAlignment.Left
+FeatureList.TextYAlignment = Enum.TextYAlignment.Top
+FeatureList.Parent = StartupFrame
+
+local StartBtn = Instance.new("TextButton")
+StartBtn.Size = UDim2.new(0, 280, 0, 55)
+StartBtn.Position = UDim2.new(0.5, -140, 0, 500)
+StartBtn.BackgroundColor3 = Color3.fromRGB(25, 140, 255)
+StartBtn.Text = "🚀 START HUB"
+StartBtn.TextColor3 = Color3.new(1,1,1)
+StartBtn.Font = Enum.Font.GothamBold
+StartBtn.TextScaled = true
+StartBtn.Parent = StartupFrame
+Instance.new("UICorner", StartBtn).CornerRadius = UDim.new(0, 12)
+AddRainbowGlow(StartBtn, 3)
+
+StartBtn.MouseButton1Click:Connect(function()
+    StartupUI:Destroy()
+    LoadMainHub()
+end)
+
+
 -- START THE HUB
 LoadMainHub()
 print("✅ BLUE MODE HUB | FULLY LOADED | ALL FEATURES WORKING!")
