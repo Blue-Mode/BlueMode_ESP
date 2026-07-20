@@ -1,8 +1,8 @@
 -- ==============================================
 -- 🔵 BLUE MODE HUB | FINAL VERSION
--- ✅ UPDATES: EXIT POPUP RAINBOW OUTLINE + TEXT OUTLINE, MOUNTAIN BG
+-- ✅ UPDATES: CREATOR NAME → DWAYNE KEAN ONLY, EXIT POPUP RAINBOW OUTLINE + TEXT OUTLINE, MOUNTAIN BG
 -- ✅ CROSS-EXECUTOR COMPATIBLE | DRAGGABLE GUI
--- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
+-- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -131,7 +131,7 @@ UpdateList.Text = [[• VOLUME: 0 → 1000
 • ✅ ADDED: FPS / PING / SP (SERVER PING)
 • ✅ FIXED: New players auto-get ESP
 • ✅ NEW: Exit popup with rainbow border + outlined text
-• Creator: Dwayne Kean / Blue_Mode]]
+• Creator: DWAYNE KEAN / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
 local StartupTimerLabel = Instance.new("TextLabel")
@@ -274,9 +274,9 @@ function LoadMainHub()
         Bg.BackgroundColor3 = Color3.fromRGB(15,15,20)
         Bg.Parent = ConfirmUI
         Instance.new("UICorner", Bg).CornerRadius = UDim.new(0, 14)
-        AddRainbowGlow(Bg, 4) -- Same thickness as Music/Console
+        AddRainbowGlow(Bg, 4)
 
-        -- Mountain background (matches other menus exactly)
+        -- Mountain background
         local PopupBg = Instance.new("ImageLabel")
         PopupBg.Size = UDim2.new(1, 0, 1, 0)
         PopupBg.Position = UDim2.new(0, 0, 0, 0)
@@ -285,7 +285,7 @@ function LoadMainHub()
         PopupBg.ScaleType = Enum.ScaleType.Stretch
         PopupBg.Parent = Bg
 
-        -- Text: WHITE FILL + RAINBOW OUTLINE (matches your other GUIs)
+        -- White fill + rainbow outline text
         local Msg = Instance.new("TextLabel")
         Msg.Size = UDim2.new(1, -40, 0, 70)
         Msg.Position = UDim2.new(0, 20, 0, 20)
@@ -294,10 +294,10 @@ function LoadMainHub()
         Msg.TextWrapped = true
         Msg.TextScaled = true
         Msg.Text = "Are you sure you want to close the hub?"
-        Msg.TextColor3 = Color3.new(1,1,1) -- White fill
-        Msg.TextStrokeTransparency = 0 -- Visible outline
+        Msg.TextColor3 = Color3.new(1,1,1)
+        Msg.TextStrokeTransparency = 0
         Msg.Parent = Bg
-        AddRainbowGlow(Msg, 2) -- Rainbow outline on text
+        AddRainbowGlow(Msg, 2)
 
         local CancelBtn = Instance.new("TextButton")
         CancelBtn.Size = UDim2.new(0, 150, 0, 50)
@@ -360,7 +360,7 @@ function LoadMainHub()
     DragHandle.Position = UDim2.new(0,0,0,0)
     DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
     DragHandle.AutoLocalize = false
-    DragHandle.Text = "made by BLUE_MODE | DRAG HERE"
+    DragHandle.Text = "made by BLUE_MODE / DWAYNE KEAN | DRAG HERE"
     DragHandle.Font = Enum.Font.GothamBold
     DragHandle.TextScaled = true
     DragHandle.TextColor3 = Color3.new(1,1,1)
