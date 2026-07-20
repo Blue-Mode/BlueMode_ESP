@@ -1,8 +1,7 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | BACKUP | ESP TEXT RAINBOW
--- ✅ ONLY CHANGE: ESP BUTTON TEXT NOW RAINBOW
--- ✅ NOTHING ELSE ADDED / REMOVED / MODIFIED
--- ✅ ALL ORIGINAL FEATURES FULLY PRESERVED
+-- 🔵 BLUE MODE HUB | ESP FILL FIXED
+-- ✅ ESP NOW HAS RAINBOW FILL + OUTLINE LIKE OTHERS
+-- ✅ NO FEATURES ADDED / REMOVED / CHANGED
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -184,7 +183,7 @@ end)
 print("✅ BLUE MODE HUB STARTUP READY")
 
 -- ==============================================
--- ✅ MAIN HUB | ESP TEXT RAINBOW ONLY
+-- ✅ MAIN HUB | ESP FILL FIXED
 -- ==============================================
 function LoadMainHub()
     local CurrentTime = os.time()
@@ -554,7 +553,7 @@ function LoadMainHub()
     end
 
     -- ==============================================
-    -- ✅ MAIN UI | ESP TEXT RAINBOW APPLIED
+    -- ✅ MAIN UI | UNCHANGED
     -- ==============================================
     local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
@@ -615,7 +614,7 @@ function LoadMainHub()
     ESPBtn.Position = UDim2.new(0,10,0,30)
     ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     ESPBtn.Text = "ESP: OFF"
-    ESPBtn.TextColor3 = Color3.new(1,1,1) -- ✅ WILL BE OVERRIDDEN BY RAINBOW
+    ESPBtn.TextColor3 = Color3.new(1,1,1)
     ESPBtn.Font = Enum.Font.GothamBold
     ESPBtn.TextScaled = true
     ESPBtn.Parent = MainFrame
@@ -863,7 +862,6 @@ function LoadMainHub()
         if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
         if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
         TimerLabel.TextColor3 = Rainbow
-        -- ✅ ESP TEXT NOW RAINBOW
         if ESPBtn then ESPBtn.TextColor3 = Rainbow end
 
         if not ESP_Enabled then return end
@@ -886,11 +884,13 @@ function LoadMainHub()
                 continue
             end
 
+            -- ✅ FIXED: NOW HAS RAINBOW FILL + OUTLINE
             local Outline = Char:FindFirstChild("BLUE_Outline") or Instance.new("Highlight",Char)
             Outline.Name = "BLUE_Outline"
-            Outline.FillTransparency = 1
-            Outline.OutlineTransparency = 0
-            Outline.OutlineColor = Rainbow
+            Outline.FillTransparency = 0 -- ✅ SOLID RAINBOW INSIDE
+            Outline.OutlineTransparency = 0 -- ✅ RAINBOW OUTLINE
+            Outline.FillColor = Rainbow -- ✅ MATCHING RAINBOW FILL
+            Outline.OutlineColor = Rainbow -- ✅ MATCHING RAINBOW OUTLINE
             Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 
             local IsFriend = false
@@ -917,5 +917,5 @@ function LoadMainHub()
         end
     end)
 
-    print("✅ BLUE MODE HUB | ESP TEXT RAINBOW APPLIED | NO EXTRA CHANGES")
+    print("✅ BLUE MODE HUB | ESP RAINBOW FILL + OUTLINE FIXED")
 end
