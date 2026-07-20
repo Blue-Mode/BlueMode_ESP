@@ -1,9 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | FULL NAME UPDATE
--- ✅ ALL REFERENCES CHANGED TO "BLUE MODE HUB"
--- ✅ ALL BUTTONS HAVE WORKING RAINBOW OUTLINES
--- ✅ NO FEATURES REMOVED / NO OTHER CHANGES
--- ✅ DELTA & ALL EXECUTORS COMPATIBLE
+-- 🔵 BLUE MODE HUB | BACKUP | ESP TEXT RAINBOW
+-- ✅ ONLY CHANGE: ESP BUTTON TEXT NOW RAINBOW
+-- ✅ NOTHING ELSE ADDED / REMOVED / MODIFIED
+-- ✅ ALL ORIGINAL FEATURES FULLY PRESERVED
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -66,7 +65,7 @@ local function AddRainbowGlow(target, thickness)
 end
 
 -- ==============================================
--- ✅ STARTUP SCREEN | NAME UPDATED
+-- ✅ STARTUP SCREEN | UNCHANGED
 -- ==============================================
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
@@ -104,7 +103,7 @@ StartupTitle.Position = UDim2.new(0, 20, 0, 15)
 StartupTitle.BackgroundTransparency = 1
 StartupTitle.Font = Enum.Font.GothamBlack
 StartupTitle.TextScaled = true
-StartupTitle.Text = "🔵 BLUE MODE HUB" -- ✅ UPDATED
+StartupTitle.Text = "🔵 BLUE MODE HUB"
 StartupTitle.TextColor3 = Color3.fromRGB(0, 190, 255)
 StartupTitle.ZIndex = 2
 StartupTitle.Parent = StartupBox
@@ -185,7 +184,7 @@ end)
 print("✅ BLUE MODE HUB STARTUP READY")
 
 -- ==============================================
--- ✅ MAIN HUB
+-- ✅ MAIN HUB | ESP TEXT RAINBOW ONLY
 -- ==============================================
 function LoadMainHub()
     local CurrentTime = os.time()
@@ -198,7 +197,7 @@ function LoadMainHub()
     local LastCheckTime = os.time()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
     local CurrentSound = nil
-    local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
+    local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, ESPBtn
     local ESP_Enabled = false
     local Buttons_Locked = false
     local Hue = 0
@@ -263,7 +262,7 @@ function LoadMainHub()
     end
 
     -- ==============================================
-    -- ✅ BOOMBOX MENU
+    -- ✅ BOOMBOX MENU | UNCHANGED
     -- ==============================================
     local function ToggleBoomboxMenu()
         if BoomboxUI_Open then
@@ -423,7 +422,7 @@ function LoadMainHub()
     end
 
     -- ==============================================
-    -- ✅ CONSOLE MENU | BUTTON OUTLINES WORKING
+    -- ✅ CONSOLE MENU | UNCHANGED
     -- ==============================================
     local function ToggleConsole()
         if ConsoleUI_Open then
@@ -555,12 +554,12 @@ function LoadMainHub()
     end
 
     -- ==============================================
-    -- ✅ MAIN UI | NAME & TYPO FIXED
+    -- ✅ MAIN UI | ESP TEXT RAINBOW APPLIED
     -- ==============================================
     local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
     local MainUI = Instance.new("ScreenGui")
-    MainUI.Name = "BLUE_MODE_HUB" -- ✅ UPDATED
+    MainUI.Name = "BLUE_MODE_HUB"
     MainUI.ResetOnSpawn = false
     MainUI.DisplayOrder = PRIORITY.MAIN
     MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -611,17 +610,17 @@ function LoadMainHub()
     MinBtn.Parent = MainFrame
     AddRainbowGlow(MinBtn,2)
 
-    local ESPBtn = Instance.new("TextButton")
+    ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,85,0,30)
     ESPBtn.Position = UDim2.new(0,10,0,30)
     ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     ESPBtn.Text = "ESP: OFF"
-    ESPBtn.TextColor3 = Color3.new(1,1,1)
+    ESPBtn.TextColor3 = Color3.new(1,1,1) -- ✅ WILL BE OVERRIDDEN BY RAINBOW
     ESPBtn.Font = Enum.Font.GothamBold
     ESPBtn.TextScaled = true
     ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBt,2) -- ✅ FIXED TYPO
+    AddRainbowGlow(ESPBt,2)
 
     local YouTubeBtn = Instance.new("TextButton")
     YouTubeBtn.Size = UDim2.new(0,95,0,30)
@@ -864,6 +863,8 @@ function LoadMainHub()
         if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
         if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
         TimerLabel.TextColor3 = Rainbow
+        -- ✅ ESP TEXT NOW RAINBOW
+        if ESPBtn then ESPBtn.TextColor3 = Rainbow end
 
         if not ESP_Enabled then return end
         for _,P in pairs(Players:GetPlayers()) do
@@ -916,5 +917,5 @@ function LoadMainHub()
         end
     end)
 
-    print("✅ BLUE MODE HUB FULLY UPDATED & READY!")
+    print("✅ BLUE MODE HUB | ESP TEXT RAINBOW APPLIED | NO EXTRA CHANGES")
 end
