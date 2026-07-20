@@ -1,6 +1,6 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 1/2 | EXIT CONFIRM ONLY
--- ✅ NO NEW FEATURES | NO MECHANICS CHANGED
+-- 🔵 BLUE MODE HUB | FIXED GUI LOAD | NO NEW FEATURES
+-- ✅ ONLY FIXED: Missing GUI after OK click + typos
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -43,6 +43,7 @@ local CurrentConsoleUI = nil
 local IsMinimized = false
 local GuiFocused = false
 local GuiElements = {}
+local MainUI = nil -- Fixed: Declared early
 
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
@@ -178,7 +179,7 @@ end)
 
 print("✅ BLUE MODE HUB STARTUP READY")
 
--- EXIT CONFIRM POPUP (ONLY ADDED THING)
+-- EXIT CONFIRM POPUP
 function ShowExitConfirm()
     local ConfirmUI = Instance.new("ScreenGui")
     ConfirmUI.Name = "EXIT_CONFIRM_POPUP"
@@ -244,7 +245,7 @@ function ShowExitConfirm()
         pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
         if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
         if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
-        MainUI:Destroy()
+        if MainUI then MainUI:Destroy() end
         getgenv().BlueMode_Loaded = nil
     end)
 end
@@ -261,7 +262,7 @@ function LoadMainHub()
     local LastCheckTime = os.time()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
     local CurrentSound = nil
-    local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, ESPBtn, MainUI
+    local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, ESPBtn
     local FPSLabel, PingLabel, ServerPingLabel
     local ESP_Enabled = false
     local Buttons_Locked = false
@@ -326,8 +327,9 @@ function LoadMainHub()
         CurrentSound.Parent = SoundService
         pcall(function() CurrentSound:Play() end)
     end
+-- PASTE PART 2 RIGHT HERE --
+    end)
 
--- PASTE PART 2 RIGHT AFTER THIS LINE --
     -- FPS COUNTER LOOP
     task.spawn(function()
         local LastFPS = os.clock()
@@ -385,5 +387,5 @@ function LoadMainHub()
         end
     end)
 
-    print("✅ BLUE MODE HUB FULLY LOADED")
+    print("✅ BLUE MODE HUB FULLY LOADED & VISIBLE")
 end
