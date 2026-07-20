@@ -1,6 +1,6 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | ESP FILL FIXED
--- ✅ ESP NOW HAS RAINBOW FILL + OUTLINE LIKE OTHERS
+-- 🔵 BLUE MODE HUB | ESP TEXT COLOR MATCHED
+-- ✅ ESP BUTTON NOW WHITE TEXT + RAINBOW OUTLINE
 -- ✅ NO FEATURES ADDED / REMOVED / CHANGED
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
@@ -183,7 +183,7 @@ end)
 print("✅ BLUE MODE HUB STARTUP READY")
 
 -- ==============================================
--- ✅ MAIN HUB | ESP FILL FIXED
+-- ✅ MAIN HUB | ESP TEXT COLOR FIXED
 -- ==============================================
 function LoadMainHub()
     local CurrentTime = os.time()
@@ -553,7 +553,7 @@ function LoadMainHub()
     end
 
     -- ==============================================
-    -- ✅ MAIN UI | UNCHANGED
+    -- ✅ MAIN UI | ESP TEXT WHITE + RAINBOW OUTLINE
     -- ==============================================
     local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
@@ -609,17 +609,18 @@ function LoadMainHub()
     MinBtn.Parent = MainFrame
     AddRainbowGlow(MinBtn,2)
 
+    -- ✅ FIXED: ESP BUTTON TEXT NOW WHITE + RAINBOW OUTLINE
     ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,85,0,30)
     ESPBtn.Position = UDim2.new(0,10,0,30)
     ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     ESPBtn.Text = "ESP: OFF"
-    ESPBtn.TextColor3 = Color3.new(1,1,1)
+    ESPBtn.TextColor3 = Color3.new(1,1,1) -- ✅ PURE WHITE TEXT LIKE OTHERS
     ESPBtn.Font = Enum.Font.GothamBold
     ESPBtn.TextScaled = true
     ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBt,2)
+    AddRainbowGlow(ESPBt,2) -- ✅ RAINBOW OUTLINE ACTIVE
 
     local YouTubeBtn = Instance.new("TextButton")
     YouTubeBtn.Size = UDim2.new(0,95,0,30)
@@ -811,6 +812,7 @@ function LoadMainHub()
     ESPBtn.MouseButton1Click:Connect(function()
         ESP_Enabled = not ESP_Enabled
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
+        ESPBtn.TextColor3 = Color3.new(1,1,1) -- ✅ STAYS WHITE WHEN TOGGLED
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
         if not ESP_Enabled then ClearAllESP() end
     end)
@@ -862,7 +864,8 @@ function LoadMainHub()
         if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
         if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
         TimerLabel.TextColor3 = Rainbow
-        if ESPBtn then ESPBtn.TextColor3 = Rainbow end
+        -- ✅ NO LONGER CHANGES ESP TEXT COLOR — REMAINS WHITE ALWAYS
+        -- ✅ RAINBOW OUTLINE REMAINS ACTIVE FROM AddRainbowGlow()
 
         if not ESP_Enabled then return end
         for _,P in pairs(Players:GetPlayers()) do
@@ -884,13 +887,13 @@ function LoadMainHub()
                 continue
             end
 
-            -- ✅ FIXED: NOW HAS RAINBOW FILL + OUTLINE
+            -- ✅ ESP RAINBOW FILL + OUTLINE UNCHANGED
             local Outline = Char:FindFirstChild("BLUE_Outline") or Instance.new("Highlight",Char)
             Outline.Name = "BLUE_Outline"
-            Outline.FillTransparency = 0 -- ✅ SOLID RAINBOW INSIDE
-            Outline.OutlineTransparency = 0 -- ✅ RAINBOW OUTLINE
-            Outline.FillColor = Rainbow -- ✅ MATCHING RAINBOW FILL
-            Outline.OutlineColor = Rainbow -- ✅ MATCHING RAINBOW OUTLINE
+            Outline.FillTransparency = 0
+            Outline.OutlineTransparency = 0
+            Outline.FillColor = Rainbow
+            Outline.OutlineColor = Rainbow
             Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 
             local IsFriend = false
@@ -917,5 +920,5 @@ function LoadMainHub()
         end
     end)
 
-    print("✅ BLUE MODE HUB | ESP RAINBOW FILL + OUTLINE FIXED")
+    print("✅ BLUE MODE HUB | ESP TEXT COLOR MATCHED TO ALL BUTTONS")
 end
