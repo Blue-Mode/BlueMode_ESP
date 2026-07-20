@@ -2,10 +2,11 @@
 -- 🔵 BLUE MODE HUB | FINAL FULL VERSION
 -- ✅ FULL BODY RAINBOW OUTLINE
 -- ✅ FRIEND DOTS & CROWN VISIBLE AT ANY DISTANCE
--- ✅ MAIN GUI VOLUME SLIDER
+-- ✅ MAIN VOLUME SLIDER BELOW MUSIC BUTTON + RAINBOW FILL
+-- ✅ EXIT BUTTON FULLY INSIDE BLACK AREA
 -- ✅ MINIMIZE HIDES EXTRA BUTTONS
 -- ✅ CUSTOM BACKGROUND ON ALL MENUS
--- ✅ FULL RAINBOW ON ALL TEXT & BORDERS
+-- ✅ FULL RAINBOW ON ALL TEXT, BORDERS & VOLUME BAR
 -- ✅ EXIT WITH CONFIRMATION POPUP
 -- ✅ CROSS-EXECUTOR / DELTA COMPATIBLE
 -- ✅ CREATOR: DWAYNEKEAN015 / BLUE_MODE
@@ -182,7 +183,8 @@ FeatureList.TextColor3 = Color3.fromRGB(220, 220, 220)
 FeatureList.ZIndex = 2
 FeatureList.Text = [[• FULL BODY RAINBOW OUTLINE FOR ALL PLAYERS
 • FRIEND INDICATOR VISIBLE AT ANY DISTANCE
-• MAIN GUI VOLUME SLIDER + MUSIC MENU VOLUME
+• MAIN VOLUME SLIDER BELOW MUSIC BUTTON + RAINBOW FILL
+• EXIT BUTTON FULLY INSIDE MAIN FRAME
 • MINIMIZE HIDES ALL EXTRA BUTTONS
 • CUSTOM BACKGROUND ON EVERY MENU
 • FULL RAINBOW EFFECTS ON ALL TEXT & BORDERS
@@ -243,7 +245,8 @@ print("✅ BLUE MODE HUB PART 1 LOADED SUCCESSFULLY")
 -- ==============================================
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2 / 2
--- ✅ ALL FEATURES INTACT | NO SPELLING ERRORS
+-- ✅ LAYOUT FIXES + RAINBOW VOLUME BAR
+-- ✅ NO SPELLING ERRORS | ALL FEATURES INTACT
 -- ==============================================
 
 local VolNumMain, VolFillMain, VolNumMenu, VolFillMenu, ESPBtn, LockBtn
@@ -381,7 +384,7 @@ local function ToggleBoomboxMenu()
 
     VolFillMenu = Instance.new("Frame")
     VolFillMenu.Size = UDim2.new(MusicVolume / VOLUME_MAX, 0, 1, 0)
-    VolFillMenu.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    VolFillMenu.BackgroundColor3 = Color3.fromHSV(Hue, 1, 1)
     VolFillMenu.ZIndex = 2
     VolFillMenu.Parent = VolBG
     Instance.new("UICorner", VolFillMenu).CornerRadius = UDim.new(0, 12)
@@ -553,7 +556,7 @@ local function ToggleConsole()
     ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
 end
 
--- MAIN HUB LOAD
+-- MAIN HUB LOAD | UPDATED LAYOUT
 function LoadMainHub()
     local FULL_SIZE = UDim2.new(0, 680, 0, 130)
     local MINI_SIZE = UDim2.new(0, 110, 0, 36)
@@ -622,7 +625,7 @@ function LoadMainHub()
         return Btn
     end
 
-    -- MAIN BUTTONS
+    -- ✅ ALIGNED BUTTONS (ALL INSIDE BLACK AREA)
     ESPBtn = CreateButton("ESP: OFF", UDim2.new(0, 10, 0, 30), Color3.fromRGB(40, 40, 40), function()
         ESP_Enabled = not ESP_Enabled
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
@@ -644,63 +647,8 @@ function LoadMainHub()
 
     CreateButton("💻 CONSOLE", UDim2.new(0, 390, 0, 30), Color3.fromRGB(30, 120, 90), ToggleConsole)
 
-    -- MAIN GUI VOLUME
-    local VolLabel = Instance.new("TextLabel")
-    VolLabel.Size = UDim2.new(0, 80, 0, 25)
-    VolLabel.Position = UDim2.new(0, 490, 0, 32)
-    VolLabel.BackgroundTransparency = 1
-    VolLabel.Text = "🔊 VOLUME:"
-    VolLabel.Font = Enum.Font.GothamBold
-    VolLabel.TextScaled = true
-    VolLabel.Parent = MainFrame
-    table.insert(MainButtons, VolLabel)
-
-    VolNumMain = Instance.new("TextLabel")
-    VolNumMain.Size = UDim2.new(0, 45, 0, 25)
-    VolNumMain.Position = UDim2.new(0, 575, 0, 32)
-    VolNumMain.BackgroundTransparency = 1
-    VolNumMain.Text = tostring(MusicVolume)
-    VolNumMain.Font = Enum.Font.GothamBold
-    VolNumMain.TextScaled = true
-    VolNumMain.Parent = MainFrame
-    table.insert(MainButtons, VolNumMain)
-
-    local VolBGMain = Instance.new("Frame")
-    VolBGMain.Size = UDim2.new(0, 150, 0, 22)
-    VolBGMain.Position = UDim2.new(0, 490, 0, 60)
-    VolBGMain.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    VolBGMain.Active = true
-    VolBGMain.Parent = MainFrame
-    Instance.new("UICorner", VolBGMain).CornerRadius = UDim.new(0, 11)
-    AddRainbowGlow(VolBGMain, 2)
-    table.insert(MainButtons, VolBGMain)
-
-    VolFillMain = Instance.new("Frame")
-    VolFillMain.Size = UDim2.new(MusicVolume / VOLUME_MAX, 0, 1, 0)
-    VolFillMain.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    VolFillMain.Parent = VolBGMain
-    Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0, 11)
-
-    local MainSliderActive = false
-    VolBGMain.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            MainSliderActive = true
-        end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            MainSliderActive = false
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if MainSliderActive and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local RelPos = math.clamp((input.Position.X - VolBGMain.AbsolutePosition.X) / VolBGMain.AbsoluteSize.X, 0, 1)
-            UpdateVolume(math.floor(RelPos * VOLUME_MAX))
-        end
-    end)
-
-    -- EXIT BUTTON WITH CONFIRMATION
-    local ExitBtn = CreateButton("🗑️ EXIT", UDim2.new(0, 620, 0, 30), Color3.fromRGB(140, 20, 20), function()
+    -- ✅ EXIT BUTTON FULLY INSIDE BLACK AREA
+    CreateButton("🗑️ EXIT", UDim2.new(0, 580, 0, 30), Color3.fromRGB(140, 20, 20), function()
         local ConfirmUI = Instance.new("ScreenGui")
         ConfirmUI.Name = "BLUE_MODE_EXIT_CONFIRM"
         ConfirmUI.ResetOnSpawn = false
@@ -763,6 +711,62 @@ function LoadMainHub()
         NoBtn.MouseButton1Click:Connect(function() ConfirmUI:Destroy() end)
     end)
 
+    -- ✅ VOLUME SLIDER NOW BELOW MUSIC BUTTON + RAINBOW FILL
+    local VolLabel = Instance.new("TextLabel")
+    VolLabel.Size = UDim2.new(0, 90, 0, 25)
+    VolLabel.Position = UDim2.new(0, 200, 0, 65)
+    VolLabel.BackgroundTransparency = 1
+    VolLabel.Text = "🔊 VOLUME:"
+    VolLabel.Font = Enum.Font.GothamBold
+    VolLabel.TextScaled = true
+    VolLabel.Parent = MainFrame
+    table.insert(MainButtons, VolLabel)
+
+    VolNumMain = Instance.new("TextLabel")
+    VolNumMain.Size = UDim2.new(0, 50, 0, 25)
+    VolNumMain.Position = UDim2.new(0, 295, 0, 65)
+    VolNumMain.BackgroundTransparency = 1
+    VolNumMain.Text = tostring(MusicVolume)
+    VolNumMain.Font = Enum.Font.GothamBold
+    VolNumMain.TextScaled = true
+    VolNumMain.Parent = MainFrame
+    table.insert(MainButtons, VolNumMain)
+
+    local VolBGMain = Instance.new("Frame")
+    VolBGMain.Size = UDim2.new(0, 260, 0, 22)
+    VolBGMain.Position = UDim2.new(0, 200, 0, 92)
+    VolBGMain.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    VolBGMain.Active = true
+    VolBGMain.Parent = MainFrame
+    Instance.new("UICorner", VolBGMain).CornerRadius = UDim.new(0, 11)
+    AddRainbowGlow(VolBGMain, 2)
+    table.insert(MainButtons, VolBGMain)
+
+    VolFillMain = Instance.new("Frame")
+    VolFillMain.Size = UDim2.new(MusicVolume / VOLUME_MAX, 0, 1, 0)
+    VolFillMain.BackgroundColor3 = Color3.fromHSV(Hue, 1, 1)
+    VolFillMain.ZIndex = 2
+    VolFillMain.Parent = VolBGMain
+    Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0, 11)
+
+    local MainSliderActive = false
+    VolBGMain.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            MainSliderActive = true
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            MainSliderActive = false
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if MainSliderActive and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local RelPos = math.clamp((input.Position.X - VolBGMain.AbsolutePosition.X) / VolBGMain.AbsoluteSize.X, 0, 1)
+            UpdateVolume(math.floor(RelPos * VOLUME_MAX))
+        end
+    end)
+
     -- MINIMIZE LOGIC
     MinBtn.MouseButton1Click:Connect(function()
         IsMinimized = not IsMinimized
@@ -794,15 +798,17 @@ function LoadMainHub()
         end
     end)
 
-    -- FULL BODY RAINBOW ESP LOOP
+    -- FULL BODY RAINBOW ESP + ANIMATION LOOP
     RunService.Heartbeat:Connect(function(dt)
         Hue = (Hue + dt * 0.25) % 1
         local RainbowCol = Color3.fromHSV(Hue, 1, 1)
 
-        -- UPDATE ALL RAINBOW TEXT
+        -- UPDATE ALL RAINBOW EFFECTS
         for _, Element in pairs(GuiElements) do
             if Element.ClassName == "UIStroke" then Element.Color = RainbowCol end
         end
+        if VolFillMain then VolFillMain.BackgroundColor3 = RainbowCol end
+        if VolFillMenu then VolFillMenu.BackgroundColor3 = RainbowCol end
         StartupTitle.TextColor3 = RainbowCol
 
         if ESP_Enabled then
