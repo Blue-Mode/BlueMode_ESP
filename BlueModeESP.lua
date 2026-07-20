@@ -1,8 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | MAIN GUI = DARK BLUE
+-- 🔵 BLUE MODE HUB | MADE BY DWAYNEKEAN / BLUE_MODE
 -- ✅ NO BLACK BACKGROUND ANYMORE
--- ✅ ALL FEATURES 100% PRESERVED
--- ✅ FPS/PING BESIDE VOLUME | FULLY INSIDE FRAME
+-- ✅ FPS/PING FEATURE!!
+-- ✅ FPS/PING BESIDE VOLUME | FULLY INSIDE FRAME!!
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
