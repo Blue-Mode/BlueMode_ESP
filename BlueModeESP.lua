@@ -1,6 +1,6 @@
 -- ==============================================
 -- 🔵 BLUE MODE HUB | FULL SCRIPT PART 1/2
--- ✅ NO FEATURES REMOVED | NO CUT SECTIONS
+-- ✅ UPDATED: SP LABEL + ESP RAINBOW OUTLINE
 -- ✅ CROSS-EXECUTOR COMPATIBLE | DRAGGABLE GUI
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
@@ -31,9 +31,9 @@ local PRIORITY = {
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v21"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v21"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v21"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v22"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v22"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v22"
 local VOLUME_MAX = 1000
 
 local BoomboxUI_Open = false
@@ -126,7 +126,7 @@ UpdateList.Text = [[• VOLUME: 0 → 1000
 • NO LONGER BLOCKS ROBLOX MENUS
 • REMAINS ABOVE ALL GAME ELEMENTS
 • All buttons now have matching rainbow outlines
-• ✅ ADDED: FPS / PING / SERVER PING
+• ✅ ADDED: FPS / PING / SP (SERVER PING)
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -253,8 +253,8 @@ function LoadMainHub()
         CurrentSound.Parent = SoundService
         pcall(function() CurrentSound:Play() end)
     end
--- END OF PART 1 | COPY PART 2 BELOW THIS LINE
--- CONTINUATION OF BLUE MODE HUB SCRIPT | FULL VERSION
+-- END OF PART 1 | PASTE PART 2 RIGHT AFTER THIS LINE
+-- CONTINUATION OF BLUE MODE HUB | FINAL FULL VERSION
     -- BOOMBOX MENU
     local function ToggleBoomboxMenu()
         if BoomboxUI_Open then
@@ -598,7 +598,7 @@ function LoadMainHub()
     MinBtn.Parent = MainFrame
     AddRainbowGlow(MinBtn,2)
 
-    -- ESP BUTTON | FIXED TYPO
+    -- ESP BUTTON WITH RAINBOW OUTLINE
     ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,85,0,30)
     ESPBtn.Position = UDim2.new(0,10,0,30)
@@ -609,7 +609,7 @@ function LoadMainHub()
     ESPBtn.TextScaled = true
     ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBt,2)
+    AddRainbowGlow(ESPBt, 2)
 
     local YouTubeBtn = Instance.new("TextButton")
     YouTubeBtn.Size = UDim2.new(0,95,0,30)
@@ -707,7 +707,7 @@ function LoadMainHub()
     VolFillMain.Parent = VolBGMain
     Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0,9)
 
-    -- ✅ FPS / PING / SERVER PING — SAME WIDTH AS VOLUME, RIGHT NEXT TO IT
+    -- FPS / PING / SP STATS
     local StatsBG = Instance.new("Frame")
     StatsBG.Size = UDim2.new(0,150,0,18)
     StatsBG.Position = UDim2.new(0,335,0,67)
@@ -742,7 +742,7 @@ function LoadMainHub()
     ServerPingLabel.BackgroundTransparency = 1
     ServerPingLabel.Font = Enum.Font.GothamBold
     ServerPingLabel.TextScaled = true
-    ServerPingLabel.Text = "S: 0"
+    ServerPingLabel.Text = "SP: 0"
     ServerPingLabel.TextColor3 = Color3.fromRGB(255,100,100)
     ServerPingLabel.Parent = StatsBG
 
@@ -906,7 +906,7 @@ function LoadMainHub()
         if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
         TimerLabel.TextColor3 = Rainbow
 
-        -- UPDATE PING / SERVER PING
+        -- UPDATE PING / SP
         local Ping = 0
         local ServerPing = 0
         pcall(function()
@@ -914,7 +914,7 @@ function LoadMainHub()
             ServerPing = math.floor(NetworkClient:GetServerPing())
         end)
         if PingLabel then PingLabel.Text = "PING: "..Ping.."ms" end
-        if ServerPingLabel then ServerPingLabel.Text = "S: "..ServerPing.."ms" end
+        if ServerPingLabel then ServerPingLabel.Text = "SP: "..ServerPing.."ms" end
 
         if not ESP_Enabled then return end
         for _,P in pairs(Players:GetPlayers()) do
@@ -960,7 +960,7 @@ function LoadMainHub()
                     Circ.BackgroundColor3 = Rainbow
                     Instance.new("UICorner",Circ).CornerRadius = UDim.new(1,0)
                 else
-                    Circ = Dot.Frame
+                    local Circ = Dot.Frame
                     Circ.BackgroundColor3 = Rainbow
                 end
             elseif Dot then
@@ -971,5 +971,3 @@ function LoadMainHub()
 
     print("✅ BLUE MODE HUB FULLY LOADED | ALL FEATURES ACTIVE")
 end
-
-    
