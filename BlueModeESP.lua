@@ -1,6 +1,6 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | FULL SCRIPT PART 1/2
--- ✅ UPDATED: SP LABEL + ESP RAINBOW OUTLINE
+-- 🔵 BLUE MODE HUB | FULL FINAL VERSION
+-- ✅ UPDATES: SP LABEL, ESP RAINBOW OUTLINE, NEW PLAYER FIX
 -- ✅ CROSS-EXECUTOR COMPATIBLE | DRAGGABLE GUI
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
@@ -127,6 +127,7 @@ UpdateList.Text = [[• VOLUME: 0 → 1000
 • REMAINS ABOVE ALL GAME ELEMENTS
 • All buttons now have matching rainbow outlines
 • ✅ ADDED: FPS / PING / SP (SERVER PING)
+• ✅ FIXED: New players auto-get ESP
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -869,7 +870,24 @@ function LoadMainHub()
 
     SetupDeathCheck()
 
-    -- FPS UPDATE LOOP
+    -- NEW PLAYER AUTO-ESP + CLEANUP FIX
+    Players.PlayerAdded:Connect(function(NewPlayer)
+        print("👤 New player joined: "..NewPlayer.Name)
+        NewPlayer.CharacterAdded:Connect(function()
+            task.wait(1)
+            print("✅ ESP ready for: "..NewPlayer.Name)
+        end)
+    end)
+    Players.PlayerRemoving:Connect(function(OldPlayer)
+        if OldPlayer.Character then
+            pcall(function()
+                if OldPlayer.Character:FindFirstChild("BLUE_Outline") then OldPlayer.Character.BLUE_Outline:Destroy() end
+                if OldPlayer.Character:FindFirstChild("FriendRainbowDot") then OldPlayer.Character.FriendRainbowDot:Destroy() end
+            end)
+        end
+    end)
+
+    -- FPS COUNTER LOOP
     task.spawn(function()
         while task.wait(1) do
             if FPSLabel then FPSLabel.Text = "FPS: "..tostring(FPSCounter) end
@@ -877,11 +895,13 @@ function LoadMainHub()
         end
     end)
 
+    -- MAIN UPDATE LOOP
     RunService.Heartbeat:Connect(function(Delta)
         if not MainUI or not MainUI.Parent then return end
 
         FPSCounter += 1
 
+        -- TIME TRACKING
         local Now = os.time()
         UsedTime = UsedTime + math.max(0, Now - LastCheckTime)
         LastCheckTime = Now
@@ -899,6 +919,7 @@ function LoadMainHub()
             return
         end
 
+        -- RAINBOW ANIMATION
         Hue = (Hue + Delta*0.5) % 1
         local Rainbow = Color3.fromHSV(Hue,1,1)
         for _,e in pairs(GuiElements) do e.Color = Rainbow end
@@ -906,7 +927,7 @@ function LoadMainHub()
         if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
         TimerLabel.TextColor3 = Rainbow
 
-        -- UPDATE PING / SP
+        -- UPDATE PING / SERVER PING
         local Ping = 0
         local ServerPing = 0
         pcall(function()
@@ -916,17 +937,17 @@ function LoadMainHub()
         if PingLabel then PingLabel.Text = "PING: "..Ping.."ms" end
         if ServerPingLabel then ServerPingLabel.Text = "SP: "..ServerPing.."ms" end
 
+        -- ESP SYSTEM
         if not ESP_Enabled then return end
         for _,P in pairs(Players:GetPlayers()) do
-            if P == LocalPlayer then continue end
+            if P == LocalPlayer or not P then continue end
+
             local Char = P.Character
             if not Char then
-                pcall(function()
-                    if Char and Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                    if Char and Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-                end)
+                pcall(function() P:LoadCharacter() end)
                 continue
             end
+
             local Hum = Char:FindFirstChildOfClass("Humanoid")
             if not Hum or Hum.Health <= 0 then
                 pcall(function()
@@ -936,6 +957,7 @@ function LoadMainHub()
                 continue
             end
 
+            -- ADD OUTLINE
             local Outline = Char:FindFirstChild("BLUE_Outline") or Instance.new("Highlight",Char)
             Outline.Name = "BLUE_Outline"
             Outline.FillTransparency = 0
@@ -944,6 +966,7 @@ function LoadMainHub()
             Outline.OutlineColor = Rainbow
             Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 
+            -- FRIEND RAINBOW DOT
             local IsFriend = false
             pcall(function() IsFriend = LocalPlayer:IsFriendsWith(P.UserId) end)
             local Head = Char:FindFirstChild("Head")
@@ -960,8 +983,7 @@ function LoadMainHub()
                     Circ.BackgroundColor3 = Rainbow
                     Instance.new("UICorner",Circ).CornerRadius = UDim.new(1,0)
                 else
-                    local Circ = Dot.Frame
-                    Circ.BackgroundColor3 = Rainbow
+                    Dot.Frame.BackgroundColor3 = Rainbow
                 end
             elseif Dot then
                 Dot:Destroy()
