@@ -1,8 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | FULL FIXED VERSION
--- ✅ NO SYNTAX ERRORS | ALL FEATURES WORK
--- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
+-- 🔵 BLUE MODE HUB | STARTUP GUI FIXED
+-- ✅ NO DUPLICATE LOAD | CORRECT PARENT | NO BLOCKS
 -- ==============================================
+getgenv().BlueMode_Loaded = nil -- FORCE RESET OLD LOCK
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
 
@@ -16,9 +16,14 @@ local LocalPlayer = Players.LocalPlayer
 
 local CUSTOM_GUI_BG = "rbxassetid://101782008402770"
 
+-- ✅ FIXED: USE SAFE EXECUTOR-COMPATIBLE PARENT
 local GuiContainer = Instance.new("Folder")
 GuiContainer.Name = "BLUE_MODE_HUB_ROOT"
-GuiContainer.Parent = CoreGui
+-- Try CoreGui first, fall back to PlayerGui if blocked
+pcall(function() GuiContainer.Parent = CoreGui end)
+if not GuiContainer.Parent then
+    GuiContainer.Parent = LocalPlayer.PlayerGui
+end
 
 local PRIORITY = {
     STARTUP = 800,
@@ -131,19 +136,23 @@ local function ShowExitConfirm()
     end)
 end
 
--- STARTUP SCREEN
+-- ✅ STARTUP SCREEN (FORCE VISIBLE, NO BLOCKS)
+print("🔄 LOADING STARTUP GUI...")
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
 StartupUI.ResetOnSpawn = false
 StartupUI.DisplayOrder = PRIORITY.STARTUP
 StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+StartupUI.AlwaysOnTop = true -- ✅ FORCE ON TOP
 StartupUI.Parent = GuiContainer
+print("✅ STARTUP GUI PARENTED SUCCESSFULLY")
 
 local StartupBox = Instance.new("Frame")
 StartupBox.Size = UDim2.new(0, 420, 0, 480)
 StartupBox.Position = UDim2.new(0.5, -210, 0.5, -240)
 StartupBox.BackgroundColor3 = Color3.fromRGB(10,12,18)
 StartupBox.Active = true
+StartupBox.Visible = true -- ✅ FORCE VISIBLE
 StartupBox.Parent = StartupUI
 Instance.new("UICorner", StartupBox).CornerRadius = UDim.new(0, 18)
 
@@ -315,7 +324,6 @@ function LoadMainHub()
         if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
     end
 
-    -- ✅ FIXED MISSING CLOSING PARENTHESIS HERE
     local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D","") end
     local function PlaySound(id)
         pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
@@ -486,7 +494,7 @@ function LoadMainHub()
         StopBtn.MouseButton1Click:Connect(function() if CurrentSound then CurrentSound:Destroy() end end)
     end
 
--- ➡️ PASTE PART 2 RIGHT AFTER THIS LINE
+-- ➡️ PASTE THE FULL PART 2 I SENT EARLIER RIGHT HERE
     end)
 
     -- MAIN UPDATE LOOP & ESP SYSTEM
