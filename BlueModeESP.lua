@@ -1,7 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | FULL VERSION
--- ✅ ESP TEXT NOW HAS RAINBOW OUTLINE
--- ✅ NO FEATURES REMOVED / FULLY COMPATIBLE
+-- 🔵 BLUE MODE HUB | UPDATED
+-- ✅ FPS+PING INSIDE MAIN UI
+-- ✅ ESP TEXT RAINBOW OUTLINE
+-- ✅ ESP BTN: RED=OFF / GREEN=ON
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -15,10 +16,8 @@ local CoreGui = game:GetService("CoreGui")
 local Stats = game:GetService("Stats")
 local LocalPlayer = Players.LocalPlayer
 
--- ✅ CUSTOM IMAGE ASSET
 local CUSTOM_GUI_BG = "rbxassetid://101782008402770"
 
--- ✅ DISPLAY ORDER
 local GuiContainer = Instance.new("Folder")
 GuiContainer.Name = "BLUE_MODE_HUB_ROOT"
 GuiContainer.Parent = CoreGui
@@ -28,20 +27,17 @@ local PRIORITY = {
     MAIN = 799,
     BOOMBOX = 798,
     CONSOLE = 797,
-    STATS = 801,
     ESP_TEXT = 900
 }
 
--- SETTINGS
 local USAGE_LIMIT = 12 * 3600
 local COOLDOWN = 12 * 3600
 local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_USED = "BlueMode_UsedTime_v21"
-local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v21"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v21"
+local SAVE_KEY_USED = "BlueMode_UsedTime_v23"
+local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v23"
+local SAVE_KEY_VOLUME = "BlueMode_Volume_v23"
 local VOLUME_MAX = 1000
 
--- TOGGLE STATES
 local BoomboxUI_Open = false
 local ConsoleUI_Open = false
 local CurrentBoomboxUI = nil
@@ -50,11 +46,9 @@ local IsMinimized = false
 local GuiFocused = false
 local GuiElements = {}
 
--- DATA HELPERS
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
 
--- ✅ RAINBOW OUTLINE HELPER
 local function AddRainbowGlow(target, thickness)
     if not target then return end
     local Outline = Instance.new("UIStroke")
@@ -66,37 +60,7 @@ local function AddRainbowGlow(target, thickness)
     table.insert(GuiElements, Outline)
 end
 
--- ==============================================
--- ✅ FPS + PING DISPLAY
--- ==============================================
-local StatsUI = Instance.new("ScreenGui")
-StatsUI.Name = "BLUE_MODE_STATS"
-StatsUI.ResetOnSpawn = false
-StatsUI.DisplayOrder = PRIORITY.STATS
-StatsUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-StatsUI.Parent = GuiContainer
-
-local StatsFrame = Instance.new("Frame")
-StatsFrame.Size = UDim2.new(0, 280, 0, 32)
-StatsFrame.Position = UDim2.new(0, 20, 0, 2)
-StatsFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-StatsFrame.Active = false
-StatsFrame.Parent = StatsUI
-Instance.new("UICorner", StatsFrame).CornerRadius = UDim.new(0,8)
-AddRainbowGlow(StatsFrame,2)
-
-local StatsLabel = Instance.new("TextLabel")
-StatsLabel.Size = UDim2.new(1,0,1,0)
-StatsLabel.BackgroundTransparency = 1
-StatsLabel.Font = Enum.Font.GothamBold
-StatsLabel.TextScaled = true
-StatsLabel.Text = "⚡ FPS: 0 | 📶 YOUR PING: 0ms | 🌐 SERVER PING: 0ms"
-StatsLabel.TextColor3 = Color3.new(1,1,1)
-StatsLabel.Parent = StatsFrame
-
--- ==============================================
--- ✅ STARTUP SCREEN
--- ==============================================
+-- STARTUP SCREEN
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
 StartupUI.ResetOnSpawn = false
@@ -160,12 +124,10 @@ UpdateList.TextXAlignment = Enum.TextXAlignment.Left
 UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
 UpdateList.ZIndex = 2
-UpdateList.Text = [[• VOLUME: 0 → 1000
-• NO LONGER BLOCKS ROBLOX MENUS
-• REMAINS ABOVE ALL GAME ELEMENTS
-• All buttons now have matching rainbow outlines
-• ✅ ADDED FPS + PING MONITOR
-• ✅ ESP TEXT NOW HAS RAINBOW OUTLINE
+UpdateList.Text = [[• FPS/PING MOVED INSIDE MAIN HUB
+• ESP TEXT NOW HAS FULL RAINBOW OUTLINE
+• ESP BUTTON: RED=OFF / GREEN=ON
+• VOLUME: 0 → 1000
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -212,18 +174,16 @@ OkBtn.MouseButton1Click:Connect(function()
     StartupUI:Destroy()
     LoadMainHub()
 end)
-
-print("✅ BLUE MODE HUB STARTUP READY")
+print("✅ STARTUP READY")
 
 -- ==============================================
--- ✅ MAIN HUB & ESP CODE | FULL UNCHOPPED
--- ✅ ALL FEATURES PRESERVED + RAINBOW TEXT OUTLINE
+-- ✅ MAIN HUB & ESP
 -- ==============================================
 function LoadMainHub()
     local CurrentTime = os.time()
     local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
     if CurrentTime < CooldownEnd then
-        print("⏳ COOLDOWN ACTIVE! Wait "..math.floor((CooldownEnd-CurrentTime)/60).." mins")
+        print("⏳ COOLDOWN: "..math.floor((CooldownEnd-CurrentTime)/60).." mins left")
         return
     end
 
@@ -231,6 +191,7 @@ function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
     local CurrentSound = nil
     local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
+    local FPSPingLabel, ESPBtn
     local ESP_Enabled = false
     local Buttons_Locked = false
     local Hue = 0
@@ -243,14 +204,13 @@ function LoadMainHub()
             if P and P.Character then
                 pcall(function()
                     if P.Character:FindFirstChild("BLUE_Outline") then P.Character.BLUE_Outline:Destroy() end
-                    if P.Character:FindFirstChild("FriendRainbowDot") then P.Character.FriendRainbowDot:Destroy() end
                     if P.Character:FindFirstChild("ESP_NameTag") then P.Character.ESP_NameTag:Destroy() end
                 end)
             end
         end
         pcall(function()
             for _,D in pairs(workspace:GetDescendants()) do
-                if D.Name == "BLUE_Outline" or D.Name == "FriendRainbowDot" or D.Name == "ESP_NameTag" then D:Destroy() end
+                if D.Name == "BLUE_Outline" or D.Name == "ESP_NameTag" then D:Destroy() end
             end
         end)
         table.clear(ESP_Labels)
@@ -264,10 +224,8 @@ function LoadMainHub()
             Hum.Died:Connect(function()
                 if ESP_Enabled then
                     ESP_Enabled = false
-                    if ESPBtn then
-                        ESPBtn.Text = "ESP: OFF"
-                        ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-                    end
+                    ESPBtn.Text = "ESP: OFF"
+                    ESPBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
                     ClearAllESP()
                 end
             end)
@@ -299,9 +257,7 @@ function LoadMainHub()
         pcall(function() CurrentSound:Play() end)
     end
 
-    -- ==============================================
-    -- ✅ BOOMBOX MENU
-    -- ==============================================
+    -- BOOMBOX MENU
     local function ToggleBoomboxMenu()
         if BoomboxUI_Open then
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
@@ -315,7 +271,6 @@ function LoadMainHub()
         BoomUI.Name = "BLUE_MODE_HUB_BOOMBOX"
         BoomUI.ResetOnSpawn = false
         BoomUI.DisplayOrder = PRIORITY.BOOMBOX
-        BoomUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         BoomUI.Parent = GuiContainer
         CurrentBoomboxUI = BoomUI
         BoomboxUI_Open = true
@@ -329,12 +284,9 @@ function LoadMainHub()
         Instance.new("UICorner", BoomFrame).CornerRadius = UDim.new(0,12)
 
         local BoomGuiBg = Instance.new("ImageLabel")
-        BoomGuiBg.Size = UDim2.new(1, 0, 1, 0)
-        BoomGuiBg.Position = UDim2.new(0, 0, 0, 0)
+        BoomGuiBg.Size = UDim2.new(1,0,1,0)
         BoomGuiBg.BackgroundTransparency = 1
         BoomGuiBg.Image = CUSTOM_GUI_BG
-        BoomGuiBg.ScaleType = Enum.ScaleType.Stretch
-        BoomGuiBg.ZIndex = 1
         BoomGuiBg.Parent = BoomFrame
         AddRainbowGlow(BoomFrame,4)
 
@@ -345,10 +297,8 @@ function LoadMainHub()
         CloseTop.Text = "✕"
         CloseTop.TextColor3 = Color3.new(1,1,1)
         CloseTop.Font = Enum.Font.GothamBold
-        CloseTop.TextSize = 24
-        CloseTop.ZIndex = 3
         CloseTop.Parent = BoomFrame
-        CloseTop.MouseButton1Click:Connect(function() ToggleBoomboxMenu() end)
+        CloseTop.MouseButton1Click:Connect(ToggleBoomboxMenu)
 
         local Title = Instance.new("TextLabel")
         Title.Size = UDim2.new(1,-70,0,40)
@@ -358,8 +308,6 @@ function LoadMainHub()
         Title.TextColor3 = Color3.new(1,1,1)
         Title.Font = Enum.Font.GothamBold
         Title.TextScaled = true
-        Title.TextXAlignment = Enum.TextXAlignment.Left
-        Title.ZIndex = 2
         Title.Parent = BoomFrame
 
         local Input = Instance.new("TextBox")
@@ -369,8 +317,6 @@ function LoadMainHub()
         Input.PlaceholderText = "Paste Sound ID here..."
         Input.TextColor3 = Color3.new(1,1,1)
         Input.Font = Enum.Font.Gotham
-        Input.TextScaled = true
-        Input.ZIndex = 2
         Input.Parent = BoomFrame
         Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(Input,2)
@@ -382,8 +328,6 @@ function LoadMainHub()
         VolLabel.Text = "🔊 VOLUME (0–1000):"
         VolLabel.TextColor3 = Color3.new(1,1,1)
         VolLabel.Font = Enum.Font.GothamBold
-        VolLabel.TextScaled = true
-        VolLabel.ZIndex = 2
         VolLabel.Parent = BoomFrame
 
         VolNumMenu = Instance.new("TextLabel")
@@ -393,8 +337,6 @@ function LoadMainHub()
         VolNumMenu.Text = tostring(math.floor(MusicVolume+0.5))
         VolNumMenu.TextColor3 = Color3.new(1,1,1)
         VolNumMenu.Font = Enum.Font.GothamBold
-        VolNumMenu.TextScaled = true
-        VolNumMenu.ZIndex = 2
         VolNumMenu.Parent = BoomFrame
 
         local VolBG = Instance.new("Frame")
@@ -402,7 +344,6 @@ function LoadMainHub()
         VolBG.Position = UDim2.new(0,20,0,145)
         VolBG.BackgroundColor3 = Color3.fromRGB(50,50,50)
         VolBG.Active = true
-        VolBG.ZIndex = 2
         VolBG.Parent = BoomFrame
         Instance.new("UICorner", VolBG).CornerRadius = UDim.new(0,12)
         AddRainbowGlow(VolBG,2)
@@ -410,21 +351,16 @@ function LoadMainHub()
         VolFillMenu = Instance.new("Frame")
         VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0)
         VolFillMenu.BackgroundColor3 = Color3.fromRGB(100,100,100)
-        VolFillMenu.ZIndex = 2
         VolFillMenu.Parent = VolBG
         Instance.new("UICorner", VolFillMenu).CornerRadius = UDim.new(0,12)
 
         local SliderActive = false
-        VolBG.InputBegan:Connect(function(i)
-            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = true end
-        end)
-        UserInputService.InputEnded:Connect(function(i)
-            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = false end
-        end)
+        VolBG.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then SliderActive=true end end)
+        UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then SliderActive=false end end)
         UserInputService.InputChanged:Connect(function(i)
-            if SliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-                local rel = math.clamp((i.Position.X - VolBG.AbsolutePosition.X)/VolBG.AbsoluteSize.X, 0, 1)
-                UpdateVolume(math.floor(rel * VOLUME_MAX))
+            if SliderActive and i.UserInputType == Enum.UserInputType.MouseMovement then
+                local rel = math.clamp((i.Position.X - VolBG.AbsolutePosition.X)/VolBG.AbsoluteSize.X,0,1)
+                UpdateVolume(math.floor(rel*VOLUME_MAX))
             end
         end)
 
@@ -435,8 +371,6 @@ function LoadMainHub()
         PlayBtn.Text = "▶ PLAY SOUND"
         PlayBtn.TextColor3 = Color3.new(1,1,1)
         PlayBtn.Font = Enum.Font.GothamBold
-        PlayBtn.TextScaled = true
-        PlayBtn.ZIndex = 2
         PlayBtn.Parent = BoomFrame
         Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(PlayBtn,2)
@@ -448,8 +382,6 @@ function LoadMainHub()
         StopBtn.Text = "⏹ STOP SOUND"
         StopBtn.TextColor3 = Color3.new(1,1,1)
         StopBtn.Font = Enum.Font.GothamBold
-        StopBtn.TextScaled = true
-        StopBtn.ZIndex = 2
         StopBtn.Parent = BoomFrame
         Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(StopBtn,2)
@@ -458,9 +390,7 @@ function LoadMainHub()
         StopBtn.MouseButton1Click:Connect(function() if CurrentSound then CurrentSound:Destroy() end end)
     end
 
-    -- ==============================================
-    -- ✅ CONSOLE MENU
-    -- ==============================================
+    -- CONSOLE MENU
     local function ToggleConsole()
         if ConsoleUI_Open then
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -474,7 +404,6 @@ function LoadMainHub()
         ConsoleUI.Name = "BLUE_MODE_HUB_CONSOLE"
         ConsoleUI.ResetOnSpawn = false
         ConsoleUI.DisplayOrder = PRIORITY.CONSOLE
-        ConsoleUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         ConsoleUI.Parent = GuiContainer
         CurrentConsoleUI = ConsoleUI
         ConsoleUI_Open = true
@@ -486,15 +415,6 @@ function LoadMainHub()
         Frame.Active = true
         Frame.Parent = ConsoleUI
         Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
-
-        local ConsoleGuiBg = Instance.new("ImageLabel")
-        ConsoleGuiBg.Size = UDim2.new(1, 0, 1, 0)
-        ConsoleGuiBg.Position = UDim2.new(0, 0, 0, 0)
-        ConsoleGuiBg.BackgroundTransparency = 1
-        ConsoleGuiBg.Image = CUSTOM_GUI_BG
-        ConsoleGuiBg.ScaleType = Enum.ScaleType.Stretch
-        ConsoleGuiBg.ZIndex = 1
-        ConsoleGuiBg.Parent = Frame
         AddRainbowGlow(Frame,5)
 
         local CloseTop = Instance.new("TextButton")
@@ -504,22 +424,8 @@ function LoadMainHub()
         CloseTop.Text = "✕"
         CloseTop.TextColor3 = Color3.new(1,1,1)
         CloseTop.Font = Enum.Font.GothamBold
-        CloseTop.TextSize = 26
-        CloseTop.ZIndex = 3
         CloseTop.Parent = Frame
-        CloseTop.MouseButton1Click:Connect(function() ToggleConsole() end)
-
-        local Title = Instance.new("TextLabel")
-        Title.Size = UDim2.new(1,-50,0,35)
-        Title.Position = UDim2.new(0,15,0,6)
-        Title.BackgroundTransparency = 1
-        Title.Text = "💻 CONSOLE"
-        Title.TextColor3 = Color3.new(1,1,1)
-        Title.Font = Enum.Font.GothamBold
-        Title.TextScaled = true
-        Title.TextXAlignment = Enum.TextXAlignment.Left
-        Title.ZIndex = 2
-        Title.Parent = Frame
+        CloseTop.MouseButton1Click:Connect(ToggleConsole)
 
         local Output = Instance.new("TextLabel")
         Output.Size = UDim2.new(1,-30,0,40)
@@ -529,10 +435,6 @@ function LoadMainHub()
         Output.TextColor3 = Color3.fromRGB(0,255,120)
         Output.Font = Enum.Font.Code
         Output.TextScaled = true
-        Output.TextXAlignment = Enum.TextXAlignment.Left
-        Output.TextWrapped = true
-        Output.ZIndex = 2
-        Instance.new("UICorner", Output).CornerRadius = UDim.new(0,8)
         Output.Parent = Frame
 
         local Input = Instance.new("TextBox")
@@ -542,9 +444,7 @@ function LoadMainHub()
         Input.PlaceholderText = "Paste your script here..."
         Input.TextColor3 = Color3.new(1,1,1)
         Input.Font = Enum.Font.Code
-        Input.TextScaled = true
         Input.MultiLine = true
-        Input.ZIndex = 2
         Input.Parent = Frame
         Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(Input,2)
@@ -556,8 +456,6 @@ function LoadMainHub()
         ExecBtn.Text = "▶ EXECUTE"
         ExecBtn.TextColor3 = Color3.new(1,1,1)
         ExecBtn.Font = Enum.Font.GothamBold
-        ExecBtn.TextScaled = true
-        ExecBtn.ZIndex = 2
         ExecBtn.Parent = Frame
         Instance.new("UICorner", ExecBtn).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(ExecBtn,2)
@@ -569,36 +467,29 @@ function LoadMainHub()
         ClearBtn.Text = "🗑️ CLEAR"
         ClearBtn.TextColor3 = Color3.new(1,1,1)
         ClearBtn.Font = Enum.Font.GothamBold
-        ClearBtn.TextScaled = true
-        ClearBtn.ZIndex = 2
         ClearBtn.Parent = Frame
         Instance.new("UICorner", ClearBtn).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(ClearBtn,2)
 
         ExecBtn.MouseButton1Click:Connect(function()
-            local ScriptCode = Input.Text
-            if ScriptCode == "" then Output.Text = "⚠️ Nothing to run!" return end
-            local Compile = loadstring or load
-            if not Compile then Output.Text = "⚠️ Executor does not support compiling." return end
-            local Func, Err = Compile(ScriptCode)
-            if not Func then Output.Text = "❌ Syntax Error:\n"..tostring(Err) return end
-            local Ok, RunErr = pcall(Func)
-            if not Ok then Output.Text = "❌ Runtime Error:\n"..tostring(RunErr) return end
-            Output.Text = "✅ Script ran successfully!"
+            local code = Input.Text
+            if code=="" then Output.Text="⚠️ Nothing to run!" return end
+            local load = loadstring or load
+            local f,e = load(code)
+            if not f then Output.Text="❌ ERROR: "..tostring(e) return end
+            local ok,err = pcall(f)
+            Output.Text = ok and "✅ SUCCESS!" or "❌ ERROR: "..tostring(err)
         end)
-        ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
+        ClearBtn.MouseButton1Click:Connect(function() Input.Text="" Output.Text="✅ Cleared!" end)
     end
 
-    -- ==============================================
-    -- ✅ MAIN UI FRAME
-    -- ==============================================
-    local FULL_SIZE = UDim2.new(0,680,0,105)
+    -- MAIN UI
+    local FULL_SIZE = UDim2.new(0,680,0,155)
     local MINI_SIZE = UDim2.new(0,110,0,36)
     local MainUI = Instance.new("ScreenGui")
     MainUI.Name = "BLUE_MODE_HUB"
     MainUI.ResetOnSpawn = false
     MainUI.DisplayOrder = PRIORITY.MAIN
-    MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     MainUI.Parent = GuiContainer
 
     local MainFrame = Instance.new("Frame")
@@ -606,21 +497,17 @@ function LoadMainHub()
     MainFrame.Position = UDim2.new(0,20,0,0.05)
     MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
     MainFrame.Active = true
-    MainFrame.ClipsDescendants = false
     MainFrame.Parent = MainUI
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
     AddRainbowGlow(MainFrame,5)
 
     local DragHandle = Instance.new("TextButton")
     DragHandle.Size = UDim2.new(1,-30,0,22)
-    DragHandle.Position = UDim2.new(0,0,0,0)
     DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
-    DragHandle.Active = true
     DragHandle.Text = "made by BLUE_MODE | DRAG HERE"
     DragHandle.TextColor3 = Color3.new(1,1,1)
     DragHandle.Font = Enum.Font.GothamBold
     DragHandle.TextScaled = true
-    DragHandle.TextXAlignment = Enum.TextXAlignment.Left
     DragHandle.Parent = MainFrame
     AddRainbowGlow(DragHandle,2)
 
@@ -642,14 +529,14 @@ function LoadMainHub()
     MinBtn.Text = "➖"
     MinBtn.TextColor3 = Color3.new(1,1,1)
     MinBtn.Font = Enum.Font.GothamBold
-    MinBtn.TextScaled = true
     MinBtn.Parent = MainFrame
     AddRainbowGlow(MinBtn,2)
 
-    local ESPBtn = Instance.new("TextButton")
+    -- ESP BUTTON: RED=OFF / GREEN=ON
+    ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,85,0,30)
     ESPBtn.Position = UDim2.new(0,10,0,30)
-    ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    ESPBtn.BackgroundColor3 = Color3.fromRGB(180,40,40) -- RED OFF
     ESPBtn.Text = "ESP: OFF"
     ESPBtn.TextColor3 = Color3.new(1,1,1)
     ESPBtn.Font = Enum.Font.GothamBold
@@ -718,6 +605,7 @@ function LoadMainHub()
     Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
     AddRainbowGlow(ExitBtn,2)
 
+    -- VOLUME BAR
     local VolLabelMain = Instance.new("TextLabel")
     VolLabelMain.Size = UDim2.new(0,100,0,25)
     VolLabelMain.Position = UDim2.new(0,10,0,65)
@@ -753,44 +641,39 @@ function LoadMainHub()
     VolFillMain.Parent = VolBGMain
     Instance.new("UICorner", VolFillMain).CornerRadius = UDim.new(0,9)
 
-    local SliderActiveMain = false
-    VolBGMain.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActiveMain = true end
-    end)
-    UserInputService.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActiveMain = false end
-    end)
-    UserInputService.InputChanged:Connect(function(i)
-        if SliderActiveMain and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-            local rel = math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X)/VolBGMain.AbsoluteSize.X, 0, 1)
-            UpdateVolume(math.floor(rel * VOLUME_MAX))
-        end
-    end)
+    -- ✅ FPS/PING LABEL INSIDE MAIN UI UNDER VOLUME
+    FPSPingLabel = Instance.new("TextLabel")
+    FPSPingLabel.Size = UDim2.new(1,-20,0,25)
+    FPSPingLabel.Position = UDim2.new(0,10,0,92)
+    FPSPingLabel.BackgroundTransparency = 1
+    FPSPingLabel.Font = Enum.Font.GothamBold
+    FPSPingLabel.TextScaled = true
+    FPSPingLabel.TextColor3 = Color3.new(1,1,1)
+    FPSPingLabel.Text = "⚡ FPS: 0 | 📶 YOUR PING: 0ms | 🌐 SERVER PING: 0ms"
+    FPSPingLabel.Parent = MainFrame
 
-    -- ==============================================
-    -- ✅ DRAG & MINIMIZE / LOCK
-    -- ==============================================
-    local DragState = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
-    DragHandle.InputBegan:Connect(function(Input)
+    -- DRAG & MINIMIZE
+    local DragState = {Active=false, X=0, Y=0, PosX=0, PosY=0}
+    DragHandle.InputBegan:Connect(function(i)
         GuiFocused = true
         if Buttons_Locked then return end
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        if i.UserInputType == Enum.UserInputType.MouseButton1 then
             DragState.Active = true
-            DragState.StartX = Input.Position.X
-            DragState.StartY = Input.Position.Y
+            DragState.X = i.Position.X
+            DragState.Y = i.Position.Y
             DragState.PosX = MainFrame.Position.X.Offset
             DragState.PosY = MainFrame.Position.Y.Offset
         end
     end)
-    UserInputService.InputEnded:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 then
             DragState.Active = false
             task.delay(0.2, function() GuiFocused = false end)
         end
     end)
-    UserInputService.InputChanged:Connect(function(Input)
-        if DragState.Active and not Buttons_Locked then
-            MainFrame.Position = UDim2.new(0, DragState.PosX + (Input.Position.X - DragState.StartX), 0, DragState.PosY + (Input.Position.Y - DragState.StartY))
+    UserInputService.InputChanged:Connect(function(i)
+        if DragState.Active and not Buttons_Locked and i.UserInputType == Enum.UserInputType.MouseMovement then
+            MainFrame.Position = UDim2.new(0, DragState.PosX + (i.Position.X - DragState.X), 0, DragState.PosY + (i.Position.Y - DragState.Y))
         end
     end)
 
@@ -804,7 +687,6 @@ function LoadMainHub()
         IsMinimized = not IsMinimized
         if IsMinimized then
             MainFrame.Size = MINI_SIZE
-            StatsFrame.Visible = false
             ESPBtn.Visible = false
             YouTubeBtn.Visible = false
             MusicBtn.Visible = false
@@ -814,16 +696,14 @@ function LoadMainHub()
             VolLabelMain.Visible = false
             VolNumTextMain.Visible = false
             VolBGMain.Visible = false
+            FPSPingLabel.Visible = false
             DragHandle.Text = ""
             MinBtn.Text = "➕"
             TimerLabel.Size = UDim2.new(1,-28,1,0)
             TimerLabel.Position = UDim2.new(0,4,0,0)
             TimerLabel.TextXAlignment = Enum.TextXAlignment.Center
-            TimerLabel.TextScaled = false
-            TimerLabel.TextSize = 12
         else
             MainFrame.Size = FULL_SIZE
-            StatsFrame.Visible = true
             ESPBtn.Visible = true
             YouTubeBtn.Visible = true
             MusicBtn.Visible = true
@@ -833,20 +713,20 @@ function LoadMainHub()
             VolLabelMain.Visible = true
             VolNumTextMain.Visible = true
             VolBGMain.Visible = true
+            FPSPingLabel.Visible = true
             DragHandle.Text = "made by BLUE_MODE | DRAG HERE"
             MinBtn.Text = "➖"
             TimerLabel.Size = UDim2.new(0,120,1,0)
             TimerLabel.Position = UDim2.new(1,-125,0,0)
             TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
-            TimerLabel.TextScaled = true
-            TimerLabel.TextSize = nil
         end
     end)
 
+    -- ESP TOGGLE: RED=OFF / GREEN=ON
     ESPBtn.MouseButton1Click:Connect(function()
         ESP_Enabled = not ESP_Enabled
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
-        ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
+        ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(180,40,40)
         if not ESP_Enabled then ClearAllESP() end
     end)
 
@@ -866,31 +746,28 @@ function LoadMainHub()
         if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
         if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
         MainUI:Destroy()
-        StatsUI:Destroy()
         getgenv().BlueMode_Loaded = nil
     end)
 
     SetupDeathCheck()
 
-    -- ==============================================
-    -- ✅ MAIN LOOP + RAINBOW + ESP WITH TEXT OUTLINE
-    -- ==============================================
+    -- MAIN LOOP + RAINBOW + ESP TEXT OUTLINE
     RunService.Heartbeat:Connect(function(Delta)
         if not MainUI or not MainUI.Parent then return end
 
-        -- FPS + PING CALCULATION
+        -- FPS/PING UPDATE
         FrameCount += 1
         local Now = os.clock()
         if Now - LastFPSUpdate >= 1 then
             local FPS = math.floor(FrameCount / (Now - LastFPSUpdate))
             local YourPing = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
             local ServerPing = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue() * 1.1)
-            StatsLabel.Text = string.format("⚡ FPS: %d | 📶 YOUR PING: %dms | 🌐 SERVER PING: %dms", FPS, YourPing, ServerPing)
+            FPSPingLabel.Text = string.format("⚡ FPS: %d | 📶 YOUR PING: %dms | 🌐 SERVER PING: %dms", FPS, YourPing, ServerPing)
             FrameCount = 0
             LastFPSUpdate = Now
         end
 
-        -- USAGE TIMER
+        -- TIMER
         local TimeNow = os.time()
         UsedTime = UsedTime + math.max(0, TimeNow - LastCheckTime)
         LastCheckTime = TimeNow
@@ -908,37 +785,29 @@ function LoadMainHub()
             return
         end
 
-        -- UPDATE ALL RAINBOW COLORS
+        -- RAINBOW EFFECTS
         Hue = (Hue + Delta*0.5) % 1
         local Rainbow = Color3.fromHSV(Hue,1,1)
         for _,e in pairs(GuiElements) do e.Color = Rainbow end
         for _,Tag in pairs(ESP_Labels) do
-            if Tag and Tag:FindFirstChild("RainbowAura") then Tag.RainbowAura.Color = Rainbow end
             if Tag then Tag.TextColor3 = Rainbow end
+            if Tag and Tag:FindFirstChild("RainbowAura") then Tag.RainbowAura.Color = Rainbow end
         end
         if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
         if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
         TimerLabel.TextColor3 = Rainbow
-        StatsLabel.TextColor3 = Rainbow
+        FPSPingLabel.TextColor3 = Rainbow
 
-        -- ESP SYSTEM WITH RAINBOW TEXT OUTLINE
+        -- ESP WITH RAINBOW TEXT OUTLINE
         if not ESP_Enabled then return end
         for _,P in pairs(Players:GetPlayers()) do
             if P == LocalPlayer then continue end
             local Char = P.Character
-            if not Char then
-                pcall(function() if Char and Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
-                pcall(function() if Char and Char:FindFirstChild("ESP_NameTag") then Char.ESP_NameTag:Destroy() end end)
-                continue
-            end
+            if not Char then continue end
             local Hum = Char:FindFirstChildOfClass("Humanoid")
-            if not Hum or Hum.Health <= 0 then
-                pcall(function() if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
-                pcall(function() if Char:FindFirstChild("ESP_NameTag") then Char.ESP_NameTag:Destroy() end end)
-                continue
-            end
+            if not Hum or Hum.Health <= 0 then continue end
 
-            -- PLAYER BODY OUTLINE
+            -- PLAYER OUTLINE
             local Outline = Char:FindFirstChild("BLUE_Outline") or Instance.new("Highlight")
             Outline.Name = "BLUE_Outline"
             Outline.Adornee = Char
@@ -948,7 +817,7 @@ function LoadMainHub()
             Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
             Outline.Parent = Char
 
-            -- ✅ ESP TEXT WITH RAINBOW OUTLINE
+            -- ✅ ESP TEXT WITH FULL RAINBOW OUTLINE
             local Head = Char:FindFirstChild("Head")
             if Head then
                 local NameTag = Char:FindFirstChild("ESP_NameTag")
@@ -970,22 +839,17 @@ function LoadMainHub()
                     TagText.Text = P.Name.."\n"..math.floor(Hum.Health).." HP"
                     TagText.TextColor3 = Rainbow
                     TagText.TextStrokeTransparency = 0
-                    TagText.ZIndex = 2
                     TagText.Parent = NameTag
 
-                    -- APPLY RAINBOW OUTLINE TO TEXT
+                    -- MATCHING RAINBOW OUTLINE
                     AddRainbowGlow(TagText, 2.5)
                     table.insert(ESP_Labels, TagText)
                 else
-                    -- UPDATE EXISTING TEXT
                     local TagText = NameTag:FindFirstChildWhichIsA("TextLabel")
-                    if TagText then
-                        TagText.Text = P.Name.."\n"..math.floor(Hum.Health).." HP"
-                    end
+                    if TagText then TagText.Text = P.Name.."\n"..math.floor(Hum.Health).." HP" end
                 end
             end
         end
     end)
 end
-
-print("✅ BLUE MODE HUB FULLY LOADED | ESP TEXT RAINBOW OUTLINE ACTIVE")
+print("✅ BLUE MODE HUB FULLY UPDATED & READY")
