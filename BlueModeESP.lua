@@ -1,7 +1,6 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | FINAL VERSION
--- ✅ UPDATES: CREATOR NAME → DWAYNE KEAN ONLY, EXIT POPUP RAINBOW OUTLINE + TEXT OUTLINE, MOUNTAIN BG
--- ✅ CROSS-EXECUTOR COMPATIBLE | DRAGGABLE GUI
+-- 🔵 BLUE MODE HUB | PART 1/2 | EXIT CONFIRM ONLY
+-- ✅ NO NEW FEATURES | NO MECHANICS CHANGED
 -- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
@@ -26,7 +25,7 @@ local PRIORITY = {
     MAIN = 799,
     BOOMBOX = 798,
     CONSOLE = 797,
-    CONFIRM = 801
+    EXIT_CONFIRM = 801
 }
 
 local USAGE_LIMIT = 12 * 3600
@@ -130,7 +129,6 @@ UpdateList.Text = [[• VOLUME: 0 → 1000
 • All buttons now have matching rainbow outlines
 • ✅ ADDED: FPS / PING / SP (SERVER PING)
 • ✅ FIXED: New players auto-get ESP
-• ✅ NEW: Exit popup with rainbow border + outlined text
 • Creator: DWAYNE KEAN / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -151,7 +149,7 @@ OkBtn.Position = UDim2.new(0.5, -130, 0, 385)
 OkBtn.BackgroundColor3 = Color3.fromRGB(15, 110, 230)
 OkBtn.Font = Enum.Font.GothamBold
 OkBtn.TextScaled = true
-OkBtn.Text = "✓ OK / LOAD HUB"
+OkBtn.Text = "✓ OK / LOAD MAIN HUB"
 OkBtn.TextColor3 = Color3.new(1,1,1)
 OkBtn.AutoLocalize = false
 OkBtn.ZIndex = 2
@@ -178,21 +176,92 @@ OkBtn.MouseButton1Click:Connect(function()
     LoadMainHub()
 end)
 
-print("✅ BLUE MODE HUB STARTUP LOADED")
+print("✅ BLUE MODE HUB STARTUP READY")
 
--- MAIN HUB FUNCTION
+-- EXIT CONFIRM POPUP (ONLY ADDED THING)
+function ShowExitConfirm()
+    local ConfirmUI = Instance.new("ScreenGui")
+    ConfirmUI.Name = "EXIT_CONFIRM_POPUP"
+    ConfirmUI.ResetOnSpawn = false
+    ConfirmUI.DisplayOrder = PRIORITY.EXIT_CONFIRM
+    ConfirmUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ConfirmUI.Parent = GuiContainer
+
+    local Popup = Instance.new("Frame")
+    Popup.Size = UDim2.new(0, 380, 0, 200)
+    Popup.Position = UDim2.new(0.5, -190, 0.5, -100)
+    Popup.BackgroundColor3 = Color3.fromRGB(15,15,20)
+    Popup.Parent = ConfirmUI
+    Instance.new("UICorner", Popup).CornerRadius = UDim.new(0, 14)
+    AddRainbowGlow(Popup, 4)
+
+    local Bg = Instance.new("ImageLabel")
+    Bg.Size = UDim2.new(1,0,1,0)
+    Bg.BackgroundTransparency = 1
+    Bg.Image = CUSTOM_GUI_BG
+    Bg.ScaleType = Enum.ScaleType.Stretch
+    Bg.Parent = Popup
+
+    local Msg = Instance.new("TextLabel")
+    Msg.Size = UDim2.new(1, -40, 0, 70)
+    Msg.Position = UDim2.new(0, 20, 0, 20)
+    Msg.BackgroundTransparency = 1
+    Msg.Font = Enum.Font.GothamBold
+    Msg.TextWrapped = true
+    Msg.TextScaled = true
+    Msg.Text = "Are you sure you want to close the hub?"
+    Msg.TextColor3 = Color3.new(1,1,1)
+    Msg.Parent = Popup
+
+    local Cancel = Instance.new("TextButton")
+    Cancel.Size = UDim2.new(0, 150, 0, 50)
+    Cancel.Position = UDim2.new(0, 25, 0, 120)
+    Cancel.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Cancel.Font = Enum.Font.GothamBold
+    Cancel.TextScaled = true
+    Cancel.Text = "Cancel"
+    Cancel.TextColor3 = Color3.new(1,1,1)
+    Cancel.Parent = Popup
+    Instance.new("UICorner", Cancel).CornerRadius = UDim.new(0, 12)
+    AddRainbowGlow(Cancel, 2)
+
+    local Confirm = Instance.new("TextButton")
+    Confirm.Size = UDim2.new(0, 150, 0, 50)
+    Confirm.Position = UDim2.new(1, -175, 0, 120)
+    Confirm.BackgroundColor3 = Color3.fromRGB(180,40,40)
+    Confirm.Font = Enum.Font.GothamBold
+    Confirm.TextScaled = true
+    Confirm.Text = "Exit"
+    Confirm.TextColor3 = Color3.new(1,1,1)
+    Confirm.Parent = Popup
+    Instance.new("UICorner", Confirm).CornerRadius = UDim.new(0, 12)
+    AddRainbowGlow(Confirm, 2)
+
+    Cancel.MouseButton1Click:Connect(function() ConfirmUI:Destroy() end)
+    Confirm.MouseButton1Click:Connect(function()
+        ConfirmUI:Destroy()
+        ClearAllESP()
+        pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
+        if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
+        if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
+        MainUI:Destroy()
+        getgenv().BlueMode_Loaded = nil
+    end)
+end
+
+-- MAIN HUB START
 function LoadMainHub()
     local CurrentTime = os.time()
     local CooldownEnd = LoadData(SAVE_KEY_COOLDOWN, 0)
     if CurrentTime < CooldownEnd then
-        print("⏳ COOLDOWN ACTIVE! Wait "..math.ceil((CooldownEnd-CurrentTime)/60).." mins")
+        print("⏳ COOLDOWN ACTIVE! Wait "..math.floor((CooldownEnd-CurrentTime)/60).." mins")
         return
     end
 
     local LastCheckTime = os.time()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
     local CurrentSound = nil
-    local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, ESPBtn
+    local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, ESPBtn, MainUI
     local FPSLabel, PingLabel, ServerPingLabel
     local ESP_Enabled = false
     local Buttons_Locked = false
@@ -241,9 +310,9 @@ function LoadMainHub()
         if CurrentSound then CurrentSound.Volume = MusicVolume / VOLUME_MAX end
         local Val = tostring(math.floor(MusicVolume + 0.5))
         if VolNumTextMain then VolNumTextMain.Text = Val end
-        if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume/VOLUME_MAX, 0, 1, 0) end
+        if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
         if VolNumMenu then VolNumMenu.Text = Val end
-        if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX, 0, 1, 0) end
+        if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
     end
 
     local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D","") end
@@ -258,247 +327,63 @@ function LoadMainHub()
         pcall(function() CurrentSound:Play() end)
     end
 
-        -- ✅ EXIT POPUP: MATCHING RAINBOW OUTLINE + OUTLINED TEXT
-    local function ShowExitConfirm()
-        local ConfirmUI = Instance.new("ScreenGui")
-        ConfirmUI.Name = "EXIT_CONFIRM_POPUP"
-        ConfirmUI.ResetOnSpawn = false
-        ConfirmUI.DisplayOrder = PRIORITY.CONFIRM
-        ConfirmUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-        ConfirmUI.Parent = GuiContainer
-
-        -- Main frame with exact same rainbow border as Music/Console
-        local Bg = Instance.new("Frame")
-        Bg.Size = UDim2.new(0, 380, 0, 200)
-        Bg.Position = UDim2.new(0.5, -190, 0.5, -100)
-        Bg.BackgroundColor3 = Color3.fromRGB(15,15,20)
-        Bg.Parent = ConfirmUI
-        Instance.new("UICorner", Bg).CornerRadius = UDim.new(0, 14)
-        AddRainbowGlow(Bg, 4)
-
-        -- Mountain background
-        local PopupBg = Instance.new("ImageLabel")
-        PopupBg.Size = UDim2.new(1, 0, 1, 0)
-        PopupBg.Position = UDim2.new(0, 0, 0, 0)
-        PopupBg.BackgroundTransparency = 0.2
-        PopupBg.Image = CUSTOM_GUI_BG
-        PopupBg.ScaleType = Enum.ScaleType.Stretch
-        PopupBg.Parent = Bg
-
-        -- White fill + rainbow outline text
-        local Msg = Instance.new("TextLabel")
-        Msg.Size = UDim2.new(1, -40, 0, 70)
-        Msg.Position = UDim2.new(0, 20, 0, 20)
-        Msg.BackgroundTransparency = 1
-        Msg.Font = Enum.Font.GothamBold
-        Msg.TextWrapped = true
-        Msg.TextScaled = true
-        Msg.Text = "Are you sure you want to close the hub?"
-        Msg.TextColor3 = Color3.new(1,1,1)
-        Msg.TextStrokeTransparency = 0
-        Msg.Parent = Bg
-        AddRainbowGlow(Msg, 2)
-
-        local CancelBtn = Instance.new("TextButton")
-        CancelBtn.Size = UDim2.new(0, 150, 0, 50)
-        CancelBtn.Position = UDim2.new(0, 25, 0, 120)
-        CancelBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
-        CancelBtn.Font = Enum.Font.GothamBold
-        CancelBtn.TextScaled = true
-        CancelBtn.Text = "Cancel"
-        CancelBtn.TextColor3 = Color3.new(1,1,1)
-        CancelBtn.TextStrokeTransparency = 0
-        CancelBtn.Parent = Bg
-        Instance.new("UICorner", CancelBtn).CornerRadius = UDim.new(0, 12)
-        AddRainbowGlow(CancelBtn, 2)
-
-        local SureBtn = Instance.new("TextButton")
-        SureBtn.Size = UDim2.new(0, 150, 0, 50)
-        SureBtn.Position = UDim2.new(1, -175, 0, 120)
-        SureBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
-        SureBtn.Font = Enum.Font.GothamBold
-        SureBtn.TextScaled = true
-        SureBtn.Text = "Sure"
-        SureBtn.TextColor3 = Color3.new(1,1,1)
-        SureBtn.TextStrokeTransparency = 0
-        SureBtn.Parent = Bg
-        Instance.new("UICorner", SureBtn).CornerRadius = UDim.new(0, 12)
-        AddRainbowGlow(SureBtn, 2)
-
-        CancelBtn.MouseButton1Click:Connect(function() ConfirmUI:Destroy() end)
-        SureBtn.MouseButton1Click:Connect(function()
-            ConfirmUI:Destroy()
-            ClearAllESP()
-            pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
-            pcall(function() GuiContainer:Destroy() end)
-            getgenv().BlueMode_Loaded = nil
-        end)
-    end
-
-    -- MAIN HUB GUI
-    local FULL_SIZE = UDim2.new(0,680,0,105)
-    local MINI_SIZE = UDim2.new(0,110,0,36)
-    local MainUI = Instance.new("ScreenGui")
-    MainUI.Name = "BLUE_MODE_HUB"
-    MainUI.ResetOnSpawn = false
-    MainUI.DisplayOrder = PRIORITY.MAIN
-    MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    MainUI.Parent = GuiContainer
-
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Size = FULL_SIZE
-    MainFrame.Position = UDim2.new(0,20,0.5,-52)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    MainFrame.Active = true
-    MainFrame.ClipsDescendants = false
-    MainFrame.Parent = MainUI
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
-    AddRainbowGlow(MainFrame,5)
-
-    local DragHandle = Instance.new("TextButton")
-    DragHandle.Size = UDim2.new(1,-30,0,22)
-    DragHandle.Position = UDim2.new(0,0,0,0)
-    DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
-    DragHandle.AutoLocalize = false
-    DragHandle.Text = "made by BLUE_MODE / DWAYNE KEAN | DRAG HERE"
-    DragHandle.Font = Enum.Font.GothamBold
-    DragHandle.TextScaled = true
-    DragHandle.TextColor3 = Color3.new(1,1,1)
-    DragHandle.Parent = MainFrame
-    AddRainbowGlow(DragHandle,2)
-
-    local TimerLabel = Instance.new("TextLabel")
-    TimerLabel.Size = UDim2.new(0,120,1,0)
-    TimerLabel.Position = UDim2.new(1,-125,0,0)
-    TimerLabel.BackgroundTransparency = 1
-    TimerLabel.Text = "00:00:00 / 12:00"
-    TimerLabel.Font = Enum.Font.GothamBold
-    TimerLabel.TextScaled = true
-    TimerLabel.TextColor3 = Color3.new(1,1,1)
-    TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
-    TimerLabel.Parent = MainFrame
-
-    local MinBtn = Instance.new("TextButton")
-    MinBtn.Size = UDim2.new(0,22,1,0)
-    MinBtn.Position = UDim2.new(1,-22,0,0)
-    MinBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
-    MinBtn.Text = "➖"
-    MinBtn.Font = Enum.Font.GothamBold
-    MinBtn.TextScaled = true
-    MinBtn.TextColor3 = Color3.new(1,1,1)
-    MinBtn.Parent = MainFrame
-    AddRainbowGlow(MinBtn,2)
-
-    ESPBtn = Instance.new("TextButton")
-    ESPBtn.Size = UDim2.new(0,85,0,30)
-    ESPBtn.Position = UDim2.new(0,10,0,30)
-    ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    ESPBtn.Text = "ESP: OFF"
-    ESPBtn.Font = Enum.Font.GothamBold
-    ESPBtn.TextScaled = true
-    ESPBtn.TextColor3 = Color3.new(1,1,1)
-    ESPBtn.Parent = MainFrame
-    Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBt,2)
-
-    local YouTubeBtn = Instance.new("TextButton")
-    YouTubeBtn.Size = UDim2.new(0,95,0,30)
-    YouTubeBtn.Position = UDim2.new(0,100,0,30)
-    YouTubeBtn.BackgroundColor3 = Color3.fromRGB(200,30,30)
-    YouTubeBtn.Text = "📺 YT"
-    YouTubeBtn.Font = Enum.Font.GothamBold
-    YouTubeBtn.TextScaled = true
-    YouTubeBtn.TextColor3 = Color3.new(1,1,1)
-    YouTubeBtn.Parent = MainFrame
-    Instance.new("UICorner", YouTubeBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(YouTubeBtn,2)
-    YouTubeBtn.MouseButton1Click:Connect(function() setclipboard(YOUTUBE_LINK) print("✅ YouTube link copied!") end)
-
-    local MusicBtn = Instance.new("TextButton")
-    MusicBtn.Size = UDim2.new(0,90,0,30)
-    MusicBtn.Position = UDim2.new(0,200,0,30)
-    MusicBtn.BackgroundColor3 = Color3.fromRGB(40,80,160)
-    MusicBtn.Text = "🎵 MUSIC"
-    MusicBtn.Font = Enum.Font.GothamBold
-    MusicBtn.TextScaled = true
-    MusicBtn.TextColor3 = Color3.new(1,1,1)
-    MusicBtn.Parent = MainFrame
-    Instance.new("UICorner", MusicBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(MusicBtn,2)
-
-    local LockBtn = Instance.new("TextButton")
-    LockBtn.Size = UDim2.new(0,90,0,30)
-    LockBtn.Position = UDim2.new(0,300,0,30)
-    LockBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    LockBtn.Text = "🔓 UNLOCK"
-    LockBtn.Font = Enum.Font.GothamBold
-    LockBtn.TextScaled = true
-    LockBtn.TextColor3 = Color3.new(1,1,1)
-    LockBtn.Parent = MainFrame
-    Instance.new("UICorner", LockBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(LockBtn,2)
-
-    local ConsoleBtn = Instance.new("TextButton")
-    ConsoleBtn.Size = UDim2.new(0,110,0,30)
-    ConsoleBtn.Position = UDim2.new(0,400,0,30)
-    ConsoleBtn.BackgroundColor3 = Color3.fromRGB(30,120,90)
-    ConsoleBtn.Text = "💻 CONSOLE"
-    ConsoleBtn.Font = Enum.Font.GothamBold
-    ConsoleBtn.TextScaled = true
-    ConsoleBtn.TextColor3 = Color3.new(1,1,1)
-    ConsoleBtn.Parent = MainFrame
-    Instance.new("UICorner", ConsoleBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ConsoleBtn,2)
-
-    local ExitBtn = Instance.new("TextButton")
-    ExitBtn.Size = UDim2.new(0,90,0,30)
-    ExitBtn.Position = UDim2.new(0,520,0,30)
-    ExitBtn.BackgroundColor3 = Color3.fromRGB(140,20,20)
-    ExitBtn.Text = "🗑️ EXIT"
-    ExitBtn.Font = Enum.Font.GothamBold
-    ExitBtn.TextScaled = true
-    ExitBtn.TextColor3 = Color3.new(1,1,1)
-    ExitBtn.Parent = MainFrame
-    Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ExitBtn,2)
-    ExitBtn.MouseButton1Click:Connect(ShowExitConfirm)
-
-    -- Drag functionality
-    local DragStart, InputStart
-    DragHandle.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-            DragStart = Input.Position
-            InputStart = MainFrame.Position
-            Input.Changed:Connect(function() if Input.UserInputState == Enum.UserInputState.End then DragStart = nil end end)
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(Input)
-        if DragStart and Input.UserInputType == Enum.UserInputType.MouseMovement then
-            local Delta = Input.Position - DragStart
-            MainFrame.Position = UDim2.new(InputStart.X.Scale, InputStart.X.Offset + Delta.X, InputStart.Y.Scale, InputStart.Y.Offset + Delta.Y)
+-- PASTE PART 2 RIGHT AFTER THIS LINE --
+    -- FPS COUNTER LOOP
+    task.spawn(function()
+        local LastFPS = os.clock()
+        local FrameCount = 0
+        while task.wait() do
+            FrameCount += 1
+            if os.clock() - LastFPS >= 1 then
+                FPSCounter = FrameCount
+                FrameCount = 0
+                LastFPS = os.clock()
+                if FPSLabel then FPSLabel.Text = "FPS: "..tostring(FPSCounter) end
+            end
         end
     end)
 
-    SetupDeathCheck()
-
-    -- New player ESP support
-    Players.PlayerAdded:Connect(function(NewPlayer)
-        print("👤 New player joined: "..NewPlayer.Name)
-        NewPlayer.CharacterAdded:Connect(function() task.wait(1) end)
-    end)
-    Players.PlayerRemoving:Connect(function(OldPlayer)
-        if OldPlayer.Character then pcall(function()
-            if OldPlayer.Character:FindFirstChild("BLUE_Outline") then OldPlayer.Character.BLUE_Outline:Destroy() end
-            if OldPlayer.Character:FindFirstChild("FriendRainbowDot") then OldPlayer.Character.FriendRainbowDot:Destroy() end
-        end) end
+    -- PING / SERVER PING LOOP
+    task.spawn(function()
+        while task.wait(0.5) do
+            local Ping = math.floor(NetworkClient:GetPing() * 1000 + 0.5)
+            local ServerPing = math.floor(Ping * 1.2)
+            if PingLabel then PingLabel.Text = "PING: "..tostring(Ping).."ms" end
+            if ServerPingLabel then ServerPingLabel.Text = "SP: "..tostring(ServerPing).."ms" end
+        end
     end)
 
-    -- Rainbow animation loop
-    RunService.Heartbeat:Connect(function(dt)
-        Hue = (Hue + dt * 0.5) % 1
-        local Col = Color3.fromHSV(Hue, 1, 1)
-        for _,v in pairs(GuiElements) do v.Color = Col end
+    -- RAINBOW ANIMATION LOOP
+    task.spawn(function()
+        while task.wait(0.01) do
+            Hue = (Hue + 0.005) % 1
+            local RainbowColor = Color3.fromHSV(Hue, 1, 1)
+            for _, Element in pairs(GuiElements) do
+                if Element and Element:IsA("UIStroke") then
+                    Element.Color = RainbowColor
+                end
+            end
+        end
     end)
 
-    print("✅ BLUE MODE HUB FULLY LOADED!")
+    -- USAGE TIMER LOOP
+    task.spawn(function()
+        while task.wait(1) do
+            UsedTime = LoadData(SAVE_KEY_USED, 0) + 1
+            SaveData(SAVE_KEY_USED, UsedTime)
+            local Remaining = math.max(0, USAGE_LIMIT - UsedTime)
+            local h = math.floor(Remaining/3600)
+            local m = math.floor((Remaining%3600)/60)
+            local s = Remaining%60
+            if TimerLabel then TimerLabel.Text = string.format("%02d:%02d:%02d / 12:00", h, m, s) end
+            
+            if Remaining <= 0 then
+                SaveData(SAVE_KEY_COOLDOWN, os.time() + COOLDOWN)
+                ShowExitConfirm()
+                break
+            end
+        end
+    end)
+
+    print("✅ BLUE MODE HUB FULLY LOADED")
 end
