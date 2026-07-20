@@ -1,7 +1,8 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 1/2
--- ✅ NO TIMER | EXIT CONFIRM | FULL GUI PRESERVED
--- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN FRANCISCO
+-- 🔵 BLUE MODE HUB | FULL PART 1/2
+-- ✅ NO TIMER | EXIT CONFIRM | FULL GUI
+-- ✅ ALL PLAYERS RAINBOW | FRIENDS GET DOT
+-- ✅ CREATOR: BLUE_MODE / DWAYNE KEAN FRANCISCO
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -120,7 +121,7 @@ local function ShowExitConfirm(OnConfirm)
     NoBtn.MouseButton1Click:Connect(function() PopupUI:Destroy() end)
 end
 
--- STARTUP SCREEN (TIMER FULLY REMOVED)
+-- STARTUP SCREEN
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
 StartupUI.ResetOnSpawn = false
@@ -188,7 +189,9 @@ UpdateList.Text = [[• VOLUME: 0 → 1000
 • NO LONGER BLOCKS ROBLOX MENUS
 • REMAINS ABOVE ALL GAME ELEMENTS
 • All buttons now have matching rainbow outlines
-• ✅ ADDED: FPS / PING / SP (SERVER PING)
+• ✅ ADDED: FPS / PING / SERVER PING
+• ✅ ESP: ALL PLAYERS RAINBOW | FRIENDS GET DOT
+• ✅ OWNER: GOLD OUTLINE + GOLD CROWN
 • ✅ FIXED: New players auto-get ESP
 • ✅ REMOVED: All usage timers & limits
 • Creator: Dwayne Kean / Blue_Mode]]
@@ -222,11 +225,11 @@ OkBtn.MouseButton1Click:Connect(function()
 end)
 
 print("✅ BLUE MODE HUB STARTUP READY")
--- ⚠️ COPY PART 2 BELOW TO FINISH THE SCRIPT ⚠️
+-- ⚠️ COPY & RUN PART 2 RIGHT AFTER THIS ⚠️
 -- ==============================================
 -- 🔵 BLUE MODE HUB | FULL PART 2/2
--- ✅ COMPLETED ESP | OWNER GOLDEN + CROWN | FRIEND RAINBOW
--- ✅ ALL FEATURES PRESERVED | NO MISSING CODE
+-- ✅ UPDATED ESP RULES: ALL RAINBOW | FRIENDS DOT
+-- ✅ OWNER GOLD + CROWN | NO MISSING CODE
 -- ==============================================
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
@@ -240,7 +243,7 @@ function LoadMainHub()
     local LastFPSUpdate = os.clock()
     local LOCAL_USERID = LocalPlayer.UserId
 
-    -- ✅ FIXED ACCURATE PING READERS
+    -- ✅ PING READERS
     local function GetClientPing()
         local Ping = 0
         pcall(function() Ping = math.floor(NetworkClient:GetPing() or 0) end)
@@ -928,7 +931,7 @@ function LoadMainHub()
         end
     end)
 
-    -- ✅ FULL COMPLETED ESP SYSTEM
+    -- ✅ FULL ESP SYSTEM
     RunService.Heartbeat:Connect(function(Delta)
         if not MainUI or not MainUI.Parent then return end
 
@@ -953,6 +956,7 @@ function LoadMainHub()
             local Root = Char:FindFirstChild("HumanoidRootPart")
             if not Hum or not Root or Hum.Health <= 0 then
                 pcall(function() if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
+                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
                 continue
             end
 
@@ -971,6 +975,7 @@ function LoadMainHub()
             if P.UserId == LOCAL_USERID then
                 Outline.FillColor = Color3.fromRGB(255,215,0)
                 Outline.OutlineColor = Color3.fromRGB(255,223,0)
+                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
                 if not Char:FindFirstChild("OwnerCrown") then
                     local Crown = Instance.new("BillboardGui")
                     Crown.Name = "OwnerCrown"
@@ -985,10 +990,12 @@ function LoadMainHub()
                     CrownImg.Parent = Crown
                     Crown.Parent = Char.Head
                 end
-            -- ✅ FRIENDS = RAINBOW OUTLINE + INDICATOR
+
+            -- ✅ FRIENDS = RAINBOW OUTLINE + RAINBOW DOT
             elseif P:IsFriendsWith(LOCAL_USERID) then
                 Outline.FillColor = Rainbow
                 Outline.OutlineColor = Rainbow
+                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
                 if not Char:FindFirstChild("FriendRainbowDot") then
                     local Dot = Instance.new("BillboardGui")
                     Dot.Name = "FriendRainbowDot"
@@ -1004,10 +1011,11 @@ function LoadMainHub()
                 else
                     Char.FriendRainbowDot.Frame.BackgroundColor3 = Rainbow
                 end
-            -- ✅ NORMAL PLAYERS = RED OUTLINE
+
+            -- ✅ ALL OTHER PLAYERS = RAINBOW OUTLINE ONLY
             else
-                Outline.FillColor = Color3.fromRGB(255,40,40)
-                Outline.OutlineColor = Color3.fromRGB(255,70,70)
+                Outline.FillColor = Rainbow
+                Outline.OutlineColor = Rainbow
                 pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
                 pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
             end
