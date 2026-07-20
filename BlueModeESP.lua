@@ -1,7 +1,7 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | FIXED GUI LOAD | NO NEW FEATURES
--- ✅ ONLY FIXED: Missing GUI after OK click + typos
--- ✅ MADE BY: BLUE_MODE / DWAYNE KEAN
+-- 🔵 BLUE MODE HUB | FINAL FIX: GUI NOT SHOWING
+-- ✅ FIXED: Folder → ScreenGui parent + scoping bugs
+-- ✅ 100% ORIGINAL FEATURES PRESERVED
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -16,9 +16,12 @@ local LocalPlayer = Players.LocalPlayer
 
 local CUSTOM_GUI_BG = "rbxassetid://101782008402770"
 
-local GuiContainer = Instance.new("Folder")
-GuiContainer.Name = "BLUE_MODE_HUB_ROOT"
-GuiContainer.Parent = CoreGui
+-- ✅ FIXED: Use ScreenGui instead of Folder (executor block issue)
+local GuiRoot = Instance.new("ScreenGui")
+GuiRoot.Name = "BLUE_MODE_HUB_ROOT"
+GuiRoot.ResetOnSpawn = false
+GuiRoot.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+GuiRoot.Parent = CoreGui
 
 local PRIORITY = {
     STARTUP = 800,
@@ -36,6 +39,7 @@ local SAVE_KEY_COOLDOWN = "BlueMode_CooldownEnd_v22"
 local SAVE_KEY_VOLUME = "BlueMode_Volume_v22"
 local VOLUME_MAX = 1000
 
+-- ✅ FIXED: Global scope for all critical variables
 local BoomboxUI_Open = false
 local ConsoleUI_Open = false
 local CurrentBoomboxUI = nil
@@ -43,7 +47,9 @@ local CurrentConsoleUI = nil
 local IsMinimized = false
 local GuiFocused = false
 local GuiElements = {}
-local MainUI = nil -- Fixed: Declared early
+local MainUI = nil
+local CurrentSound = nil
+local ESPBtn = nil
 
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
@@ -65,7 +71,7 @@ StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
 StartupUI.ResetOnSpawn = false
 StartupUI.DisplayOrder = PRIORITY.STARTUP
 StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-StartupUI.Parent = GuiContainer
+StartupUI.Parent = GuiRoot
 
 local StartupBox = Instance.new("Frame")
 StartupBox.Size = UDim2.new(0, 420, 0, 480)
@@ -172,9 +178,13 @@ RunService.Heartbeat:Connect(function(dt)
     StartupTimerLabel.Text = string.format("TIME REMAINING: %02d:%02d:%02d", h, m, s)
 end)
 
+-- ✅ FIXED: Ensure LoadMainHub runs properly before destroying startup
 OkBtn.MouseButton1Click:Connect(function()
-    StartupUI:Destroy()
+    print("🔄 Loading Main Hub...")
     LoadMainHub()
+    task.wait(0.1)
+    StartupUI:Destroy()
+    print("✅ Main Hub Loaded!")
 end)
 
 print("✅ BLUE MODE HUB STARTUP READY")
@@ -186,7 +196,7 @@ function ShowExitConfirm()
     ConfirmUI.ResetOnSpawn = false
     ConfirmUI.DisplayOrder = PRIORITY.EXIT_CONFIRM
     ConfirmUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ConfirmUI.Parent = GuiContainer
+    ConfirmUI.Parent = GuiRoot
 
     local Popup = Instance.new("Frame")
     Popup.Size = UDim2.new(0, 380, 0, 200)
@@ -246,6 +256,7 @@ function ShowExitConfirm()
         if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
         if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
         if MainUI then MainUI:Destroy() end
+        GuiRoot:Destroy()
         getgenv().BlueMode_Loaded = nil
     end)
 end
@@ -259,10 +270,8 @@ function LoadMainHub()
         return
     end
 
-    local LastCheckTime = os.time()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
-    local CurrentSound = nil
-    local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, ESPBtn
+    local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
     local FPSLabel, PingLabel, ServerPingLabel
     local ESP_Enabled = false
     local Buttons_Locked = false
@@ -328,6 +337,15 @@ function LoadMainHub()
         pcall(function() CurrentSound:Play() end)
     end
 -- PASTE PART 2 RIGHT HERE --
+        end)
+    end)
+    Players.PlayerRemoving:Connect(function(OldPlayer)
+        if OldPlayer.Character then
+            pcall(function()
+                if OldPlayer.Character:FindFirstChild("BLUE_Outline") then OldPlayer.Character.BLUE_Outline:Destroy() end
+                if OldPlayer.Character:FindFirstChild("FriendRainbowDot") then OldPlayer.Character.FriendRainbowDot:Destroy() end
+            end)
+        end
     end)
 
     -- FPS COUNTER LOOP
@@ -387,5 +405,5 @@ function LoadMainHub()
         end
     end)
 
-    print("✅ BLUE MODE HUB FULLY LOADED & VISIBLE")
+    print("✅ BLUE MODE HUB FULLY LOADED & VISIBLE!")
 end
