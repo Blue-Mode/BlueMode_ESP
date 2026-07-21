@@ -1,7 +1,7 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 1/2
--- ✅ ONLY FIXED: Accidental volume reset
--- ✅ ALL ORIGINAL CODE / FEATURES KEPT 100%
+-- 🔵 BLUE MODE HUB | PART 1/2 | BUTTON FIXED
+-- ✅ OK BUTTON NOW LOADS MAIN HUB CORRECTLY
+-- ✅ VOLUME BUG FIXED | ALL FEATURES INTACT
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -15,32 +15,31 @@ local Stats = game:GetService("Stats")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
-local CUSTOM_GUI_BG = "rbxassetid://101782008402770"
-
-local GuiContainer = Instance.new("Folder")
-GuiContainer.Name = "BLUE_MODE_HUB_ROOT"
-GuiContainer.Parent = CoreGui
-
-local PRIORITY = {
+-- GLOBALS SHARED BETWEEN PARTS
+CUSTOM_GUI_BG = "rbxassetid://101782008402770"
+PRIORITY = {
     STARTUP = 800,
     MAIN = 799,
     BOOMBOX = 798,
     CONSOLE = 797,
     EXIT_POPUP = 9999
 }
+YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
+SAVE_KEY_VOLUME = "BlueMode_Volume_v22"
+VOLUME_MAX = 1000
+OWNER_USERID = 10820455655
 
-local YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-local SAVE_KEY_VOLUME = "BlueMode_Volume_v22"
-local VOLUME_MAX = 1000
-local OWNER_USERID = 10820455655
+GuiContainer = Instance.new("Folder")
+GuiContainer.Name = "BLUE_MODE_HUB_ROOT"
+GuiContainer.Parent = CoreGui
 
-local BoomboxUI_Open = false
-local ConsoleUI_Open = false
-local CurrentBoomboxUI = nil
-local CurrentConsoleUI = nil
-local IsMinimized = false
-local GuiFocused = false
-local GuiElements = {}
+BoomboxUI_Open = false
+ConsoleUI_Open = false
+CurrentBoomboxUI = nil
+CurrentConsoleUI = nil
+IsMinimized = false
+GuiFocused = false
+GuiElements = {}
 
 local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
 local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
@@ -135,6 +134,7 @@ local function ShowExitConfirm(OnConfirm)
     NoBtn.MouseButton1Click:Connect(function() PopupUI:Destroy() end)
 end
 
+-- STARTUP GUI
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
 StartupUI.ResetOnSpawn = false
@@ -198,7 +198,7 @@ UpdateList.TextXAlignment = Enum.TextXAlignment.Left
 UpdateList.TextYAlignment = Enum.TextYAlignment.Top
 UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
 UpdateList.ZIndex = 2
-UpdateList.Text = [[• VOLUME: 0 → 1000
+UpdateList.Text = [[• VOLUME: 0 → 1000 | SAVES PERMANENTLY
 • NO LONGER BLOCKS ROBLOX MENUS
 • REMAINS ABOVE ALL GAME ELEMENTS
 • All buttons now have matching rainbow outlines
@@ -230,23 +230,24 @@ RunService.Heartbeat:Connect(function(dt)
     StartupTitle.TextColor3 = Col
 end)
 
+-- ✅ FIXED: LoadMainHub is global so button finds it
 OkBtn.MouseButton1Click:Connect(function()
     StartupUI:Destroy()
+    task.wait(0.05)
     LoadMainHub()
 end)
 
-print("✅ BLUE MODE HUB STARTUP READY")
+print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
 
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2 | FULL UNTRUNCATED
--- ✅ ONLY FIX: Volume no longer resets accidentally
--- ✅ ALL ORIGINAL CODE / FEATURES 100% PRESERVED
--- ✅ STARTUP BUTTON NOW LOADS MAIN HUB CORRECTLY
+-- ✅ OK BUTTON LOADS MAIN HUB PERFECTLY
+-- ✅ TYPO FIXED: ESPBt → ESPBtn
+-- ✅ VOLUME SAVES CORRECTLY
+-- ✅ ALL FEATURES PRESERVED
 -- ==============================================
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
-    task.wait(0.1)
-    UpdateVolume(MusicVolume)
     local CurrentSound = nil
     local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, ESPBtn
     local FPSLabel, PingLabel, ServerPingLabel
@@ -360,7 +361,7 @@ function LoadMainHub()
         LocalPlayer.CharacterAdded:Connect(CheckCharacter)
     end
 
-    -- ✅ ONLY FIXED VOLUME LOGIC HERE — NOTHING ELSE CHANGED
+    -- ✅ VOLUME FIXED: Saves permanently, no accidental reset
     local function UpdateVolume(newVol)
         MusicVolume = math.clamp(tonumber(newVol) or LoadData(SAVE_KEY_VOLUME, 500), 0, VOLUME_MAX)
         SaveData(SAVE_KEY_VOLUME, MusicVolume)
@@ -371,6 +372,8 @@ function LoadMainHub()
         if VolNumMenu then VolNumMenu.Text = Val end
         if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
     end
+    UpdateVolume(MusicVolume)
+
     local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D","") end
     local function PlaySound(id)
         pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
@@ -602,7 +605,7 @@ function LoadMainHub()
     ESPBtn.TextColor3 = Color3.new(1,1,1); ESPBtn.Font = Enum.Font.GothamBold
     ESPBtn.TextScaled = true; ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBt,2)
+    AddRainbowGlow(ESPBtn,2)
 
     local YouTubeBtn = Instance.new("TextButton")
     YouTubeBtn.Size = UDim2.new(0,95,0,30); YouTubeBtn.Position = UDim2.new(0,100,0,30)
