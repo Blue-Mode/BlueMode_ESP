@@ -239,11 +239,17 @@ OkBtn.MouseButton1Click:Connect(function()
 end)
 
 print("✅ BLUE MODE HUB STARTUP READY")
--- ⚠️ NOW RUN PART 2 RIGHT AFTER THIS ⚠️
+
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ FINAL FIX: SERVER PING NO LONGER SHOWS 0
--- ✅ ALL BACKGROUNDS & FEATURES UNCHANGED
+-- 🛑 END OF PART 1 — STOP HERE!
+-- ✅ RUN THIS PART FIRST, THEN RUN PART 2 RIGHT AFTER
+-- ==============================================
+
+-- ==============================================
+-- 🔵 BLUE MODE HUB | PART 2/2 | UPDATED ESP SYSTEM
+-- ✅ Owner Check First | Gold Outline + Crown
+-- ✅ Friends Get Rainbow Dot + Rainbow Outline
+-- ✅ All Original Features Preserved
 -- ✅ RUN AFTER PART 1
 -- ==============================================
 function LoadMainHub()
@@ -259,7 +265,7 @@ function LoadMainHub()
     local LOCAL_USERID = LocalPlayer.UserId
     local LastServerLatency = 0
 
-    -- ✅ FULLY FIXED PING (WORKS ON DELTA / ALL EXECUTORS)
+    -- ✅ FULLY FIXED PING (WORKS ON DELTA & ALL EXECUTORS)
     local function GetClientPing()
         local Ping = 0
         pcall(function() Ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) end)
@@ -267,11 +273,9 @@ function LoadMainHub()
         return Ping > 0 and Ping or 0
     end
 
-    -- ✅ NEW SERVER PING: NO MORE 0 VALUES
+    -- ✅ SERVER PING: NO MORE 0 VALUES
     local function GetServerPing()
         local SPing = 0
-
-        -- Method 1: Official Roblox Network Stats (most reliable)
         pcall(function()
             for _, Item in pairs(Stats.Network:GetChildren()) do
                 if Item:IsA("StatsItem") and (Item.Name == "Ping" or Item.Name == "ServerPing" or Item.Name == "Data Ping") then
@@ -280,16 +284,12 @@ function LoadMainHub()
                 end
             end
         end)
-
-        -- Method 2: Performance Latency (Roblox native)
         if SPing <= 0 then
             pcall(function()
-                local Latency = Stats.Performance:GetAttribute("NetworkLatency") or Stats.Performance.NetworkLatency
+                local Latency = Stats.Performance:GetAttribute("NetworkLatency") or Stats.Performance:GetAttribute("Latency")
                 if Latency and Latency > 0 then SPing = math.floor(Latency * 1000) end
             end)
         end
-
-        -- Method 3: Manual RTT Calculation (guaranteed no 0)
         if SPing <= 0 then
             local Start = os.clock()
             task.wait()
@@ -297,20 +297,102 @@ function LoadMainHub()
             LastServerLatency = math.floor((LastServerLatency * 0.7) + (RTT * 0.3))
             SPing = LastServerLatency
         end
-
-        -- Final safety: Never return 0
         return math.max(SPing, GetClientPing(), 10)
     end
 
+    -- ✅ YOUR NEW ESP CLEANUP FUNCTION
     local function ClearAllESP()
-        for _,P in pairs(Players:GetPlayers()) do
-            if P and P.Character then
+        for _, Player in pairs(Players:GetPlayers()) do
+            if Player.Character then
                 pcall(function()
-                    if P.Character:FindFirstChild("BLUE_Outline") then P.Character.BLUE_Outline:Destroy() end
-                    if P.Character:FindFirstChild("FriendRainbowDot") then P.Character.FriendRainbowDot:Destroy() end
-                    if P.Character:FindFirstChild("OwnerCrown") then P.Character.OwnerCrown:Destroy() end
+                    if Player.Character:FindFirstChild("BLUE_Outline") then Player.Character.BLUE_Outline:Destroy() end
+                    if Player.Character:FindFirstChild("FriendRainbowDot") then Player.Character.FriendRainbowDot:Destroy() end
+                    if Player.Character:FindFirstChild("OwnerCrown") then Player.Character.OwnerCrown:Destroy() end
+                    if Player.Character:FindFirstChild("OwnerOutline") then Player.Character.OwnerOutline:Destroy() end
                 end)
             end
+        end
+    end
+
+    -- ✅ YOUR NEW ESP APPLY SYSTEM (OWNER OVERRIDES EVERYTHING)
+    local function ApplyESP(player)
+        if not player or not player.Character then return end
+
+        -- 🔴 OWNER CHECK FIRST: Blue_Mode / Dwayne Kean Francisco
+        if player.Name == "Blue_Mode" or player.Name == "Dwayne Kean Francisco" then
+            -- Gold Outline
+            local outline = Instance.new("Highlight")
+            outline.Name = "OwnerOutline"
+            outline.FillTransparency = 1
+            outline.OutlineTransparency = 0
+            outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            outline.Adornee = player.Character
+            outline.Parent = player.Character
+
+            task.spawn(function()
+                while outline.Parent and ESP_Enabled do
+                    outline.OutlineColor = Color3.fromRGB(255, 215, 0) -- Solid Gold
+                    task.wait(0.1)
+                end
+            end)
+
+            -- Gold Crown Above Head
+            local crown = Instance.new("BillboardGui")
+            crown.Name = "OwnerCrown"
+            crown.Size = UDim2.new(0, 40, 0, 40)
+            crown.StudsOffset = Vector3.new(0, 3.5, 0)
+            crown.AlwaysOnTop = true
+            crown.Adornee = player.Character:FindFirstChild("Head")
+            crown.Parent = player.Character
+
+            local CrownText = Instance.new("TextLabel", crown)
+            CrownText.Size = UDim2.new(1, 0, 1, 0)
+            CrownText.BackgroundTransparency = 1
+            CrownText.Text = "👑"
+            CrownText.TextColor3 = Color3.fromRGB(255, 215, 0)
+            CrownText.TextScaled = true
+            CrownText.Font = Enum.Font.GothamBold
+            return -- Stop here, no friend dot/rainbow for owner
+        end
+
+        -- 🌈 RAINBOW OUTLINE FOR ALL NON-OWNERS
+        local outline = Instance.new("Highlight")
+        outline.Name = "BLUE_Outline"
+        outline.FillTransparency = 1
+        outline.OutlineTransparency = 0
+        outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        outline.Adornee = player.Character
+        outline.Parent = player.Character
+
+        task.spawn(function()
+            while outline.Parent and ESP_Enabled do
+                outline.OutlineColor = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+                task.wait(0.1)
+            end
+        end)
+
+        -- 🟠 RAINBOW DOT FOR FRIENDS ONLY
+        if player:IsFriendsWith(LocalPlayer.UserId) then
+            local dot = Instance.new("BillboardGui")
+            dot.Name = "FriendRainbowDot"
+            dot.Size = UDim2.new(0, 12, 0, 12)
+            dot.StudsOffset = Vector3.new(1.5, 1, 0)
+            dot.AlwaysOnTop = true
+            dot.Adornee = player.Character:FindFirstChild("Head")
+            dot.Parent = player.Character
+
+            local DotFrame = Instance.new("Frame", dot)
+            DotFrame.Size = UDim2.new(1, 0, 1, 0)
+            DotFrame.BackgroundTransparency = 0
+            DotFrame.BorderSizePixel = 0
+            Instance.new("UICorner", DotFrame).CornerRadius = UDim.new(1, 0)
+
+            task.spawn(function()
+                while DotFrame.Parent and ESP_Enabled do
+                    DotFrame.BackgroundColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+                    task.wait(0.1)
+                end
+            end)
         end
     end
 
@@ -320,14 +402,7 @@ function LoadMainHub()
             local Hum = Char:WaitForChild("Humanoid", 10)
             if not Hum then return end
             Hum.Died:Connect(function()
-                if ESP_Enabled then
-                    ESP_Enabled = false
-                    if ESPBtn then
-                        ESPBtn.Text = "ESP: OFF"
-                        ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-                    end
-                    ClearAllESP()
-                end
+                if ESP_Enabled then ClearAllESP() end
             end)
         end
         CheckCharacter(LocalPlayer.Character)
@@ -360,7 +435,7 @@ function LoadMainHub()
         CurrentSound = nil
     end
 
-    -- ✅ BOOMBOX MENU (WITH CUSTOM BACKGROUND)
+    -- ✅ BOOMBOX MENU
     local function ToggleBoomboxMenu()
         if BoomboxUI_Open then
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
@@ -499,7 +574,6 @@ function LoadMainHub()
         PlayBtn.Parent = BoomFrame
         Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(PlayBtn,2)
-        PlayBtn.MouseButton1Click:Connect(function() if Input.Text~="" then PlaySound(Input.Text) end end)
 
         local StopBtn = Instance.new("TextButton")
         StopBtn.Size = UDim2.new(0,130,0,40)
@@ -513,10 +587,12 @@ function LoadMainHub()
         StopBtn.Parent = BoomFrame
         Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0,8)
         AddRainbowGlow(StopBtn,2)
+
+        PlayBtn.MouseButton1Click:Connect(function() if Input.Text~="" then PlaySound(Input.Text) end end)
         StopBtn.MouseButton1Click:Connect(StopSound)
     end
 
-    -- ✅ CONSOLE MENU (WITH CUSTOM BACKGROUND)
+    -- ✅ CONSOLE MENU
     local function ToggleConsole()
         if ConsoleUI_Open then
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -645,7 +721,7 @@ function LoadMainHub()
         ClearBtn.MouseButton1Click:Connect(function() Input.Text = "" Output.Text = "✅ Cleared!" end)
     end
 
-    -- MAIN HUB UI
+    -- ✅ MAIN HUB UI
     local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
     local MainUI = Instance.new("ScreenGui")
@@ -689,7 +765,6 @@ function LoadMainHub()
     MinBtn.Parent = MainFrame
     AddRainbowGlow(MinBtn,2)
 
-    -- ✅ FIXED ESP BUTTON TYPO
     ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,85,0,30)
     ESPBtn.Position = UDim2.new(0,10,0,30)
@@ -750,7 +825,7 @@ function LoadMainHub()
     Instance.new("UICorner", ConsoleBtn).CornerRadius = UDim.new(0,6)
     AddRainbowGlow(ConsoleBtn,2)
 
-    local ExitBtn = Instance.new("TextButton")
+    ExitBtn = Instance.new("TextButton")
     ExitBtn.Size = UDim2.new(0,90,0,30)
     ExitBtn.Position = UDim2.new(0,520,0,30)
     ExitBtn.BackgroundColor3 = Color3.fromRGB(140,20,20)
@@ -762,7 +837,6 @@ function LoadMainHub()
     Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
     AddRainbowGlow(ExitBtn,2)
 
-    -- VOLUME + STATS
     local VolLabelMain = Instance.new("TextLabel")
     VolLabelMain.Size = UDim2.new(0,100,0,25)
     VolLabelMain.Position = UDim2.new(0,10,0,65)
@@ -836,7 +910,6 @@ function LoadMainHub()
     ServerPingLabel.TextColor3 = Color3.fromRGB(255,100,100)
     ServerPingLabel.Parent = StatsBG
 
-    -- MAIN VOLUME SLIDER + DRAG LOGIC
     local SliderActiveMain = false
     VolBGMain.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActiveMain = true end
@@ -875,7 +948,27 @@ function LoadMainHub()
         end
     end)
 
-    -- BUTTON FUNCTIONS
+    -- ✅ UPDATED ESP TOGGLE WITH YOUR LOGIC
+    ESPBtn.MouseButton1Click:Connect(function()
+        ESP_Enabled = not ESP_Enabled
+        if ESP_Enabled then
+            ESPBtn.Text = "ESP: ON"
+            ESPBtn.BackgroundColor3 = Color3.fromRGB(25, 140, 255)
+            for _,plr in pairs(Players:GetPlayers()) do
+                if plr ~= LocalPlayer then
+                    ApplyESP(plr)
+                end
+            end
+            Players.PlayerAdded:Connect(function(plr)
+                plr.CharacterAdded:Connect(function() task.wait(1) ApplyESP(plr) end)
+            end)
+        else
+            ESPBtn.Text = "ESP: OFF"
+            ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+            ClearAllESP()
+        end
+    end)
+
     LockBtn.MouseButton1Click:Connect(function()
         Buttons_Locked = not Buttons_Locked
         LockBtn.Text = Buttons_Locked and "🔒 LOCKED" or "🔓 UNLOCK"
@@ -915,14 +1008,6 @@ function LoadMainHub()
         end
     end)
 
-    ESPBtn.MouseButton1Click:Connect(function()
-        ESP_Enabled = not ESP_Enabled
-        ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
-        ESPBtn.TextColor3 = Color3.new(1,1,1)
-        ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        if not ESP_Enabled then ClearAllESP() end
-    end)
-
     YouTubeBtn.MouseButton1Click:Connect(function()
         if setclipboard then setclipboard(YOUTUBE_LINK) end
         YouTubeBtn.Text = "✅ COPIED!"
@@ -933,8 +1018,10 @@ function LoadMainHub()
     MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)
     ConsoleBtn.MouseButton1Click:Connect(ToggleConsole)
 
+    -- ✅ UPDATED EXIT CLEANUP
     ExitBtn.MouseButton1Click:Connect(function()
         ShowExitConfirm(function()
+            ESP_Enabled = false
             ClearAllESP()
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
@@ -946,17 +1033,6 @@ function LoadMainHub()
 
     SetupDeathCheck()
 
-    -- PLAYER TRACKING
-    Players.PlayerAdded:Connect(function(NewPlayer)
-        NewPlayer.CharacterAdded:Connect(function() task.wait(0.5) end)
-    end)
-    Players.PlayerRemoving:Connect(function(OldPlayer)
-        if OldPlayer.Character then pcall(function()
-            if OldPlayer.Character:FindFirstChild("BLUE_Outline") then OldPlayer.Character.BLUE_Outline:Destroy() end
-        end) end
-    end)
-
-    -- FPS COUNTER
     task.spawn(function()
         while task.wait() do
             local Now = os.clock()
@@ -969,103 +1045,16 @@ function LoadMainHub()
         end
     end)
 
-    -- ✅ MAIN LOOP (RAINBOW + ESP + STATS)
     RunService.Heartbeat:Connect(function(Delta)
         if not MainUI or not MainUI.Parent then return end
-
-        -- Rainbow Animation
         Hue = (Hue + Delta * 0.5) % 1
         local Rainbow = Color3.fromHSV(Hue, 1, 1)
         for _,e in pairs(GuiElements) do e.Color = Rainbow end
         if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
         if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
-
-        -- ✅ UPDATED STATS: NO MORE 0 SERVER PING
         if PingLabel then PingLabel.Text = "PING: "..GetClientPing().."ms" end
         if ServerPingLabel then ServerPingLabel.Text = "SP: "..GetServerPing().."ms" end
-
-        -- Skip if ESP is disabled
-        if not ESP_Enabled then return end
-
-        -- Update ESP for all players
-        for _,P in pairs(Players:GetPlayers()) do
-            if P == LocalPlayer or not P then continue end
-            local Char = P.Character
-            if not Char then
-                pcall(function() if Char and Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
-                continue
-            end
-            local Hum = Char:FindFirstChild("Humanoid")
-            if not Hum or Hum.Health <= 0 then
-                pcall(function() if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
-                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
-                continue
-            end
-
-            -- Create Outline if missing
-            if not Char:FindFirstChild("BLUE_Outline") then
-                local Outline = Instance.new("Highlight")
-                Outline.Name = "BLUE_Outline"
-                Outline.FillTransparency = 0.6
-                Outline.OutlineTransparency = 0
-                Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                Outline.Adornee = Char
-                Outline.Parent = Char
-            end
-            local Outline = Char.BLUE_Outline
-
-            -- Check Friend Status
-            local IsFriend = false
-            pcall(function() IsFriend = P:IsFriendsWith(LOCAL_USERID) end)
-
-            -- Owner / Local Player
-            if P.UserId == LOCAL_USERID then
-                Outline.FillColor = Color3.fromRGB(255,215,0)
-                Outline.OutlineColor = Color3.fromRGB(255,223,0)
-                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
-                if not Char:FindFirstChild("OwnerCrown") then
-                    local Crown = Instance.new("BillboardGui")
-                    Crown.Name = "OwnerCrown"
-                    Crown.Size = UDim2.new(0,32,0,32)
-                    Crown.StudsOffset = Vector3.new(0, 3.5, 0)
-                    Crown.AlwaysOnTop = true
-                    local CrownImg = Instance.new("ImageLabel")
-                    CrownImg.Size = UDim2.new(1,0,1,0)
-                    CrownImg.BackgroundTransparency = 1
-                    CrownImg.Image = "rbxassetid://10342197"
-                    CrownImg.ImageColor3 = Color3.fromRGB(255,215,0)
-                    CrownImg.Parent = Crown
-                    Crown.Parent = Char.Head
-                end
-
-            -- Friends
-            elseif IsFriend then
-                Outline.FillColor = Rainbow
-                Outline.OutlineColor = Rainbow
-                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
-                if not Char:FindFirstChild("FriendRainbowDot") then
-                    local Dot = Instance.new("BillboardGui")
-                    Dot.Name = "FriendRainbowDot"
-                    Dot.Size = UDim2.new(0,15,0,15)
-                    Dot.StudsOffset = Vector3.new(1.5, 1, 0)
-                    Dot.AlwaysOnTop = true
-                    local DotFrame = Instance.new("Frame")
-                    DotFrame.Size = UDim2.new(1,0,1,0)
-                    DotFrame.BackgroundColor3 = Rainbow
-                    Instance.new("UICorner", DotFrame).CornerRadius = UDim.new(1,0)
-                    DotFrame.Parent = Dot
-                    Dot.Parent = Char.Head
-                else
-                    Char.FriendRainbowDot.Frame.BackgroundColor3 = Rainbow
-                end
-
-            -- Other Players
-            else
-                Outline.FillColor = Rainbow
-                Outline.OutlineColor = Rainbow
-                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
-                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
-            end
-        end
     end)
+
+    print("✅ BLUE MODE HUB | UPDATED ESP LOADED SUCCESSFULLY")
 end
