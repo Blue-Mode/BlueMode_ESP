@@ -1,7 +1,5 @@
 -- ==============================================
 -- 🔵 BLUE MODE HUB | FINAL FULL VERSION (Part 1/2)
--- ✅ ESP: Rainbow Outline + Friend Dot + Owner Crown
--- ✅ FIXED Server Ping, FPS, Volume
 -- ==============================================
 
 if getgenv().BlueMode_Loaded then return end
@@ -181,7 +179,7 @@ function LoadMainHub()
         end
     end
 
-    -- ✅ MAIN HUB UI
+    -- MAIN UI
     local MainUI = Instance.new("ScreenGui")
     MainUI.Name = "BLUE_MODE_HUB"
     MainUI.Parent = GuiContainer
