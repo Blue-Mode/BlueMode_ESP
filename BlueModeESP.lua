@@ -242,9 +242,8 @@ print("✅ BLUE MODE HUB STARTUP READY")
 -- ⚠️ USE YOUR EXISTING PART 2 AS IS ⚠️
 
 -- ==============================================
--- 🔵 BLUE MODE HUB | FINAL V15 | NO MORE STUCK DOTS
--- ✅ FORCE REMOVE ALL ITEMS ON ESP OFF / EXIT
--- ✅ OWNER + FRIEND = BOTH DOTS STILL WORKS
+-- 🔵 BLUE MODE HUB | V16 | NO MORE STUCK DOTS EVER
+-- ✅ DOTS/OUTLINES REMOVE 100% INSTANTLY ON ESP OFF / EXIT / DIE
 -- ✅ RUN AFTER PART 1 EXACTLY
 -- ==============================================
 function LoadMainHub()
@@ -253,6 +252,7 @@ function LoadMainHub()
     local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, ESPBtn
     local FPSLabel, PingLabel, ServerPingLabel
     local ESP_Enabled = false
+    local ESP_UpdateRunning = false -- ✅ BLOCKS NEW CREATION WHEN OFF
     local Buttons_Locked = false
     local Hue = 0
     local FPSCounter = 0
@@ -276,30 +276,53 @@ function LoadMainHub()
         return Success and Result or false
     end
 
-    -- ✅ SUPER FORCE CLEANUP: REMOVE EVERYTHING EVERYWHERE
+    -- ✅ SUPER FORCE CLEANUP: REMOVE EVERY POSSIBLE INSTANCE
     local function ClearAllESP()
-        -- CLEAR ALL PLAYERS
+        -- 1. CLEAR ALL PLAYERS' CHARACTERS
         for _, Player in pairs(Players:GetPlayers()) do
-            if Player and Player.Character then
-                local Char = Player.Character
+            if Player then
+                -- Clear old characters too
                 pcall(function()
-                    -- REPEAT UNTIL 100% GONE
-                    for _ = 1, 3 do
-                        if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                        if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-                        if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
-                        if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
+                    for _, Desc in pairs(Player:GetChildren()) do
+                        if Desc:IsA("Model") then
+                            for _, Item in pairs(Desc:GetChildren()) do
+                                if Item.Name == "BLUE_Outline" or Item.Name == "FriendRainbowDot" or Item.Name == "GoldenOwnerDot" or Item.Name == "OwnerCrown" then
+                                    Item:Destroy()
+                                end
+                            end
+                        end
                     end
                 end)
+                -- Clear current character
+                if Player.Character then
+                    local Char = Player.Character
+                    pcall(function()
+                        while Char:FindFirstChild("BLUE_Outline") do Char.BLUE_Outline:Destroy() end
+                        while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end
+                        while Char:FindFirstChild("GoldenOwnerDot") do Char.GoldenOwnerDot:Destroy() end
+                        while Char:FindFirstChild("OwnerCrown") do Char.OwnerCrown:Destroy() end
+                    end)
+                end
             end
         end
-        -- CLEAR ANY LEFTOVERS IN WORKSPACE
-        pcall(function()
-            for _, v in pairs(workspace:GetChildren()) do
-                if v:IsA("Highlight") and v.Name == "BLUE_Outline" then v:Destroy() end
-                if v:IsA("BillboardGui") and (v.Name == "FriendRainbowDot" or v.Name == "GoldenOwnerDot") then v:Destroy() end
-            end
-        end)
+
+        -- 2. CLEAR LEFTOVERS IN WORKSPACE, COREGUI, LIGHTING
+        local ScanTargets = {workspace, game.CoreGui, game:GetService("Lighting"), game:GetService("ReplicatedStorage")}
+        for _, Container in pairs(ScanTargets) do
+            pcall(function()
+                for _, Item in pairs(Container:GetDescendants()) do
+                    if Item.Name == "BLUE_Outline" or Item.Name == "FriendRainbowDot" or Item.Name == "GoldenOwnerDot" or Item.Name == "OwnerCrown" then
+                        Item:Destroy()
+                    end
+                    if Item:IsA("Highlight") and Item.Adornee and Item.Name ~= "BLUE_Outline" then
+                        -- Catch renamed highlights
+                        if Item.Adornee:IsA("Model") and Item.Adornee:FindFirstChildOfClass("Humanoid") then
+                            Item:Destroy()
+                        end
+                    end
+                end
+            end)
+        end
     end
 
     -- ✅ PING CALCULATION
@@ -344,6 +367,7 @@ function LoadMainHub()
             Hum.Died:Connect(function()
                 if ESP_Enabled then
                     ESP_Enabled = false
+                    ESP_UpdateRunning = false
                     if ESPBtn then ESPBtn.Text = "ESP: OFF"; ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40) end
                     ClearAllESP()
                 end
@@ -717,7 +741,7 @@ function LoadMainHub()
         end
     end)
 
-    -- ✅ BUTTON LOGIC WITH FORCE CLEAR
+    -- ✅ BUTTON LOGIC WITH HARD DISABLE
     LockBtn.MouseButton1Click:Connect(function()
         Buttons_Locked = not Buttons_Locked
         LockBtn.Text = Buttons_Locked and "🔒 LOCKED" or "🔓 UNLOCK"
@@ -742,11 +766,15 @@ function LoadMainHub()
 
     ESPBtn.MouseButton1Click:Connect(function()
         ESP_Enabled = not ESP_Enabled
+        ESP_UpdateRunning = ESP_Enabled -- ✅ BLOCK NEW CREATION WHEN OFF
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        ClearAllESP() -- ✅ FORCE CLEAR INSTANTLY
-        task.wait(0.05)
-        ClearAllESP() -- ✅ CLEAR TWICE TO BE 100% SURE
+        -- ✅ FORCE CLEAR 3 TIMES TO BE 100% GONE
+        ClearAllESP()
+        task.wait(0.02)
+        ClearAllESP()
+        task.wait(0.02)
+        ClearAllESP()
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -759,9 +787,11 @@ function LoadMainHub()
 
     ExitBtn.MouseButton1Click:Connect(function()
         ShowExitConfirm(function()
-            ClearAllESP() -- ✅ FORCE CLEAR BEFORE EXIT
-            task.wait(0.05)
-            ClearAllESP() -- ✅ CLEAR TWICE
+            ESP_Enabled = false
+            ESP_UpdateRunning = false
+            ClearAllESP()
+            task.wait(0.02)
+            ClearAllESP()
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -786,7 +816,7 @@ function LoadMainHub()
         end
     end)
 
-    -- ✅ FINAL ESP LOGIC
+    -- ✅ FINAL ESP LOGIC: NO STUCK ITEMS POSSIBLE
     RunService.Heartbeat:Connect(function(Delta)
         Hue = (Hue + Delta * 0.5) % 1
         local Rainbow = Color3.fromHSV(Hue,1,1)
@@ -799,8 +829,11 @@ function LoadMainHub()
         if PingLabel then PingLabel.Text = "PING: "..GetClientPing().."ms" end
         if ServerPingLabel then ServerPingLabel.Text = "SP: "..GetServerPing().."ms" end
 
-        -- ✅ IF ESP OFF: KEEP CLEANING EVERY FRAME
-        if not ESP_Enabled then ClearAllESP(); return end
+        -- ✅ COMPLETELY STOP IF DISABLED
+        if not ESP_Enabled or not ESP_UpdateRunning then
+            ClearAllESP()
+            return
+        end
 
         for _,P in pairs(Players:GetPlayers()) do
             if P == LocalPlayer or not P then continue end
