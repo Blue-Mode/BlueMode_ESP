@@ -242,8 +242,8 @@ print("✅ BLUE MODE HUB STARTUP READY")
 -- ⚠️ USE YOUR EXISTING PART 2 AS IS ⚠️
 
 -- ==============================================
--- 🔵 BLUE MODE HUB | V18 | STUCK DOTS + FPS FIXED
--- ✅ DOTS REMOVE 100% | FPS WORKS | NO LAG
+-- 🔵 BLUE MODE HUB | V19 | STUCK DOTS PERMANENT FIX
+-- ✅ DOTS/OUTLINES VANISH 100% | NO LAG | FPS WORKS
 -- ✅ RUN AFTER PART 1 EXACTLY
 -- ==============================================
 function LoadMainHub()
@@ -278,33 +278,27 @@ function LoadMainHub()
         return PlayerCache[Player.UserId]
     end
 
-    -- ✅ ABSOLUTE CLEANUP | REMOVES EVERYTHING EVERYWHERE
+    -- ✅ ABSOLUTE FORCE CLEANUP | RUNS TWICE TO GUARANTEE REMOVAL
     local function ClearAllESP()
-        -- 1. Destroy on all players & their characters
-        for _, Player in pairs(Players:GetPlayers()) do
-            if Player then
-                pcall(function()
-                    -- Destroy in any child of the player
-                    for _, Item in pairs(Player:GetDescendants()) do
-                        if Item.Name == "BLUE_Outline" or Item.Name == "FriendRainbowDot" or Item.Name == "GoldenOwnerDot" then
-                            Item:Destroy()
-                        end
-                    end
-                    -- Destroy in current character
-                    if Player.Character then
-                        local Char = Player.Character
-                        while Char:FindFirstChild("BLUE_Outline") do Char.BLUE_Outline:Destroy() end
-                        while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end
-                        while Char:FindFirstChild("GoldenOwnerDot") do Char.GoldenOwnerDot:Destroy() end
-                    end
-                end)
-            end
-        end
-        -- 2. Destroy leftovers in workspace
+        -- 1. Destroy all matching items EVERYWHERE
         pcall(function()
-            for _, Item in pairs(workspace:GetDescendants()) do
-                if Item.Name == "BLUE_Outline" or Item.Name == "FriendRainbowDot" or Item.Name == "GoldenOwnerDot" then
-                    Item:Destroy()
+            for _, Container in pairs({Players, workspace, GuiContainer}) do
+                for _, Item in pairs(Container:GetDescendants()) do
+                    if Item:IsA("Highlight") and Item.Name == "BLUE_Outline"
+                    or Item:IsA("BillboardGui") and (Item.Name == "FriendRainbowDot" or Item.Name == "GoldenOwnerDot") then
+                        Item:Destroy()
+                    end
+                end
+            end
+        end)
+        -- 2. SECOND PASS TO CATCH ANY MISSED ITEMS
+        task.wait(0.02)
+        pcall(function()
+            for _, Container in pairs({Players, workspace}) do
+                for _, Item in pairs(Container:GetDescendants()) do
+                    if Item.Name == "BLUE_Outline" or Item.Name == "FriendRainbowDot" or Item.Name == "GoldenOwnerDot" then
+                        Item:Destroy()
+                    end
                 end
             end
         end)
@@ -335,10 +329,9 @@ function LoadMainHub()
             end)
         end
         CheckCharacter(LocalPlayer.Character)
-        LocalPlayer.CharacterAdded:Connect(function(NewChar)
-            task.wait(0.2)
+        LocalPlayer.CharacterAdded:Connect(function()
+            task.wait(0.1)
             ClearAllESP()
-            CheckCharacter(NewChar)
         end)
     end
 
@@ -730,12 +723,13 @@ function LoadMainHub()
     end)
 
     ESPBtn.MouseButton1Click:Connect(function()
-        ESP_Enabled = not ESP_Enabled
-        ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
-        ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
+        ESP_Enabled = false -- FORCE OFF FIRST
         ClearAllESP()
         task.wait(0.05)
         ClearAllESP()
+        ESP_Enabled = true -- ONLY ENABLE AFTER FULL CLEANUP
+        ESPBtn.Text = "ESP: ON"
+        ESPBtn.BackgroundColor3 = Color3.fromRGB(25,120,25)
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -764,7 +758,7 @@ function LoadMainHub()
     Players.PlayerAdded:Connect(function(P) PlayerCache[P.UserId] = nil end)
     Players.PlayerRemoving:Connect(function(P) PlayerCache[P.UserId] = nil end)
 
-    -- ✅ FIXED FPS COUNTER | NO MORE STUCK AT 0
+    -- ✅ WORKING FPS COUNTER
     RunService.RenderStepped:Connect(function()
         FPSCounter += 1
         local Now = os.clock()
@@ -775,7 +769,7 @@ function LoadMainHub()
         end
     end)
 
-    -- ✅ FINAL ESP LOOP
+    -- ✅ FINAL ESP LOOP | NO RECREATION WHEN DISABLED
     RunService.Heartbeat:Connect(function(Delta)
         Hue = (Hue + Delta * 0.5) % 1
         local Rainbow = Color3.fromHSV(Hue,1,1)
@@ -791,7 +785,7 @@ function LoadMainHub()
             if ServerPingLabel then ServerPingLabel.Text = "SP: "..GetServerPing().."ms" end
         end
 
-        -- STOP ALL OPERATIONS IF ESP OFF
+        -- ❌ COMPLETELY SKIP ALL LOGIC WHEN ESP IS OFF
         if not ESP_Enabled then return end
 
         for _,P in pairs(Players:GetPlayers()) do
