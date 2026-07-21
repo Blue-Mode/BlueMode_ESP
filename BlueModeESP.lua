@@ -243,7 +243,7 @@ print("✅ BLUE MODE HUB STARTUP READY")
 
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ FIXED: DOTS FULLY REMOVE ON ESP OFF / EXIT
+-- ✅ FINAL: OWNER DOT + ALL ELEMENTS REMOVE 100%
 -- ✅ OWNER ID: 10820455655
 -- ✅ RUN AFTER PART 1
 -- ==============================================
@@ -297,38 +297,37 @@ function LoadMainHub()
 
     -- ✅ FORCE FULL CLEANUP — NO LEFTOVERS EVER
     local function ClearAllESP()
-        -- Full sweep all players
+        -- First sweep: destroy by exact name
         for _,P in pairs(Players:GetPlayers()) do
             if P and P.Character then
                 pcall(function()
                     local Char = P.Character
-                    -- Destroy every single ESP element
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                     if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
                     if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
-                    -- Extra safety: destroy any BillboardGui/Highlight we created
+                end)
+            end
+        end
+        -- Second sweep: catch ANY stuck/misnamed elements
+        for _,P in pairs(Players:GetPlayers()) do
+            if P and P.Character then
+                pcall(function()
+                    local Char = P.Character
                     for _, v in pairs(Char:GetChildren()) do
-                        if v.Name == "FriendRainbowDot" or v.Name == "GoldenOwnerDot" or v.Name == "BLUE_Outline" or v.Name == "OwnerCrown" then
+                        if v.Name == "FriendRainbowDot" 
+                        or v.Name == "GoldenOwnerDot" 
+                        or v.Name == "BLUE_Outline" 
+                        or v.Name == "OwnerCrown"
+                        or (v:IsA("BillboardGui") and (v.Name:find("Dot") or v.Name:find("Owner")))
+                        or (v:IsA("Highlight") and v.Name == "BLUE_Outline") then
                             v:Destroy()
                         end
                     end
                 end)
             end
         end
-        -- Second sweep to catch stuck items
-        task.wait(0.05)
-        for _,P in pairs(Players:GetPlayers()) do
-            if P and P.Character then
-                pcall(function()
-                    local Char = P.Character
-                    if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-                    if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
-                    if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
-                end)
-            end
-        end
+        task.wait(0.02)
     end
 
     local function SetupDeathCheck()
@@ -942,8 +941,11 @@ function LoadMainHub()
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
         ESPBtn.TextColor3 = Color3.new(1,1,1)
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        -- ✅ FORCE CLEANUP WHEN TURNING OFF
-        if not ESP_Enabled then ClearAllESP() end
+        -- ✅ FORCE CLEANUP + DELAY TO BLOCK RE-ADD
+        if not ESP_Enabled then
+            ClearAllESP()
+            task.wait(0.05)
+        end
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -960,6 +962,7 @@ function LoadMainHub()
         ShowExitConfirm(function()
             -- ✅ FULL CLEANUP BEFORE EXIT
             ClearAllESP()
+            task.wait(0.05)
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
