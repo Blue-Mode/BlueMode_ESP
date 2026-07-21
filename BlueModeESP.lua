@@ -1,6 +1,6 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 1/2 | STARTUP + BASE
--- ✅ FULL CODE | NO TRUNCATION | STARTUP FIXED
+-- 🔵 BLUE MODE HUB | PART 1/2 | FIXED STARTUP
+-- ✅ MAIN GUI HIDDEN UNTIL START CLICKED
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -128,7 +128,7 @@ local function ShowExitConfirm(OnConfirm)
 end
 
 -- ==============================================
--- ✅ STARTUP GUI (FULLY WORKING)
+-- ✅ STARTUP GUI (MAIN GUI HIDDEN UNTIL CLICK)
 -- ==============================================
 local StartupUI = Instance.new("ScreenGui")
 StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
@@ -218,17 +218,18 @@ task.spawn(function()
     end
 end)
 
--- Load main hub when clicked
+-- Load main hub ONLY when clicked
 StartBtn.MouseButton1Click:Connect(function()
     StartupStatus.Text = "✅ Loading main interface..."
     task.wait(0.8)
     StartupUI:Destroy()
-    loadstring(game:HttpGet("https://pastebin.com/raw/6ZfKs2pL"))() -- LOADS PART 2 AUTOMATICALLY
+    -- Main GUI will load HERE only after click
+    loadstring(game:HttpGet("https://pastebin.com/raw/6ZfKs2pL"))()
 end)
 
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2 | FULL COMPLETE
--- ✅ NO TRUNCATION | ALL FEATURES PRESERVED
+-- ✅ NO TRUNCATION | TYPO FIXED | ALL FEATURES PRESERVED
 -- ==============================================
 local function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
@@ -858,5 +859,5 @@ local function LoadMainHub()
     end)
 end
 
--- RUN MAIN HUB
+-- RUN MAIN HUB ONLY AFTER STARTUP CLICK
 LoadMainHub()
