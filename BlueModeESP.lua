@@ -242,8 +242,8 @@ print("✅ BLUE MODE HUB STARTUP READY")
 -- ⚠️ USE YOUR EXISTING PART 2 AS IS ⚠️
 
 -- ==============================================
--- 🔵 BLUE MODE HUB | V17 | HIGH PERFORMANCE | NO LAG
--- ✅ ALL FEATURES KEPT | DOTS STILL DISAPPEAR 100% | LOW CPU
+-- 🔵 BLUE MODE HUB | V18 | STUCK DOTS + FPS FIXED
+-- ✅ DOTS REMOVE 100% | FPS WORKS | NO LAG
 -- ✅ RUN AFTER PART 1 EXACTLY
 -- ==============================================
 function LoadMainHub()
@@ -266,7 +266,7 @@ function LoadMainHub()
     local OWNER_USERID = 10820455655
     local LastServerLatency = 0
 
-    -- ✅ CACHE FRIEND/OWNER CHECKS TO AVOID REPEAT CALLS
+    -- ✅ FRIEND CHECK CACHE
     local PlayerCache = {}
     local function IsPlayerFriend(Player)
         if not Player or Player == LocalPlayer then return false end
@@ -274,32 +274,43 @@ function LoadMainHub()
         local Success, Result = pcall(function() return Player:IsFriendsWith(LOCAL_USERID) end)
         if not Success then Success, Result = pcall(function() return LocalPlayer:IsFriendsWith(Player.UserId) end) end
         PlayerCache[Player.UserId] = Success and Result or false
-        task.delay(5, function() PlayerCache[Player.UserId] = nil end) -- Refresh every 5s
+        task.delay(5, function() PlayerCache[Player.UserId] = nil end)
         return PlayerCache[Player.UserId]
     end
 
-    -- ✅ LIGHTNING FAST CLEANUP | NO UNNECESSARY SCANS
+    -- ✅ ABSOLUTE CLEANUP | REMOVES EVERYTHING EVERYWHERE
     local function ClearAllESP()
+        -- 1. Destroy on all players & their characters
         for _, Player in pairs(Players:GetPlayers()) do
-            if Player and Player.Character then
-                local Char = Player.Character
+            if Player then
                 pcall(function()
-                    if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-                    if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
+                    -- Destroy in any child of the player
+                    for _, Item in pairs(Player:GetDescendants()) do
+                        if Item.Name == "BLUE_Outline" or Item.Name == "FriendRainbowDot" or Item.Name == "GoldenOwnerDot" then
+                            Item:Destroy()
+                        end
+                    end
+                    -- Destroy in current character
+                    if Player.Character then
+                        local Char = Player.Character
+                        while Char:FindFirstChild("BLUE_Outline") do Char.BLUE_Outline:Destroy() end
+                        while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end
+                        while Char:FindFirstChild("GoldenOwnerDot") do Char.GoldenOwnerDot:Destroy() end
+                    end
                 end)
             end
         end
-        -- Only scan workspace for leftovers (no CoreGui/Lighting scan)
+        -- 2. Destroy leftovers in workspace
         pcall(function()
-            for _, v in pairs(workspace:GetChildren()) do
-                if v:IsA("BillboardGui") and (v.Name == "FriendRainbowDot" or v.Name == "GoldenOwnerDot") then v:Destroy() end
-                if v:IsA("Highlight") and v.Name == "BLUE_Outline" then v:Destroy() end
+            for _, Item in pairs(workspace:GetDescendants()) do
+                if Item.Name == "BLUE_Outline" or Item.Name == "FriendRainbowDot" or Item.Name == "GoldenOwnerDot" then
+                    Item:Destroy()
+                end
             end
         end)
     end
 
-    -- ✅ OPTIMIZED PING CALCULATION
+    -- ✅ PING CALCS
     local function GetClientPing()
         local Ping = 0
         pcall(function() Ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) end)
@@ -311,22 +322,24 @@ function LoadMainHub()
         return SPing > 10 and SPing or GetClientPing()
     end
 
-    -- ✅ DEATH CLEANUP
+    -- ✅ DEATH/RESPAWN CLEANUP
     local function SetupDeathCheck()
         local function CheckCharacter(Char)
             if not Char then return end
             local Hum = Char:WaitForChild("Humanoid", 10)
             if not Hum then return end
             Hum.Died:Connect(function()
-                if ESP_Enabled then
-                    ESP_Enabled = false
-                    if ESPBtn then ESPBtn.Text = "ESP: OFF"; ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40) end
-                    ClearAllESP()
-                end
+                ESP_Enabled = false
+                if ESPBtn then ESPBtn.Text = "ESP: OFF"; ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40) end
+                ClearAllESP()
             end)
         end
         CheckCharacter(LocalPlayer.Character)
-        LocalPlayer.CharacterAdded:Connect(CheckCharacter)
+        LocalPlayer.CharacterAdded:Connect(function(NewChar)
+            task.wait(0.2)
+            ClearAllESP()
+            CheckCharacter(NewChar)
+        end)
     end
 
     -- ✅ VOLUME SYSTEM
@@ -421,9 +434,9 @@ function LoadMainHub()
 
         local SliderActive = false
         VolBG.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = true end end)
-        UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = false end end)
+        UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType.Touch then SliderActive = false end end)
         UserInputService.InputChanged:Connect(function(i)
-            if SliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+            if SliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType.Touch) then
                 local rel = math.clamp((i.Position.X - VolBG.AbsolutePosition.X)/VolBG.AbsoluteSize.X, 0, 1)
                 UpdateVolume(math.floor(rel * VOLUME_MAX))
             end
@@ -661,9 +674,9 @@ function LoadMainHub()
     -- DRAG + SLIDER
     local SliderActiveMain = false
     VolBGMain.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActiveMain = true end end)
-    UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActiveMain = false end end)
+    UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType.Touch then SliderActiveMain = false end end)
     UserInputService.InputChanged:Connect(function(i)
-        if SliderActiveMain and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+        if SliderActiveMain and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType.Touch) then
             local rel = math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X)/VolBGMain.AbsoluteSize.X, 0, 1)
             UpdateVolume(math.floor(rel * VOLUME_MAX))
         end
@@ -682,7 +695,7 @@ function LoadMainHub()
         end
     end)
     UserInputService.InputEnded:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType.Touch then
             DragState.Active = false
             task.delay(0.2, function() GuiFocused = false end)
         end
@@ -737,6 +750,8 @@ function LoadMainHub()
         ShowExitConfirm(function()
             ESP_Enabled = false
             ClearAllESP()
+            task.wait(0.05)
+            ClearAllESP()
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -746,21 +761,21 @@ function LoadMainHub()
     end)
 
     SetupDeathCheck()
-    Players.PlayerAdded:Connect(function(P)
-        PlayerCache[P.UserId] = nil
-        P.CharacterAdded:Connect(function() task.wait(0.3) end)
-    end)
+    Players.PlayerAdded:Connect(function(P) PlayerCache[P.UserId] = nil end)
     Players.PlayerRemoving:Connect(function(P) PlayerCache[P.UserId] = nil end)
 
-    -- FPS COUNTER
-    task.spawn(function()
-        while task.wait(1) do
+    -- ✅ FIXED FPS COUNTER | NO MORE STUCK AT 0
+    RunService.RenderStepped:Connect(function()
+        FPSCounter += 1
+        local Now = os.clock()
+        if Now - LastFPSUpdate >= 1 then
             if FPSLabel then FPSLabel.Text = "FPS: "..FPSCounter end
             FPSCounter = 0
+            LastFPSUpdate = Now
         end
     end)
 
-    -- ✅ OPTIMIZED ESP LOOP | NO LAG
+    -- ✅ FINAL ESP LOOP
     RunService.Heartbeat:Connect(function(Delta)
         Hue = (Hue + Delta * 0.5) % 1
         local Rainbow = Color3.fromHSV(Hue,1,1)
@@ -770,12 +785,13 @@ function LoadMainHub()
         if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
         if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
 
-        -- Update stats only every 0.5s to save CPU
+        -- Update stats every 0.5s
         if os.clock() % 0.5 < Delta then
             if PingLabel then PingLabel.Text = "PING: "..GetClientPing().."ms" end
             if ServerPingLabel then ServerPingLabel.Text = "SP: "..GetServerPing().."ms" end
         end
 
+        -- STOP ALL OPERATIONS IF ESP OFF
         if not ESP_Enabled then return end
 
         for _,P in pairs(Players:GetPlayers()) do
@@ -800,7 +816,7 @@ function LoadMainHub()
             local IsFriend = IsPlayerFriend(P)
             local IsOwner = (P.UserId == OWNER_USERID)
 
-            -- Owner + Friend logic
+            -- Owner + Friend Logic
             if IsOwner then
                 local OwnerDot = Char:FindFirstChild("GoldenOwnerDot") or Instance.new("BillboardGui", Char.Head)
                 OwnerDot.Name = "GoldenOwnerDot"; OwnerDot.Size = UDim2.new(0,15,0,15)
