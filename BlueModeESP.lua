@@ -242,8 +242,8 @@ print("✅ BLUE MODE HUB STARTUP READY")
 -- ⚠️ USE YOUR EXISTING PART 2 AS IS ⚠️
 
 -- ==============================================
--- 🔵 BLUE MODE HUB | V19.1 | DRAG FIX + STUCK DOTS + FPS
--- ✅ DRAG SMOOTH | NO TELEPORT | DOTS REMOVE 100% | FPS WORKS
+-- 🔵 BLUE MODE HUB | V19.2 | CRITICAL FIX
+-- ✅ DRAG SMOOTH | NO BLOCKED CLICKS | ESP TOGGLE WORKS
 -- ✅ RUN AFTER PART 1 EXACTLY
 -- ==============================================
 function LoadMainHub()
@@ -264,9 +264,8 @@ function LoadMainHub()
     local TweenService = game:GetService("TweenService")
     local LOCAL_USERID = LocalPlayer.UserId
     local OWNER_USERID = 10820455655
-    local LastServerLatency = 0
 
-    -- ✅ FRIEND CHECK CACHE
+    -- ✅ FRIEND CACHE
     local PlayerCache = {}
     local function IsPlayerFriend(Player)
         if not Player or Player == LocalPlayer then return false end
@@ -278,7 +277,7 @@ function LoadMainHub()
         return PlayerCache[Player.UserId]
     end
 
-    -- ✅ ABSOLUTE FORCE CLEANUP
+    -- ✅ FORCE CLEANUP ALL ESP
     local function ClearAllESP()
         pcall(function()
             for _, Container in pairs({Players, workspace, GuiContainer}) do
@@ -314,7 +313,7 @@ function LoadMainHub()
         return SPing > 10 and SPing or GetClientPing()
     end
 
-    -- ✅ DEATH/RESPAWN CLEANUP
+    -- ✅ DEATH CLEANUP
     local function SetupDeathCheck()
         local function CheckCharacter(Char)
             if not Char then return end
@@ -327,10 +326,7 @@ function LoadMainHub()
             end)
         end
         CheckCharacter(LocalPlayer.Character)
-        LocalPlayer.CharacterAdded:Connect(function()
-            task.wait(0.1)
-            ClearAllESP()
-        end)
+        LocalPlayer.CharacterAdded:Connect(function() task.wait(0.1); ClearAllESP() end)
     end
 
     -- ✅ VOLUME SYSTEM
@@ -662,7 +658,35 @@ function LoadMainHub()
     ServerPingLabel.TextScaled = true; ServerPingLabel.Text = "SP: 0"
     ServerPingLabel.TextColor3 = Color3.fromRGB(255,100,100); ServerPingLabel.Parent = StatsBG
 
-    -- DRAG + SLIDER
+    -- ✅ PROPER DRAG | NO BUTTON BLOCKING
+    local function MakeDraggable(Frame, Handle)
+        local DragState = {Active=false, StartX=0, StartY=0, StartPosX=0, StartPosY=0}
+        Handle.InputBegan:Connect(function(Input)
+            if Buttons_Locked then return end
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                DragState.Active = true
+                DragState.StartX = Input.Position.X
+                DragState.StartY = Input.Position.Y
+                DragState.StartPosX = Frame.Position.X.Offset
+                DragState.StartPosY = Frame.Position.Y.Offset
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                DragState.Active = false
+            end
+        end)
+        UserInputService.InputChanged:Connect(function(Input)
+            if DragState.Active then
+                local DeltaX = Input.Position.X - DragState.StartX
+                local DeltaY = Input.Position.Y - DragState.StartY
+                Frame.Position = UDim2.new(0, DragState.StartPosX + DeltaX, 0, DragState.StartPosY + DeltaY)
+            end
+        end)
+    end
+    MakeDraggable(MainFrame, DragHandle)
+
+    -- VOLUME SLIDER
     local SliderActiveMain = false
     VolBGMain.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActiveMain = true end end)
     UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType.Touch then SliderActiveMain = false end end)
@@ -670,35 +694,6 @@ function LoadMainHub()
         if SliderActiveMain and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType.Touch) then
             local rel = math.clamp((i.Position.X - VolBGMain.AbsolutePosition.X)/VolBGMain.AbsoluteSize.X, 0, 1)
             UpdateVolume(math.floor(rel * VOLUME_MAX))
-        end
-    end)
-
-    -- ✅ COMPLETELY FIXED DRAG | NO MORE TELEPORTING
-    local DragState = {Active=false, StartX=0, StartY=0, StartPosX=0, StartPosY=0}
-    DragHandle.InputBegan:Connect(function(Input)
-        GuiFocused = true
-        if Buttons_Locked then return end
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-            DragState.Active = true
-            -- Save starting positions properly
-            DragState.StartX = Input.Position.X
-            DragState.StartY = Input.Position.Y
-            DragState.StartPosX = MainFrame.Position.X.Offset
-            DragState.StartPosY = MainFrame.Position.Y.Offset
-        end
-    end)
-    UserInputService.InputEnded:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType.Touch then
-            DragState.Active = false
-            task.delay(0.2, function() GuiFocused = false end)
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(Input)
-        if DragState.Active and not Buttons_Locked then
-            -- Calculate RELATIVE movement instead of jumping to absolute position
-            local DeltaX = Input.Position.X - DragState.StartX
-            local DeltaY = Input.Position.Y - DragState.StartY
-            MainFrame.Position = UDim2.new(0, DragState.StartPosX + DeltaX, 0, DragState.StartPosY + DeltaY)
         end
     end)
 
@@ -725,19 +720,15 @@ function LoadMainHub()
         end
     end)
 
+    -- ✅ FIXED ESP TOGGLE | CLEANS FIRST EVERY TIME
     ESPBtn.MouseButton1Click:Connect(function()
-        if not ESP_Enabled then
-            -- Turn ON
-            ClearAllESP()
-            task.wait(0.03)
-            ESP_Enabled = true
+        ClearAllESP()
+        task.wait(0.03)
+        ESP_Enabled = not ESP_Enabled
+        if ESP_Enabled then
             ESPBtn.Text = "ESP: ON"
             ESPBtn.BackgroundColor3 = Color3.fromRGB(25,120,25)
         else
-            -- Turn OFF
-            ESP_Enabled = false
-            ClearAllESP()
-            task.wait(0.03)
             ESPBtn.Text = "ESP: OFF"
             ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
         end
@@ -769,7 +760,7 @@ function LoadMainHub()
     Players.PlayerAdded:Connect(function(P) PlayerCache[P.UserId] = nil end)
     Players.PlayerRemoving:Connect(function(P) PlayerCache[P.UserId] = nil end)
 
-    -- ✅ WORKING FPS COUNTER
+    -- ✅ FPS COUNTER
     RunService.RenderStepped:Connect(function()
         FPSCounter += 1
         local Now = os.clock()
