@@ -123,7 +123,6 @@ local function ShowExitConfirm(OnConfirm)
     NoBtn.Position = UDim2.new(1,-155,0,130)
     NoBtn.BackgroundColor3 = Color3.fromRGB(30,150,220)
     NoBtn.Font = Enum.Font.GothamBold
-    NoBtn.TextScaled = true
     NoBtn.Text = "❌ NO STAY"
     NoBtn.TextColor3 = Color3.new(1,1,1)
     NoBtn.ZIndex = 2
@@ -240,9 +239,10 @@ end)
 
 print("✅ BLUE MODE HUB STARTUP READY")
 -- ⚠️ NOW RUN PART 2 RIGHT AFTER THIS ⚠️
+
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ FINAL FIX: SERVER PING NO LONGER SHOWS 0
+-- ✅ UPDATED: ESP FILLS FULL BODY | FRIEND DOTS CLEAN UP PROPERLY
 -- ✅ ALL BACKGROUNDS & FEATURES UNCHANGED
 -- ✅ RUN AFTER PART 1
 -- ==============================================
@@ -302,6 +302,7 @@ function LoadMainHub()
         return math.max(SPing, GetClientPing(), 10)
     end
 
+    -- ✅ UPDATED: CLEARS OUTLINES + FRIEND DOTS + CROWNS COMPLETELY
     local function ClearAllESP()
         for _,P in pairs(Players:GetPlayers()) do
             if P and P.Character then
@@ -689,7 +690,6 @@ function LoadMainHub()
     MinBtn.Parent = MainFrame
     AddRainbowGlow(MinBtn,2)
 
-    -- ✅ FIXED ESP BUTTON TYPO
     ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,85,0,30)
     ESPBtn.Position = UDim2.new(0,10,0,30)
@@ -915,6 +915,7 @@ function LoadMainHub()
         end
     end)
 
+    -- ✅ UPDATED: CLEARS ALL FRIEND DOTS + OUTLINES WHEN ESP OFF
     ESPBtn.MouseButton1Click:Connect(function()
         ESP_Enabled = not ESP_Enabled
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
@@ -953,6 +954,8 @@ function LoadMainHub()
     Players.PlayerRemoving:Connect(function(OldPlayer)
         if OldPlayer.Character then pcall(function()
             if OldPlayer.Character:FindFirstChild("BLUE_Outline") then OldPlayer.Character.BLUE_Outline:Destroy() end
+            if OldPlayer.Character:FindFirstChild("FriendRainbowDot") then OldPlayer.Character.FriendRainbowDot:Destroy() end
+            if OldPlayer.Character:FindFirstChild("OwnerCrown") then OldPlayer.Character.OwnerCrown:Destroy() end
         end) end
     end)
 
@@ -993,12 +996,14 @@ function LoadMainHub()
             local Char = P.Character
             if not Char then
                 pcall(function() if Char and Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
+                pcall(function() if Char and Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
                 continue
             end
             local Hum = Char:FindFirstChild("Humanoid")
             if not Hum or Hum.Health <= 0 then
                 pcall(function() if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
                 pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
+                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
                 continue
             end
 
@@ -1006,7 +1011,8 @@ function LoadMainHub()
             if not Char:FindFirstChild("BLUE_Outline") then
                 local Outline = Instance.new("Highlight")
                 Outline.Name = "BLUE_Outline"
-                Outline.FillTransparency = 0.6
+                -- ✅ UPDATED: FILL IS NOW FULLY VISIBLE (NO TRANSPARENCY)
+                Outline.FillTransparency = 0
                 Outline.OutlineTransparency = 0
                 Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                 Outline.Adornee = Char
