@@ -242,8 +242,8 @@ print("✅ BLUE MODE HUB STARTUP READY")
 -- ⚠️ USE YOUR EXISTING PART 2 AS IS ⚠️
 
 -- ==============================================
--- 🔵 BLUE MODE HUB | V19 | STUCK DOTS PERMANENT FIX
--- ✅ DOTS/OUTLINES VANISH 100% | NO LAG | FPS WORKS
+-- 🔵 BLUE MODE HUB | V19.1 | DRAG FIX + STUCK DOTS + FPS
+-- ✅ DRAG SMOOTH | NO TELEPORT | DOTS REMOVE 100% | FPS WORKS
 -- ✅ RUN AFTER PART 1 EXACTLY
 -- ==============================================
 function LoadMainHub()
@@ -278,9 +278,8 @@ function LoadMainHub()
         return PlayerCache[Player.UserId]
     end
 
-    -- ✅ ABSOLUTE FORCE CLEANUP | RUNS TWICE TO GUARANTEE REMOVAL
+    -- ✅ ABSOLUTE FORCE CLEANUP
     local function ClearAllESP()
-        -- 1. Destroy all matching items EVERYWHERE
         pcall(function()
             for _, Container in pairs({Players, workspace, GuiContainer}) do
                 for _, Item in pairs(Container:GetDescendants()) do
@@ -291,7 +290,6 @@ function LoadMainHub()
                 end
             end
         end)
-        -- 2. SECOND PASS TO CATCH ANY MISSED ITEMS
         task.wait(0.02)
         pcall(function()
             for _, Container in pairs({Players, workspace}) do
@@ -675,16 +673,18 @@ function LoadMainHub()
         end
     end)
 
-    local DragState = {Active=false, StartX=0, StartY=0, PosX=0, PosY=0}
+    -- ✅ COMPLETELY FIXED DRAG | NO MORE TELEPORTING
+    local DragState = {Active=false, StartX=0, StartY=0, StartPosX=0, StartPosY=0}
     DragHandle.InputBegan:Connect(function(Input)
         GuiFocused = true
         if Buttons_Locked then return end
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             DragState.Active = true
+            -- Save starting positions properly
             DragState.StartX = Input.Position.X
             DragState.StartY = Input.Position.Y
-            DragState.PosX = MainFrame.Position.X.Offset
-            DragState.PosY = MainFrame.Position.Y.Offset
+            DragState.StartPosX = MainFrame.Position.X.Offset
+            DragState.StartPosY = MainFrame.Position.Y.Offset
         end
     end)
     UserInputService.InputEnded:Connect(function(Input)
@@ -695,7 +695,10 @@ function LoadMainHub()
     end)
     UserInputService.InputChanged:Connect(function(Input)
         if DragState.Active and not Buttons_Locked then
-            MainFrame.Position = UDim2.new(0, DragState.PosX + (Input.Position.X - DragState.StartX), 0, DragState.PosY + (Input.Position.Y - DragState.StartY))
+            -- Calculate RELATIVE movement instead of jumping to absolute position
+            local DeltaX = Input.Position.X - DragState.StartX
+            local DeltaY = Input.Position.Y - DragState.StartY
+            MainFrame.Position = UDim2.new(0, DragState.StartPosX + DeltaX, 0, DragState.StartPosY + DeltaY)
         end
     end)
 
@@ -723,13 +726,21 @@ function LoadMainHub()
     end)
 
     ESPBtn.MouseButton1Click:Connect(function()
-        ESP_Enabled = false -- FORCE OFF FIRST
-        ClearAllESP()
-        task.wait(0.05)
-        ClearAllESP()
-        ESP_Enabled = true -- ONLY ENABLE AFTER FULL CLEANUP
-        ESPBtn.Text = "ESP: ON"
-        ESPBtn.BackgroundColor3 = Color3.fromRGB(25,120,25)
+        if not ESP_Enabled then
+            -- Turn ON
+            ClearAllESP()
+            task.wait(0.03)
+            ESP_Enabled = true
+            ESPBtn.Text = "ESP: ON"
+            ESPBtn.BackgroundColor3 = Color3.fromRGB(25,120,25)
+        else
+            -- Turn OFF
+            ESP_Enabled = false
+            ClearAllESP()
+            task.wait(0.03)
+            ESPBtn.Text = "ESP: OFF"
+            ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+        end
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -769,7 +780,7 @@ function LoadMainHub()
         end
     end)
 
-    -- ✅ FINAL ESP LOOP | NO RECREATION WHEN DISABLED
+    -- ✅ ESP LOOP
     RunService.Heartbeat:Connect(function(Delta)
         Hue = (Hue + Delta * 0.5) % 1
         local Rainbow = Color3.fromHSV(Hue,1,1)
@@ -779,13 +790,11 @@ function LoadMainHub()
         if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
         if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
 
-        -- Update stats every 0.5s
         if os.clock() % 0.5 < Delta then
             if PingLabel then PingLabel.Text = "PING: "..GetClientPing().."ms" end
             if ServerPingLabel then ServerPingLabel.Text = "SP: "..GetServerPing().."ms" end
         end
 
-        -- ❌ COMPLETELY SKIP ALL LOGIC WHEN ESP IS OFF
         if not ESP_Enabled then return end
 
         for _,P in pairs(Players:GetPlayers()) do
@@ -801,7 +810,6 @@ function LoadMainHub()
                 continue
             end
 
-            -- Outline
             local Outline = Char:FindFirstChild("BLUE_Outline") or Instance.new("Highlight", Char)
             Outline.Name = "BLUE_Outline"; Outline.FillTransparency=0.6; Outline.OutlineTransparency=0
             Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
@@ -810,7 +818,6 @@ function LoadMainHub()
             local IsFriend = IsPlayerFriend(P)
             local IsOwner = (P.UserId == OWNER_USERID)
 
-            -- Owner + Friend Logic
             if IsOwner then
                 local OwnerDot = Char:FindFirstChild("GoldenOwnerDot") or Instance.new("BillboardGui", Char.Head)
                 OwnerDot.Name = "GoldenOwnerDot"; OwnerDot.Size = UDim2.new(0,15,0,15)
