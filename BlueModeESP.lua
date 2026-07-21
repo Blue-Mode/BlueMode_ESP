@@ -243,8 +243,7 @@ print("✅ BLUE MODE HUB STARTUP READY")
 
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ FIXED: FRIEND DOTS DISAPPEAR PROPERLY + RAINBOW
--- ✅ INSTANT ESP FOR NEW PLAYERS
+-- ✅ OWNER ID: 10820455655 | FINAL RULES
 -- ✅ RUN AFTER PART 1
 -- ==============================================
 function LoadMainHub()
@@ -258,7 +257,8 @@ function LoadMainHub()
     local FPSCounter = 0
     local LastFPSUpdate = os.clock()
     local LOCAL_USERID = LocalPlayer.UserId
-    local LastServerLatency = 0
+    local LAST_SERVER_LATENCY = 0
+    local OWNER_USERID = 10820455655 -- ✅ CORRECT OWNER ID SET
 
     -- ✅ PING FUNCTIONS
     local function GetClientPing()
@@ -288,20 +288,34 @@ function LoadMainHub()
             local Start = os.clock()
             task.wait()
             local RTT = (os.clock() - Start) * 1000
-            LastServerLatency = math.floor((LastServerLatency * 0.7) + (RTT * 0.3))
-            SPing = LastServerLatency
+            LAST_SERVER_LATENCY = math.floor((LAST_SERVER_LATENCY * 0.7) + (RTT * 0.3))
+            SPing = LAST_SERVER_LATENCY
         end
         return math.max(SPing, GetClientPing(), 10)
     end
 
-    -- ✅ FULL CLEANUP: REMOVES EVERYTHING INCLUDING FRIEND DOTS
+    -- ✅ FORCE FULL CLEANUP — NO EXCEPTIONS
     local function ClearAllESP()
         for _,P in pairs(Players:GetPlayers()) do
             if P and P.Character then
                 pcall(function()
-                    if P.Character:FindFirstChild("BLUE_Outline") then P.Character.BLUE_Outline:Destroy() end
-                    if P.Character:FindFirstChild("FriendRainbowDot") then P.Character.FriendRainbowDot:Destroy() end
-                    if P.Character:FindFirstChild("OwnerCrown") then P.Character.OwnerCrown:Destroy() end
+                    local Char = P.Character
+                    if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
+                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+                    if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
+                    if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
+                end)
+            end
+        end
+        task.wait(0.05)
+        for _,P in pairs(Players:GetPlayers()) do
+            if P and P.Character then
+                pcall(function()
+                    local Char = P.Character
+                    if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
+                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+                    if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
+                    if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
                 end)
             end
         end
@@ -313,10 +327,10 @@ function LoadMainHub()
             local Hum = Char:WaitForChild("Humanoid", 10)
             if not Hum then return end
             Hum.Died:Connect(function()
-                -- ✅ REMOVE ESP + DOTS INSTANTLY ON DEATH
                 pcall(function()
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+                    if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
                     if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
                 end)
                 if ESP_Enabled then
@@ -325,6 +339,7 @@ function LoadMainHub()
                         ESPBtn.Text = "ESP: OFF"
                         ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
                     end
+                    ClearAllESP()
                 end
             end)
         end
@@ -917,7 +932,7 @@ function LoadMainHub()
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
         ESPBtn.TextColor3 = Color3.new(1,1,1)
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        if not ESP_Enabled then ClearAllESP() end -- ✅ WIPES ALL DOTS INSTANTLY
+        if not ESP_Enabled then ClearAllESP() end
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -932,7 +947,7 @@ function LoadMainHub()
 
     ExitBtn.MouseButton1Click:Connect(function()
         ShowExitConfirm(function()
-            ClearAllESP() -- ✅ WIPES ALL DOTS BEFORE EXIT
+            ClearAllESP()
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -943,18 +958,19 @@ function LoadMainHub()
 
     SetupDeathCheck()
 
-    -- INSTANT ESP FOR NEW PLAYERS
     Players.PlayerAdded:Connect(function(NewPlayer)
         NewPlayer.CharacterAdded:Connect(function(Char)
-            task.wait(0.1)
+            task.wait(0.15)
         end)
     end)
 
     Players.PlayerRemoving:Connect(function(OldPlayer)
         if OldPlayer.Character then pcall(function()
-            if OldPlayer.Character:FindFirstChild("BLUE_Outline") then OldPlayer.Character.BLUE_Outline:Destroy() end
-            if OldPlayer.Character:FindFirstChild("FriendRainbowDot") then OldPlayer.Character.FriendRainbowDot:Destroy() end
-            if OldPlayer.Character:FindFirstChild("OwnerCrown") then OldPlayer.Character.OwnerCrown:Destroy() end
+            local Char = OldPlayer.Character
+            if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
+            if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+            if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
+            if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
         end) end
     end)
 
@@ -971,84 +987,57 @@ function LoadMainHub()
         end
     end)
 
-    -- MAIN ESP LOOP
+    -- ✅ MAIN ESP LOOP WITH FINAL RULES
     RunService.Heartbeat:Connect(function(Delta)
         if not MainUI or not MainUI.Parent then return end
 
-        -- Rainbow Animation
         Hue = (Hue + Delta * 0.5) % 1
         local Rainbow = Color3.fromHSV(Hue, 1, 1)
+        local GoldenYellow = Color3.fromRGB(255, 215, 0)
         for _,e in pairs(GuiElements) do e.Color = Rainbow end
         if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
         if VolFillMenu then VolFillMenu.BackgroundColor3 = Rainbow end
 
-        -- Update Stats
         if PingLabel then PingLabel.Text = "PING: "..GetClientPing().."ms" end
         if ServerPingLabel then ServerPingLabel.Text = "SP: "..GetServerPing().."ms" end
 
-        -- Skip if ESP disabled
         if not ESP_Enabled then return end
 
-        -- Update ESP for all players
         for _,P in pairs(Players:GetPlayers()) do
             if P == LocalPlayer or not P then continue end
             local Char = P.Character
-            if not Char then
-                pcall(function() if Char and Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
-                pcall(function() if Char and Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
-                continue
-            end
+            if not Char then continue end
             local Hum = Char:FindFirstChild("Humanoid")
             if not Hum or Hum.Health <= 0 then
-                -- ✅ DELETE DOTS INSTANTLY WHEN DEAD
                 pcall(function() if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
                 pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
+                pcall(function() if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end end)
                 pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
                 continue
             end
 
-            -- Create Outline
+            -- Always Rainbow Outline + Solid Fill for everyone
             if not Char:FindFirstChild("BLUE_Outline") then
                 local Outline = Instance.new("Highlight")
                 Outline.Name = "BLUE_Outline"
-                Outline.FillTransparency = 0 -- FULL SOLID FILL
+                Outline.FillTransparency = 0
                 Outline.OutlineTransparency = 0
                 Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                 Outline.Adornee = Char
                 Outline.Parent = Char
             end
             local Outline = Char.BLUE_Outline
+            Outline.FillColor = Rainbow
+            Outline.OutlineColor = Rainbow
 
-            -- Check Friend Status
             local IsFriend = false
             pcall(function() IsFriend = P:IsFriendsWith(LOCAL_USERID) end)
+            local IsOwner = (P.UserId == OWNER_USERID)
 
-            -- Owner / Local Player
-            if P.UserId == LOCAL_USERID then
-                Outline.FillColor = Color3.fromRGB(255,215,0)
-                Outline.OutlineColor = Color3.fromRGB(255,223,0)
-                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
-                if not Char:FindFirstChild("OwnerCrown") then
-                    local Crown = Instance.new("BillboardGui")
-                    Crown.Name = "OwnerCrown"
-                    Crown.Size = UDim2.new(0,32,0,32)
-                    Crown.StudsOffset = Vector3.new(0, 3.5, 0)
-                    Crown.AlwaysOnTop = true
-                    local CrownImg = Instance.new("ImageLabel")
-                    CrownImg.Size = UDim2.new(1,0,1,0)
-                    CrownImg.BackgroundTransparency = 1
-                    CrownImg.Image = "rbxassetid://10342197"
-                    CrownImg.ImageColor3 = Color3.fromRGB(255,215,0)
-                    CrownImg.Parent = Crown
-                    Crown.Parent = Char.Head
-                end
-
-            -- ✅ FRIENDS: SHOW RAINBOW DOT
-            elseif IsFriend then
-                Outline.FillColor = Rainbow
-                Outline.OutlineColor = Rainbow
+            -- ✅ OWNER + FRIEND: RAINBOW DOT + GOLDEN DOT ABOVE
+            if IsOwner and IsFriend then
                 pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
-                -- Create or update dot
+                -- Rainbow Dot
                 if not Char:FindFirstChild("FriendRainbowDot") then
                     local Dot = Instance.new("BillboardGui")
                     Dot.Name = "FriendRainbowDot"
@@ -1062,15 +1051,62 @@ function LoadMainHub()
                     DotFrame.Parent = Dot
                     Dot.Parent = Char.Head
                 else
-                    -- Keep dot RAINBOW
                     Char.FriendRainbowDot.Frame.BackgroundColor3 = Rainbow
                 end
-
-            -- ✅ OTHERS: DELETE DOT COMPLETELY
+                -- Golden Dot Above Head
+                if not Char:FindFirstChild("GoldenOwnerDot") then
+                    local Golden = Instance.new("BillboardGui")
+                    Golden.Name = "GoldenOwnerDot"
+                    Golden.Size = UDim2.new(0,12,0,12)
+                    Golden.StudsOffset = Vector3.new(0, 3, 0)
+                    Golden.AlwaysOnTop = true
+                    local GoldenFrame = Instance.new("Frame")
+                    GoldenFrame.Size = UDim2.new(1,0,1,0)
+                    GoldenFrame.BackgroundColor3 = GoldenYellow
+                    Instance.new("UICorner", GoldenFrame).CornerRadius = UDim.new(1,0)
+                    GoldenFrame.Parent = Golden
+                    Golden.Parent = Char.Head
+                end
+            -- ✅ OWNER + NOT FRIEND: ONLY GOLDEN DOT + RAINBOW OUTLINE
+            elseif IsOwner and not IsFriend then
+                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
+                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
+                if not Char:FindFirstChild("GoldenOwnerDot") then
+                    local Golden = Instance.new("BillboardGui")
+                    Golden.Name = "GoldenOwnerDot"
+                    Golden.Size = UDim2.new(0,12,0,12)
+                    Golden.StudsOffset = Vector3.new(0, 2.5, 0)
+                    Golden.AlwaysOnTop = true
+                    local GoldenFrame = Instance.new("Frame")
+                    GoldenFrame.Size = UDim2.new(1,0,1,0)
+                    GoldenFrame.BackgroundColor3 = GoldenYellow
+                    Instance.new("UICorner", GoldenFrame).CornerRadius = UDim.new(1,0)
+                    GoldenFrame.Parent = Golden
+                    Golden.Parent = Char.Head
+                end
+            -- ✅ NORMAL FRIENDS: ONLY RAINBOW DOT
+            elseif IsFriend then
+                pcall(function() if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end end)
+                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
+                if not Char:FindFirstChild("FriendRainbowDot") then
+                    local Dot = Instance.new("BillboardGui")
+                    Dot.Name = "FriendRainbowDot"
+                    Dot.Size = UDim2.new(0,15,0,15)
+                    Dot.StudsOffset = Vector3.new(1.5, 1, 0)
+                    Dot.AlwaysOnTop = true
+                    local DotFrame = Instance.new("Frame")
+                    DotFrame.Size = UDim2.new(1,0,1,0)
+                    DotFrame.BackgroundColor3 = Rainbow
+                    Instance.new("UICorner", DotFrame).CornerRadius = UDim.new(1,0)
+                    DotFrame.Parent = Dot
+                    Dot.Parent = Char.Head
+                else
+                    Char.FriendRainbowDot.Frame.BackgroundColor3 = Rainbow
+                end
+            -- ✅ NORMAL PLAYERS: NO DOTS, ONLY RAINBOW OUTLINE
             else
-                Outline.FillColor = Rainbow
-                Outline.OutlineColor = Rainbow
-                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end) -- ✅ FORCE DELETE
+                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
+                pcall(function() if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end end)
                 pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
             end
         end
