@@ -243,7 +243,8 @@ print("✅ BLUE MODE HUB STARTUP READY")
 
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ OWNER ID: 10820455655 | FINAL RULES
+-- ✅ FIXED: DOTS FULLY REMOVE ON ESP OFF / EXIT
+-- ✅ OWNER ID: 10820455655
 -- ✅ RUN AFTER PART 1
 -- ==============================================
 function LoadMainHub()
@@ -258,7 +259,7 @@ function LoadMainHub()
     local LastFPSUpdate = os.clock()
     local LOCAL_USERID = LocalPlayer.UserId
     local LAST_SERVER_LATENCY = 0
-    local OWNER_USERID = 10820455655 -- ✅ CORRECT OWNER ID SET
+    local OWNER_USERID = 10820455655
 
     -- ✅ PING FUNCTIONS
     local function GetClientPing()
@@ -294,19 +295,28 @@ function LoadMainHub()
         return math.max(SPing, GetClientPing(), 10)
     end
 
-    -- ✅ FORCE FULL CLEANUP — NO EXCEPTIONS
+    -- ✅ FORCE FULL CLEANUP — NO LEFTOVERS EVER
     local function ClearAllESP()
+        -- Full sweep all players
         for _,P in pairs(Players:GetPlayers()) do
             if P and P.Character then
                 pcall(function()
                     local Char = P.Character
+                    -- Destroy every single ESP element
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                     if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
                     if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
+                    -- Extra safety: destroy any BillboardGui/Highlight we created
+                    for _, v in pairs(Char:GetChildren()) do
+                        if v.Name == "FriendRainbowDot" or v.Name == "GoldenOwnerDot" or v.Name == "BLUE_Outline" or v.Name == "OwnerCrown" then
+                            v:Destroy()
+                        end
+                    end
                 end)
             end
         end
+        -- Second sweep to catch stuck items
         task.wait(0.05)
         for _,P in pairs(Players:GetPlayers()) do
             if P and P.Character then
@@ -932,6 +942,7 @@ function LoadMainHub()
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
         ESPBtn.TextColor3 = Color3.new(1,1,1)
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
+        -- ✅ FORCE CLEANUP WHEN TURNING OFF
         if not ESP_Enabled then ClearAllESP() end
     end)
 
@@ -947,6 +958,7 @@ function LoadMainHub()
 
     ExitBtn.MouseButton1Click:Connect(function()
         ShowExitConfirm(function()
+            -- ✅ FULL CLEANUP BEFORE EXIT
             ClearAllESP()
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
@@ -987,7 +999,7 @@ function LoadMainHub()
         end
     end)
 
-    -- ✅ MAIN ESP LOOP WITH FINAL RULES
+    -- ✅ MAIN ESP LOOP
     RunService.Heartbeat:Connect(function(Delta)
         if not MainUI or not MainUI.Parent then return end
 
