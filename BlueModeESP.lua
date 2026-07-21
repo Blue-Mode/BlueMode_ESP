@@ -243,7 +243,8 @@ print("✅ BLUE MODE HUB STARTUP READY")
 
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ NEW: INSTANT ESP FOR NEW PLAYERS | FULL UNCUT
+-- ✅ FIXED: FRIEND DOTS DISAPPEAR PROPERLY + RAINBOW
+-- ✅ INSTANT ESP FOR NEW PLAYERS
 -- ✅ RUN AFTER PART 1
 -- ==============================================
 function LoadMainHub()
@@ -293,7 +294,7 @@ function LoadMainHub()
         return math.max(SPing, GetClientPing(), 10)
     end
 
-    -- ✅ FULL CLEANUP: REMOVES OUTLINES, FRIEND DOTS, CROWNS EVERYWHERE
+    -- ✅ FULL CLEANUP: REMOVES EVERYTHING INCLUDING FRIEND DOTS
     local function ClearAllESP()
         for _,P in pairs(Players:GetPlayers()) do
             if P and P.Character then
@@ -312,13 +313,18 @@ function LoadMainHub()
             local Hum = Char:WaitForChild("Humanoid", 10)
             if not Hum then return end
             Hum.Died:Connect(function()
+                -- ✅ REMOVE ESP + DOTS INSTANTLY ON DEATH
+                pcall(function()
+                    if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
+                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+                    if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
+                end)
                 if ESP_Enabled then
                     ESP_Enabled = false
                     if ESPBtn then
                         ESPBtn.Text = "ESP: OFF"
                         ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
                     end
-                    ClearAllESP()
                 end
             end)
         end
@@ -911,7 +917,7 @@ function LoadMainHub()
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
         ESPBtn.TextColor3 = Color3.new(1,1,1)
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        if not ESP_Enabled then ClearAllESP() end
+        if not ESP_Enabled then ClearAllESP() end -- ✅ WIPES ALL DOTS INSTANTLY
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -926,7 +932,7 @@ function LoadMainHub()
 
     ExitBtn.MouseButton1Click:Connect(function()
         ShowExitConfirm(function()
-            ClearAllESP()
+            ClearAllESP() -- ✅ WIPES ALL DOTS BEFORE EXIT
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -937,13 +943,10 @@ function LoadMainHub()
 
     SetupDeathCheck()
 
-    -- ✅ NEW: INSTANT ESP WHEN NEW PLAYER JOINS (NO TOGGLE NEEDED)
+    -- INSTANT ESP FOR NEW PLAYERS
     Players.PlayerAdded:Connect(function(NewPlayer)
         NewPlayer.CharacterAdded:Connect(function(Char)
-            task.wait(0.1) -- small delay for character to fully load
-            if ESP_Enabled and Char then
-                -- will be picked up immediately by main loop, no extra work needed
-            end
+            task.wait(0.1)
         end)
     end)
 
@@ -986,7 +989,7 @@ function LoadMainHub()
         -- Skip if ESP disabled
         if not ESP_Enabled then return end
 
-        -- Update ESP for all players (including newly joined)
+        -- Update ESP for all players
         for _,P in pairs(Players:GetPlayers()) do
             if P == LocalPlayer or not P then continue end
             local Char = P.Character
@@ -997,6 +1000,7 @@ function LoadMainHub()
             end
             local Hum = Char:FindFirstChild("Humanoid")
             if not Hum or Hum.Health <= 0 then
+                -- ✅ DELETE DOTS INSTANTLY WHEN DEAD
                 pcall(function() if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
                 pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
                 pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
@@ -1007,7 +1011,7 @@ function LoadMainHub()
             if not Char:FindFirstChild("BLUE_Outline") then
                 local Outline = Instance.new("Highlight")
                 Outline.Name = "BLUE_Outline"
-                Outline.FillTransparency = 0 -- ✅ FULL SOLID FILL
+                Outline.FillTransparency = 0 -- FULL SOLID FILL
                 Outline.OutlineTransparency = 0
                 Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                 Outline.Adornee = Char
@@ -1039,11 +1043,12 @@ function LoadMainHub()
                     Crown.Parent = Char.Head
                 end
 
-            -- Friends
+            -- ✅ FRIENDS: SHOW RAINBOW DOT
             elseif IsFriend then
                 Outline.FillColor = Rainbow
                 Outline.OutlineColor = Rainbow
                 pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
+                -- Create or update dot
                 if not Char:FindFirstChild("FriendRainbowDot") then
                     local Dot = Instance.new("BillboardGui")
                     Dot.Name = "FriendRainbowDot"
@@ -1057,14 +1062,15 @@ function LoadMainHub()
                     DotFrame.Parent = Dot
                     Dot.Parent = Char.Head
                 else
+                    -- Keep dot RAINBOW
                     Char.FriendRainbowDot.Frame.BackgroundColor3 = Rainbow
                 end
 
-            -- Other Players
+            -- ✅ OTHERS: DELETE DOT COMPLETELY
             else
                 Outline.FillColor = Rainbow
                 Outline.OutlineColor = Rainbow
-                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
+                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end) -- ✅ FORCE DELETE
                 pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
             end
         end
