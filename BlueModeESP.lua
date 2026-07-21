@@ -242,10 +242,11 @@ print("✅ BLUE MODE HUB STARTUP READY")
 -- ⚠️ USE YOUR EXISTING PART 2 AS IS ⚠️
 
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 2/2 | FINAL FIX V13
--- ✅ OWNER + FRIEND = BOTH GOLD + RAINBOW DOTS
--- ✅ ALL DOTS/OUTLINES FULLY REMOVE ON ESP OFF / EXIT
--- ✅ RUN AFTER PART 1
+-- 🔵 BLUE MODE HUB | FINAL FIX V14 | FULLY WORKING
+-- ✅ OWNER + FRIEND = GOLD + RAINBOW DOTS TOGETHER
+-- ✅ ALL ITEMS REMOVE INSTANTLY ON ESP OFF / EXIT
+-- ✅ FRIEND CHECK WORKS ON MAIN + ALT
+-- ✅ RUN AFTER PART 1 EXACTLY
 -- ==============================================
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
@@ -257,21 +258,56 @@ function LoadMainHub()
     local Hue = 0
     local FPSCounter = 0
     local LastFPSUpdate = os.clock()
+    local LocalPlayer = game:GetService("Players").LocalPlayer
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local UserInputService = game:GetService("UserInputService")
+    local SoundService = game:GetService("SoundService")
     local LOCAL_USERID = LocalPlayer.UserId
-    local OWNER_USERID = 10820455655
+    local OWNER_USERID = 10820455655 -- YOUR OWNER ID
     local LastServerLatency = 0
+
+    -- ✅ RELIABLE FRIEND CHECK (FIXED FOR MAIN + ALT)
+    local function IsPlayerFriend(Player)
+        if not Player or Player == LocalPlayer then return false end
+        local Success, Result = pcall(function()
+            return Player:IsFriendsWith(LOCAL_USERID)
+        end)
+        if Success then return Result end
+        -- FALLBACK CHECK IF FIRST METHOD FAILS
+        Success, Result = pcall(function()
+            return LocalPlayer:IsFriendsWith(Player.UserId)
+        end)
+        return Success and Result or false
+    end
+
+    -- ✅ 100% PERMANENT CLEANUP (NO MORE STUCK DOTS)
+    local function ClearAllESP()
+        for _, Player in pairs(Players:GetPlayers()) do
+            if Player and Player.Character then
+                local Char = Player.Character
+                pcall(function()
+                    -- REMOVE EVERY SINGLE ITEM REPEATEDLY UNTIL GONE
+                    while Char:FindFirstChild("BLUE_Outline") do Char.BLUE_Outline:Destroy() end
+                    while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end
+                    while Char:FindFirstChild("GoldenOwnerDot") do Char.GoldenOwnerDot:Destroy() end
+                    while Char:FindFirstChild("OwnerCrown") do Char.OwnerCrown:Destroy() end
+                end)
+            end
+        end
+    end
 
     -- ✅ PING CALCULATION
     local function GetClientPing()
         local Ping = 0
-        pcall(function() Ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) end)
-        if Ping <= 0 then pcall(function() Ping = math.floor(NetworkClient:GetPing()) end) end
+        pcall(function() Ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) end)
+        if Ping <= 0 then pcall(function() Ping = math.floor(game:GetService("NetworkClient"):GetPing()) end) end
         return Ping > 0 and Ping or 0
     end
     local function GetServerPing()
         local SPing = 0
         pcall(function()
-            for _, Item in pairs(Stats.Network:GetChildren()) do
+            for _, Item in pairs(game:GetService("Stats").Network:GetChildren()) do
                 if Item:IsA("StatsItem") and (Item.Name == "Ping" or Item.Name == "ServerPing" or Item.Name == "Data Ping") then
                     local Val = tonumber(Item:GetValue())
                     if Val and Val > 0 then SPing = math.floor(Val) end
@@ -280,7 +316,7 @@ function LoadMainHub()
         end)
         if SPing <= 0 then
             pcall(function()
-                local Latency = Stats.Performance:GetAttribute("NetworkLatency") or Stats.Performance.NetworkLatency
+                local Latency = game:GetService("Stats").Performance:GetAttribute("NetworkLatency") or game:GetService("Stats").Performance.NetworkLatency
                 if Latency and Latency > 0 then SPing = math.floor(Latency * 1000) end
             end)
         end
@@ -294,21 +330,7 @@ function LoadMainHub()
         return math.max(SPing, GetClientPing(), 10)
     end
 
-    -- ✅ PERMANENT FULL CLEANUP: NO MORE STUCK DOTS
-    local function ClearAllESP()
-        for _,P in pairs(Players:GetPlayers()) do
-            if P and P.Character then
-                pcall(function()
-                    -- Destroy ALL related items repeatedly until gone
-                    while P.Character:FindFirstChild("BLUE_Outline") do P.Character.BLUE_Outline:Destroy() end
-                    while P.Character:FindFirstChild("FriendRainbowDot") do P.Character.FriendRainbowDot:Destroy() end
-                    while P.Character:FindFirstChild("GoldenOwnerDot") do P.Character.GoldenOwnerDot:Destroy() end
-                    while P.Character:FindFirstChild("OwnerCrown") do P.Character.OwnerCrown:Destroy() end
-                end)
-            end
-        end
-    end
-
+    -- ✅ DEATH CHECK CLEANUP
     local function SetupDeathCheck()
         local function CheckCharacter(Char)
             if not Char then return end
@@ -321,7 +343,7 @@ function LoadMainHub()
                         ESPBtn.Text = "ESP: OFF"
                         ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
                     end
-                    ClearAllESP() -- ✅ CLEAR ON DEATH
+                    ClearAllESP()
                 end
             end)
         end
@@ -723,7 +745,7 @@ function LoadMainHub()
         ESP_Enabled = not ESP_Enabled
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        if not ESP_Enabled then ClearAllESP() end -- ✅ FORCE CLEAR ALL WHEN OFF
+        ClearAllESP() -- ✅ FORCE CLEAR EVERYTHING WHEN TOGGLED OFF
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -747,7 +769,7 @@ function LoadMainHub()
 
     SetupDeathCheck()
     Players.PlayerAdded:Connect(function(P) P.CharacterAdded:Connect(function() task.wait(0.5) end) end)
-    Players.PlayerRemoving:Connect(ClearAllESP)
+    Players.PlayerRemoving:Connect(function(P) if P and P.Character then ClearAllESP() end end)
 
     -- FPS COUNTER
     task.spawn(function()
@@ -761,7 +783,7 @@ function LoadMainHub()
         end
     end)
 
-    -- ✅ FINAL ESP LOGIC: BOTH DOTS WHEN OWNER = FRIEND
+    -- ✅ FINAL ESP LOGIC: FIXED BOTH DOTS + FRIEND CHECK
     RunService.Heartbeat:Connect(function(Delta)
         Hue = (Hue + Delta * 0.5) % 1
         local Rainbow = Color3.fromHSV(Hue,1,1)
@@ -773,7 +795,9 @@ function LoadMainHub()
 
         if PingLabel then PingLabel.Text = "PING: "..GetClientPing().."ms" end
         if ServerPingLabel then ServerPingLabel.Text = "SP: "..GetServerPing().."ms" end
-        if not ESP_Enabled then return end
+
+        -- ✅ IF ESP IS OFF: KEEP CLEANING TO MAKE SURE NOTHING STAYS
+        if not ESP_Enabled then ClearAllESP() return end
 
         for _,P in pairs(Players:GetPlayers()) do
             if P == LocalPlayer or not P then continue end
@@ -788,7 +812,7 @@ function LoadMainHub()
                 continue
             end
 
-            -- ALL PLAYERS GET RAINBOW OUTLINE
+            -- RAINBOW OUTLINE FOR ALL PLAYERS
             if not Char:FindFirstChild("BLUE_Outline") then
                 local Out = Instance.new("Highlight")
                 Out.Name = "BLUE_Outline"; Out.FillTransparency=0.6; Out.OutlineTransparency=0
@@ -797,12 +821,13 @@ function LoadMainHub()
             Char.BLUE_Outline.FillColor = Rainbow
             Char.BLUE_Outline.OutlineColor = Rainbow
 
-            local IsFriend = false; pcall(function() IsFriend = P:IsFriendsWith(LOCAL_USERID) end)
+            -- ✅ FIXED CHECKS FOR MAIN + ALT
+            local IsFriend = IsPlayerFriend(P)
             local IsOwner = (P.UserId == OWNER_USERID)
 
-            -- ✅ IF OWNER + FRIEND = BOTH GOLD + RAINBOW DOTS
+            -- ✅ OWNER + FRIEND = SHOW BOTH DOTS
             if IsOwner then
-                -- GOLDEN DOT FOR OWNER
+                -- GOLDEN OWNER DOT
                 if not Char:FindFirstChild("GoldenOwnerDot") then
                     local Dot = Instance.new("BillboardGui")
                     Dot.Name = "GoldenOwnerDot"; Dot.Size = UDim2.new(0,15,0,15)
@@ -813,7 +838,8 @@ function LoadMainHub()
                 else
                     Char.GoldenOwnerDot.Frame.BackgroundColor3 = Golden
                 end
-                -- ✅ ALSO ADD RAINBOW DOT IF FRIEND
+
+                -- ✅ ADD RAINBOW FRIEND DOT IF ALSO FRIEND
                 if IsFriend then
                     if not Char:FindFirstChild("FriendRainbowDot") then
                         local Dot = Instance.new("BillboardGui")
