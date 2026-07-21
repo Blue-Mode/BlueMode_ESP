@@ -242,10 +242,9 @@ print("✅ BLUE MODE HUB STARTUP READY")
 -- ⚠️ USE YOUR EXISTING PART 2 AS IS ⚠️
 
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 2/2 | UPDATED V12
--- ✅ OWNER = ONLY GOLDEN DOT (NO CROWN / NO OUTLINE)
--- ✅ ALL DOTS / OUTLINES REMOVE ON ESP OFF / EXIT
--- ✅ MAX VOLUME = 1000 | ALL BUTTONS WORKING
+-- 🔵 BLUE MODE HUB | PART 2/2 | FINAL FIX V13
+-- ✅ OWNER + FRIEND = BOTH GOLD + RAINBOW DOTS
+-- ✅ ALL DOTS/OUTLINES FULLY REMOVE ON ESP OFF / EXIT
 -- ✅ RUN AFTER PART 1
 -- ==============================================
 function LoadMainHub()
@@ -295,11 +294,12 @@ function LoadMainHub()
         return math.max(SPing, GetClientPing(), 10)
     end
 
-    -- ✅ FULL CLEANUP: ALL OUTLINES + ALL DOTS REMOVED
+    -- ✅ PERMANENT FULL CLEANUP: NO MORE STUCK DOTS
     local function ClearAllESP()
         for _,P in pairs(Players:GetPlayers()) do
             if P and P.Character then
                 pcall(function()
+                    -- Destroy ALL related items repeatedly until gone
                     while P.Character:FindFirstChild("BLUE_Outline") do P.Character.BLUE_Outline:Destroy() end
                     while P.Character:FindFirstChild("FriendRainbowDot") do P.Character.FriendRainbowDot:Destroy() end
                     while P.Character:FindFirstChild("GoldenOwnerDot") do P.Character.GoldenOwnerDot:Destroy() end
@@ -321,7 +321,7 @@ function LoadMainHub()
                         ESPBtn.Text = "ESP: OFF"
                         ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
                     end
-                    ClearAllESP()
+                    ClearAllESP() -- ✅ CLEAR ON DEATH
                 end
             end)
         end
@@ -329,7 +329,7 @@ function LoadMainHub()
         LocalPlayer.CharacterAdded:Connect(CheckCharacter)
     end
 
-    -- ✅ VOLUME (MAX = 1000 EXACT)
+    -- ✅ VOLUME SYSTEM
     local function UpdateVolume(newVol)
         MusicVolume = math.clamp(tonumber(newVol) or 500, 0, VOLUME_MAX)
         SaveData(SAVE_KEY_VOLUME, MusicVolume)
@@ -424,7 +424,7 @@ function LoadMainHub()
 
         local SliderActive = false
         VolBG.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = true end end)
-        UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = false end end)
+        UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType.Touch then SliderActive = false end end)
         UserInputService.InputChanged:Connect(function(i)
             if SliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
                 local rel = math.clamp((i.Position.X - VolBG.AbsolutePosition.X)/VolBG.AbsoluteSize.X, 0, 1)
@@ -563,7 +563,6 @@ function LoadMainHub()
     MinBtn.TextScaled = true; MinBtn.Parent = MainFrame
     AddRainbowGlow(MinBtn,2)
 
-    -- ✅ FIXED TYPO: ESPBt → ESPBtn
     ESPBtn = Instance.new("TextButton")
     ESPBtn.Size = UDim2.new(0,85,0,30); ESPBtn.Position = UDim2.new(0,10,0,30)
     ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40); ESPBtn.Text = "ESP: OFF"
@@ -724,7 +723,7 @@ function LoadMainHub()
         ESP_Enabled = not ESP_Enabled
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        if not ESP_Enabled then ClearAllESP() end -- ✅ REMOVE ALL DOTS WHEN ESP OFF
+        if not ESP_Enabled then ClearAllESP() end -- ✅ FORCE CLEAR ALL WHEN OFF
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -737,7 +736,7 @@ function LoadMainHub()
 
     ExitBtn.MouseButton1Click:Connect(function()
         ShowExitConfirm(function()
-            ClearAllESP() -- ✅ FULL CLEANUP ON EXIT
+            ClearAllESP() -- ✅ FULL CLEANUP BEFORE EXIT
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -762,7 +761,7 @@ function LoadMainHub()
         end
     end)
 
-    -- ✅ MAIN ESP LOOP (UPDATED)
+    -- ✅ FINAL ESP LOGIC: BOTH DOTS WHEN OWNER = FRIEND
     RunService.Heartbeat:Connect(function(Delta)
         Hue = (Hue + Delta * 0.5) % 1
         local Rainbow = Color3.fromHSV(Hue,1,1)
@@ -789,7 +788,7 @@ function LoadMainHub()
                 continue
             end
 
-            -- ✅ ALL PLAYERS GET RAINBOW OUTLINE
+            -- ALL PLAYERS GET RAINBOW OUTLINE
             if not Char:FindFirstChild("BLUE_Outline") then
                 local Out = Instance.new("Highlight")
                 Out.Name = "BLUE_Outline"; Out.FillTransparency=0.6; Out.OutlineTransparency=0
@@ -801,9 +800,9 @@ function LoadMainHub()
             local IsFriend = false; pcall(function() IsFriend = P:IsFriendsWith(LOCAL_USERID) end)
             local IsOwner = (P.UserId == OWNER_USERID)
 
-            -- ✅ OWNER = ONLY GOLDEN DOT (NO CROWN / NO GOLD OUTLINE)
+            -- ✅ IF OWNER + FRIEND = BOTH GOLD + RAINBOW DOTS
             if IsOwner then
-                while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end
+                -- GOLDEN DOT FOR OWNER
                 if not Char:FindFirstChild("GoldenOwnerDot") then
                     local Dot = Instance.new("BillboardGui")
                     Dot.Name = "GoldenOwnerDot"; Dot.Size = UDim2.new(0,15,0,15)
@@ -814,8 +813,23 @@ function LoadMainHub()
                 else
                     Char.GoldenOwnerDot.Frame.BackgroundColor3 = Golden
                 end
+                -- ✅ ALSO ADD RAINBOW DOT IF FRIEND
+                if IsFriend then
+                    if not Char:FindFirstChild("FriendRainbowDot") then
+                        local Dot = Instance.new("BillboardGui")
+                        Dot.Name = "FriendRainbowDot"; Dot.Size = UDim2.new(0,15,0,15)
+                        Dot.StudsOffset = Vector3.new(1.5,1,0); Dot.AlwaysOnTop = true
+                        local Fr = Instance.new("Frame")
+                        Fr.Size = UDim2.new(1,0,1,0); Fr.BackgroundColor3 = Rainbow
+                        Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0); Fr.Parent=Dot; Dot.Parent=Char.Head
+                    else
+                        Char.FriendRainbowDot.Frame.BackgroundColor3 = Rainbow
+                    end
+                else
+                    while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end
+                end
 
-            -- ✅ FRIENDS = RAINBOW DOT
+            -- ✅ ONLY FRIEND = RAINBOW DOT ONLY
             elseif IsFriend then
                 while Char:FindFirstChild("GoldenOwnerDot") do Char.GoldenOwnerDot:Destroy() end
                 if not Char:FindFirstChild("FriendRainbowDot") then
