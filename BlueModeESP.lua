@@ -243,7 +243,7 @@ print("✅ BLUE MODE HUB STARTUP READY")
 
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ FINAL: OWNER DOT + ALL ELEMENTS REMOVE 100%
+-- ✅ FINAL FIX: NO MORE STUCK DOTS / REAPPEARING BUGS
 -- ✅ OWNER ID: 10820455655
 -- ✅ RUN AFTER PART 1
 -- ==============================================
@@ -253,6 +253,7 @@ function LoadMainHub()
     local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu, ESPBtn
     local FPSLabel, PingLabel, ServerPingLabel
     local ESP_Enabled = false
+    local ESP_Cleaning = false -- ✅ BLOCK LOOP WHILE CLEANING
     local Buttons_Locked = false
     local Hue = 0
     local FPSCounter = 0
@@ -295,39 +296,45 @@ function LoadMainHub()
         return math.max(SPing, GetClientPing(), 10)
     end
 
-    -- ✅ FORCE FULL CLEANUP — NO LEFTOVERS EVER
+    -- ✅ PERMANENT CLEANUP — NO MORE STUCK ELEMENTS
     local function ClearAllESP()
-        -- First sweep: destroy by exact name
+        ESP_Cleaning = true -- ✅ BLOCK LOOP FROM RECREATING
+        task.wait(0.03)
+
+        -- SWEEP 1: EXACT NAMES + DUPLICATE REMOVAL
         for _,P in pairs(Players:GetPlayers()) do
-            if P and P.Character then
+            if P then
                 pcall(function()
+                    -- CHECK OLD CHARACTER TOO
                     local Char = P.Character
-                    if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-                    if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
-                    if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
-                end)
-            end
-        end
-        -- Second sweep: catch ANY stuck/misnamed elements
-        for _,P in pairs(Players:GetPlayers()) do
-            if P and P.Character then
-                pcall(function()
-                    local Char = P.Character
-                    for _, v in pairs(Char:GetChildren()) do
-                        if v.Name == "FriendRainbowDot" 
-                        or v.Name == "GoldenOwnerDot" 
-                        or v.Name == "BLUE_Outline" 
-                        or v.Name == "OwnerCrown"
-                        or (v:IsA("BillboardGui") and (v.Name:find("Dot") or v.Name:find("Owner")))
-                        or (v:IsA("Highlight") and v.Name == "BLUE_Outline") then
-                            v:Destroy()
+                    local OldChar = P:FindFirstChild("OldCharacter")
+                    for _, TargetChar in pairs({Char, OldChar}) do
+                        if TargetChar then
+                            -- DESTROY ALL COPIES, NOT JUST FIRST
+                            while TargetChar:FindFirstChild("BLUE_Outline") do TargetChar.BLUE_Outline:Destroy() end
+                            while TargetChar:FindFirstChild("FriendRainbowDot") do TargetChar.FriendRainbowDot:Destroy() end
+                            while TargetChar:FindFirstChild("GoldenOwnerDot") do TargetChar.GoldenOwnerDot:Destroy() end
+                            while TargetChar:FindFirstChild("OwnerCrown") do TargetChar.OwnerCrown:Destroy() end
+
+                            -- CATCH ANY MATCHING ELEMENTS ANYWHERE
+                            for _, v in pairs(TargetChar:GetDescendants()) do
+                                if v.Name == "FriendRainbowDot" 
+                                or v.Name == "GoldenOwnerDot" 
+                                or v.Name == "BLUE_Outline" 
+                                or v.Name == "OwnerCrown"
+                                or (v:IsA("BillboardGui") and (v.Name:find("Dot") or v.Name:find("Owner")))
+                                or (v:IsA("Highlight") and v.Name == "BLUE_Outline") then
+                                    v:Destroy()
+                                end
+                            end
                         end
                     end
                 end)
             end
         end
-        task.wait(0.02)
+
+        task.wait(0.03)
+        ESP_Cleaning = false
     end
 
     local function SetupDeathCheck()
@@ -337,10 +344,10 @@ function LoadMainHub()
             if not Hum then return end
             Hum.Died:Connect(function()
                 pcall(function()
-                    if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-                    if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
-                    if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
+                    while Char:FindFirstChild("BLUE_Outline") do Char.BLUE_Outline:Destroy() end
+                    while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end
+                    while Char:FindFirstChild("GoldenOwnerDot") do Char.GoldenOwnerDot:Destroy() end
+                    while Char:FindFirstChild("OwnerCrown") do Char.OwnerCrown:Destroy() end
                 end)
                 if ESP_Enabled then
                     ESP_Enabled = false
@@ -941,11 +948,7 @@ function LoadMainHub()
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
         ESPBtn.TextColor3 = Color3.new(1,1,1)
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        -- ✅ FORCE CLEANUP + DELAY TO BLOCK RE-ADD
-        if not ESP_Enabled then
-            ClearAllESP()
-            task.wait(0.05)
-        end
+        if not ESP_Enabled then ClearAllESP() end
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -960,9 +963,7 @@ function LoadMainHub()
 
     ExitBtn.MouseButton1Click:Connect(function()
         ShowExitConfirm(function()
-            -- ✅ FULL CLEANUP BEFORE EXIT
             ClearAllESP()
-            task.wait(0.05)
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -982,10 +983,10 @@ function LoadMainHub()
     Players.PlayerRemoving:Connect(function(OldPlayer)
         if OldPlayer.Character then pcall(function()
             local Char = OldPlayer.Character
-            if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
-            if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
-            if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
-            if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
+            while Char:FindFirstChild("BLUE_Outline") do Char.BLUE_Outline:Destroy() end
+            while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end
+            while Char:FindFirstChild("GoldenOwnerDot") do Char.GoldenOwnerDot:Destroy() end
+            while Char:FindFirstChild("OwnerCrown") do Char.OwnerCrown:Destroy() end
         end) end
     end)
 
@@ -1002,9 +1003,9 @@ function LoadMainHub()
         end
     end)
 
-    -- ✅ MAIN ESP LOOP
+    -- ✅ MAIN ESP LOOP — WITH CLEANING BLOCK
     RunService.Heartbeat:Connect(function(Delta)
-        if not MainUI or not MainUI.Parent then return end
+        if not MainUI or not MainUI.Parent or ESP_Cleaning then return end
 
         Hue = (Hue + Delta * 0.5) % 1
         local Rainbow = Color3.fromHSV(Hue, 1, 1)
@@ -1024,14 +1025,16 @@ function LoadMainHub()
             if not Char then continue end
             local Hum = Char:FindFirstChild("Humanoid")
             if not Hum or Hum.Health <= 0 then
-                pcall(function() if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end end)
-                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
-                pcall(function() if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end end)
-                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
+                pcall(function()
+                    while Char:FindFirstChild("BLUE_Outline") do Char.BLUE_Outline:Destroy() end
+                    while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end
+                    while Char:FindFirstChild("GoldenOwnerDot") do Char.GoldenOwnerDot:Destroy() end
+                    while Char:FindFirstChild("OwnerCrown") do Char.OwnerCrown:Destroy() end
+                end)
                 continue
             end
 
-            -- Always Rainbow Outline + Solid Fill for everyone
+            -- RAINBOW OUTLINE FOR EVERYONE
             if not Char:FindFirstChild("BLUE_Outline") then
                 local Outline = Instance.new("Highlight")
                 Outline.Name = "BLUE_Outline"
@@ -1049,10 +1052,10 @@ function LoadMainHub()
             pcall(function() IsFriend = P:IsFriendsWith(LOCAL_USERID) end)
             local IsOwner = (P.UserId == OWNER_USERID)
 
-            -- ✅ OWNER + FRIEND: RAINBOW DOT + GOLDEN DOT ABOVE
+            -- ✅ OWNER + FRIEND: RAINBOW DOT + GOLDEN DOT
             if IsOwner and IsFriend then
-                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
-                -- Rainbow Dot
+                pcall(function() while Char:FindFirstChild("OwnerCrown") do Char.OwnerCrown:Destroy() end end)
+                -- RAINBOW DOT
                 if not Char:FindFirstChild("FriendRainbowDot") then
                     local Dot = Instance.new("BillboardGui")
                     Dot.Name = "FriendRainbowDot"
@@ -1068,7 +1071,7 @@ function LoadMainHub()
                 else
                     Char.FriendRainbowDot.Frame.BackgroundColor3 = Rainbow
                 end
-                -- Golden Dot Above Head
+                -- GOLDEN OWNER DOT
                 if not Char:FindFirstChild("GoldenOwnerDot") then
                     local Golden = Instance.new("BillboardGui")
                     Golden.Name = "GoldenOwnerDot"
@@ -1082,10 +1085,10 @@ function LoadMainHub()
                     GoldenFrame.Parent = Golden
                     Golden.Parent = Char.Head
                 end
-            -- ✅ OWNER + NOT FRIEND: ONLY GOLDEN DOT + RAINBOW OUTLINE
+            -- ✅ OWNER NOT FRIEND: ONLY GOLDEN DOT
             elseif IsOwner and not IsFriend then
-                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
-                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
+                pcall(function() while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end end)
+                pcall(function() while Char:FindFirstChild("OwnerCrown") do Char.OwnerCrown:Destroy() end end)
                 if not Char:FindFirstChild("GoldenOwnerDot") then
                     local Golden = Instance.new("BillboardGui")
                     Golden.Name = "GoldenOwnerDot"
@@ -1101,8 +1104,8 @@ function LoadMainHub()
                 end
             -- ✅ NORMAL FRIENDS: ONLY RAINBOW DOT
             elseif IsFriend then
-                pcall(function() if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end end)
-                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
+                pcall(function() while Char:FindFirstChild("GoldenOwnerDot") do Char.GoldenOwnerDot:Destroy() end end)
+                pcall(function() while Char:FindFirstChild("OwnerCrown") do Char.OwnerCrown:Destroy() end end)
                 if not Char:FindFirstChild("FriendRainbowDot") then
                     local Dot = Instance.new("BillboardGui")
                     Dot.Name = "FriendRainbowDot"
@@ -1118,11 +1121,11 @@ function LoadMainHub()
                 else
                     Char.FriendRainbowDot.Frame.BackgroundColor3 = Rainbow
                 end
-            -- ✅ NORMAL PLAYERS: NO DOTS, ONLY RAINBOW OUTLINE
+            -- ✅ OTHERS: NO DOTS
             else
-                pcall(function() if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end end)
-                pcall(function() if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end end)
-                pcall(function() if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end end)
+                pcall(function() while Char:FindFirstChild("FriendRainbowDot") do Char.FriendRainbowDot:Destroy() end end)
+                pcall(function() while Char:FindFirstChild("GoldenOwnerDot") do Char.GoldenOwnerDot:Destroy() end end)
+                pcall(function() while Char:FindFirstChild("OwnerCrown") do Char.OwnerCrown:Destroy() end end)
             end
         end
     end)
