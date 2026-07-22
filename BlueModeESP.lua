@@ -361,7 +361,7 @@ function LoadMainHub()
         LocalPlayer.CharacterAdded:Connect(CheckCharacter)
     end
 
-    -- ✅ VOLUME FIXED: raw 0–1000, powerful, audible even if Roblox volume = 0
+    -- ✅ VOLUME FIXED: raw 0–1000, bypasses Roblox global volume
 local function UpdateVolume(newVol)
     MusicVolume = math.clamp(tonumber(newVol) or LoadData(SAVE_KEY_VOLUME, 500), 0, VOLUME_MAX)
     SaveData(SAVE_KEY_VOLUME, MusicVolume)
@@ -381,6 +381,7 @@ local function PlaySound(id)
     CurrentSound.Volume = MusicVolume -- raw 0–1000
     CurrentSound.Looped = true
     CurrentSound.Parent = SoundService
+    SoundService.RespectFilteringEnabled = false -- ensure local override
     SoundService.Volume = 1 -- force audible even if Roblox global volume = 0
     pcall(function() CurrentSound:Play() end)
 end
