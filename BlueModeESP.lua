@@ -361,38 +361,18 @@ function LoadMainHub()
         LocalPlayer.CharacterAdded:Connect(CheckCharacter)
     end
 
-    -- === SOUND SYSTEM: BYPASSES ROBLOX VOLUME 100% ===
-local MasterSoundGroup = Instance.new("SoundGroup")
-MasterSoundGroup.Name = "BlueModeAudio"
-MasterSoundGroup.Volume = 2
-MasterSoundGroup.Parent = SoundService
-
-local function UpdateVolume(newVol)
-    MusicVolume = math.clamp(tonumber(newVol) or LoadData(SAVE_KEY_VOLUME, 500), 0, VOLUME_MAX)
-    SaveData(SAVE_KEY_VOLUME, MusicVolume)
-    local FinalVol = (MusicVolume / VOLUME_MAX) * 2
-    if CurrentSound then CurrentSound.Volume = FinalVol end
-    local Val = tostring(math.floor(MusicVolume + 0.5))
-    if VolNumTextMain then VolNumTextMain.Text = Val end
-    if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
-    if VolNumMenu then VolNumMenu.Text = Val end
-    if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
-end
-UpdateVolume(MusicVolume)
-
-local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D","") end
-local function PlaySound(id)
-    pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
-    CurrentSound = Instance.new("Sound")
-    CurrentSound.SoundId = FormatSoundID(id)
-    CurrentSound.Volume = (MusicVolume / VOLUME_MAX) * 2
-    CurrentSound.SoundGroup = MasterSoundGroup
-    CurrentSound.Looped = true
-    CurrentSound.Parent = SoundService
-    pcall(function() CurrentSound:Play() end)
-end
-local function StopSound() pcall(function() if CurrentSound then CurrentSound:Destroy() end end); CurrentSound = nil end
-
+    -- ✅ VOLUME FIXED: Saves permanently, no accidental reset
+    local function UpdateVolume(newVol)
+        MusicVolume = math.clamp(tonumber(newVol) or LoadData(SAVE_KEY_VOLUME, 500), 0, VOLUME_MAX)
+        SaveData(SAVE_KEY_VOLUME, MusicVolume)
+        if CurrentSound then CurrentSound.Volume = MusicVolume / VOLUME_MAX end
+        local Val = tostring(math.floor(MusicVolume + 0.5))
+        if VolNumTextMain then VolNumTextMain.Text = Val end
+        if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
+        if VolNumMenu then VolNumMenu.Text = Val end
+        if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
+    end
+    UpdateVolume(MusicVolume)
 
     local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D","") end
     local function PlaySound(id)
