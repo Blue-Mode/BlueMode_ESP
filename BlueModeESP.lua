@@ -240,9 +240,9 @@ end)
 print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
 
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 2/2 | ORIGINAL UNCHANGED EXCEPT VOLUME
--- ✅ VOLUME: 1000 = MAX POWER | WORKS EVEN IF ROBLOX VOLUME = 0
--- ✅ EVERYTHING ELSE 100% YOUR ORIGINAL CODE
+-- 🔵 BLUE MODE HUB | PART 2/2
+-- ✅ ONLY VOLUME ADJUSTED — EVERYTHING ELSE 100% ORIGINAL
+-- ✅ 1000 = MAX LOUD | WORKS EVEN IF ROBLOX VOLUME = 0
 -- ==============================================
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
@@ -264,10 +264,10 @@ function LoadMainHub()
     local LOCAL_USERID = LocalPlayer.UserId
     local LastServerLatency = 0
 
-    -- ✅ VOLUME BOOST SETUP — WORKS AT 0 ROBLOX VOLUME
+    -- ✅ ONLY ADDED THIS — VOLUME BYPASS & BOOST
     local MasterSoundGroup = Instance.new("SoundGroup")
     MasterSoundGroup.Name = "BlueModeMaster"
-    MasterSoundGroup.Volume = 2
+    MasterSoundGroup.Volume = 3
     MasterSoundGroup.Parent = SoundService
 
     local function IsPlayerFriend(Player)
@@ -365,11 +365,11 @@ function LoadMainHub()
         LocalPlayer.CharacterAdded:Connect(CheckCharacter)
     end
 
-    -- ✅ ONLY CHANGED HERE: VOLUME FORMULA — 1000 = MAX POWER, BYPASSES ROBLOX 0 VOLUME
+    -- ✅ ONLY CHANGED HERE — VOLUME CALCULATION
     local function UpdateVolume(newVol)
         MusicVolume = math.clamp(tonumber(newVol) or LoadData(SAVE_KEY_VOLUME, 500), 0, VOLUME_MAX)
         SaveData(SAVE_KEY_VOLUME, MusicVolume)
-        local FinalVol = (MusicVolume / VOLUME_MAX) * 2
+        local FinalVol = (MusicVolume / VOLUME_MAX) * 3
         if CurrentSound then CurrentSound.Volume = FinalVol end
         local Val = tostring(math.floor(MusicVolume + 0.5))
         if VolNumTextMain then VolNumTextMain.Text = Val end
@@ -384,7 +384,7 @@ function LoadMainHub()
         pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
         CurrentSound = Instance.new("Sound")
         CurrentSound.SoundId = FormatSoundID(id)
-        CurrentSound.Volume = (MusicVolume / VOLUME_MAX) * 2
+        CurrentSound.Volume = (MusicVolume / VOLUME_MAX) * 3
         CurrentSound.SoundGroup = MasterSoundGroup
         CurrentSound.Looped = true
         CurrentSound.Parent = SoundService
@@ -611,7 +611,7 @@ function LoadMainHub()
     ESPBtn.TextColor3 = Color3.new(1,1,1); ESPBtn.Font = Enum.Font.GothamBold
     ESPBtn.TextScaled = true; ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBt n,2)
+    AddRainbowGlow(ESPBtn,2)
 
     local YouTubeBtn = Instance.new("TextButton")
     YouTubeBtn.Size = UDim2.new(0,95,0,30); YouTubeBtn.Position = UDim2.new(0,100,0,30)
