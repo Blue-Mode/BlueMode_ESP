@@ -1,12 +1,10 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 1/2 | BUTTON FIXED
--- ✅ OK BUTTON NOW LOADS MAIN HUB CORRECTLY
--- ✅ VOLUME BUG FIXED | ALL FEATURES INTACT
+-- 🔵 BLUE MODE HUB | PART 1/2 | STARTUP GUI
+-- ✅ OK BUTTON LOADS MAIN HUB CORRECTLY
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
 
-local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 
@@ -139,121 +137,111 @@ end)
 
 print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
 
--- ==============================================
--- 🔵 BLUE MODE HUB | FULL SCRIPT (FIXED VOLUME)
--- ✅ OK BUTTON LOADS MAIN HUB PERFECTLY
--- ✅ VOLUME SAVES CORRECTLY AND IS POWERFUL
--- ✅ SOUND STILL HEARD EVEN IF ROBLOX VOLUME = 0
--- ==============================================
+-- MAIN HUB GUI
+    local FULL_SIZE = UDim2.new(0,680,0,105)
+    local MINI_SIZE = UDim2.new(0,110,0,36)
+    local MainUI = Instance.new("ScreenGui")
+    MainUI.Name = "BLUE_MODE_HUB"
+    MainUI.ResetOnSpawn = false
+    MainUI.DisplayOrder = PRIORITY.MAIN
+    MainUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    MainUI.Parent = GuiContainer
 
-if getgenv().BlueMode_Loaded then return end
-getgenv().BlueMode_Loaded = true
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = FULL_SIZE
+    MainFrame.Position = UDim2.new(0,20,0.5,-52)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    MainFrame.Active = true
+    MainFrame.ClipsDescendants = false
+    MainFrame.Parent = MainUI
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(MainFrame,5)
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local SoundService = game:GetService("SoundService")
-local NetworkClient = game:GetService("NetworkClient")
-local Stats = game:GetService("Stats")
-local CoreGui = game:GetService("CoreGui")
-local LocalPlayer = Players.LocalPlayer
+    local DragHandle = Instance.new("TextButton")
+    DragHandle.Size = UDim2.new(1,-30,0,22)
+    DragHandle.Position = UDim2.new(0,0,0,0)
+    DragHandle.BackgroundColor3 = Color3.fromRGB(60,140,220)
+    DragHandle.Text = "🔵 BLUE MODE HUB | DRAG ME"
+    DragHandle.TextColor3 = Color3.new(1,1,1)
+    DragHandle.Font = Enum.Font.GothamBold
+    DragHandle.TextScaled = true
+    DragHandle.TextXAlignment = Enum.TextXAlignment.Left
+    DragHandle.AutoLocalize = false
+    DragHandle.Parent = MainFrame
+    AddRainbowGlow(DragHandle,2)
 
-CUSTOM_GUI_BG = "rbxassetid://101782008402770"
-PRIORITY = { STARTUP = 800, MAIN = 799, BOOMBOX = 798, CONSOLE = 797, EXIT_POPUP = 9999 }
-YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-SAVE_KEY_VOLUME = "BlueMode_Volume_v22"
-VOLUME_MAX = 1000
-OWNER_USERID = 10820455655
+    local MinBtn = Instance.new("TextButton")
+    MinBtn.Size = UDim2.new(0,22,1,0)
+    MinBtn.Position = UDim2.new(1,-22,0,0)
+    MinBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
+    MinBtn.Text = "➖"
+    MinBtn.TextColor3 = Color3.new(1,1,1)
+    MinBtn.Font = Enum.Font.GothamBold
+    MinBtn.TextScaled = true
+    MinBtn.Parent = MainFrame
+    AddRainbowGlow(MinBtn,2)
 
-GuiContainer = Instance.new("Folder")
-GuiContainer.Name = "BLUE_MODE_HUB_ROOT"
-GuiContainer.Parent = CoreGui
+    -- ESP Button
+    local ESPBtn = Instance.new("TextButton")
+    ESPBtn.Size = UDim2.new(0,85,0,30)
+    ESPBtn.Position = UDim2.new(0,10,0,30)
+    ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    ESPBtn.Text = "ESP: OFF"
+    ESPBtn.TextColor3 = Color3.new(1,1,1)
+    ESPBtn.Font = Enum.Font.GothamBold
+    ESPBtn.TextScaled = true
+    ESPBtn.Parent = MainFrame
+    Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowGlow(ESPBtn,2)
 
-BoomboxUI_Open, ConsoleUI_Open, CurrentBoomboxUI, CurrentConsoleUI = false, false, nil, nil
-IsMinimized, GuiFocused = false, false
-GuiElements = {}
+    -- YouTube Button
+    local YouTubeBtn = Instance.new("TextButton")
+    YouTubeBtn.Size = UDim2.new(0,95,0,30)
+    YouTubeBtn.Position = UDim2.new(0,100,0,30)
+    YouTubeBtn.BackgroundColor3 = Color3.fromRGB(200,30,30)
+    YouTubeBtn.Text = "📺 YOUTUBE"
+    YouTubeBtn.TextColor3 = Color3.new(1,1,1)
+    YouTubeBtn.Font = Enum.Font.GothamBold
+    YouTubeBtn.TextScaled = true
+    YouTubeBtn.Parent = MainFrame
+    Instance.new("UICorner", YouTubeBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowGlow(YouTubeBtn,2)
 
-local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
-local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
+    -- Music Button
+    local MusicBtn = Instance.new("TextButton")
+    MusicBtn.Size = UDim2.new(0,90,0,30)
+    MusicBtn.Position = UDim2.new(0,200,0,30)
+    MusicBtn.BackgroundColor3 = Color3.fromRGB(40,80,160)
+    MusicBtn.Text = "🎵 MUSIC"
+    MusicBtn.TextColor3 = Color3.new(1,1,1)
+    MusicBtn.Font = Enum.Font.GothamBold
+    MusicBtn.TextScaled = true
+    MusicBtn.Parent = MainFrame
+    Instance.new("UICorner", MusicBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowGlow(MusicBtn,2)
 
-local function AddRainbowGlow(target, thickness)
-    if not target then return end
-    local Outline = Instance.new("UIStroke")
-    Outline.Name = "RainbowAura"
-    Outline.Thickness = thickness or 3
-    Outline.Transparency = 0
-    Outline.LineJoinMode = Enum.LineJoinMode.Round
-    Outline.Parent = target
-    table.insert(GuiElements, Outline)
-end
+    -- Lock Button
+    local LockBtn = Instance.new("TextButton")
+    LockBtn.Size = UDim2.new(0,90,0,30)
+    LockBtn.Position = UDim2.new(0,300,0,30)
+    LockBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    LockBtn.Text = "🔓 UNLOCK"
+    LockBtn.TextColor3 = Color3.new(1,1,1)
+    LockBtn.Font = Enum.Font.GothamBold
+    LockBtn.TextScaled = true
+    LockBtn.Parent = MainFrame
+    Instance.new("UICorner", LockBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowGlow(LockBtn,2)
 
--- ==============================================
--- MAIN HUB LOADER
--- ==============================================
-function LoadMainHub()
-    local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
-    local CurrentSound = nil
-    local VolNumTextMain, VolFillMain, VolFillMenu, VolNumMenu
-
-    -- ✅ FIXED: Volume now raw 0–1000, powerful
-    local function UpdateVolume(newVol)
-        MusicVolume = math.clamp(tonumber(newVol) or LoadData(SAVE_KEY_VOLUME, 500), 0, VOLUME_MAX)
-        SaveData(SAVE_KEY_VOLUME, MusicVolume)
-        if CurrentSound then CurrentSound.Volume = MusicVolume end -- raw value
-        local Val = tostring(math.floor(MusicVolume + 0.5))
-        if VolNumTextMain then VolNumTextMain.Text = Val end
-        if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
-        if VolNumMenu then VolNumMenu.Text = Val end
-        if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
-    end
-    UpdateVolume(MusicVolume)
-
-    local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D","") end
-    local function PlaySound(id)
-        pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
-        CurrentSound = Instance.new("Sound")
-        CurrentSound.SoundId = FormatSoundID(id)
-        CurrentSound.Volume = MusicVolume -- raw 0–1000
-        CurrentSound.Looped = true
-        CurrentSound.Parent = SoundService
-        SoundService.Volume = 1 -- force audible even if Roblox volume = 0
-        pcall(function() CurrentSound:Play() end)
-    end
-    local function StopSound() pcall(function() if CurrentSound then CurrentSound:Destroy() end end); CurrentSound = nil end
-
-    -- (rest of your GUI, ESP, Boombox, Console, etc. remains unchanged)
-end
-
--- ==============================================
--- STARTUP GUI (unchanged except OK button loads hub)
--- ==============================================
-local StartupUI = Instance.new("ScreenGui")
-StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
-StartupUI.ResetOnSpawn = false
-StartupUI.DisplayOrder = PRIORITY.STARTUP
-StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-StartupUI.Parent = GuiContainer
-
--- ... (startup frame, labels, update list, etc.)
-
-local OkBtn = Instance.new("TextButton")
-OkBtn.Size = UDim2.new(0, 260, 0, 60)
-OkBtn.Position = UDim2.new(0.5, -130, 0, 310)
-OkBtn.BackgroundColor3 = Color3.fromRGB(15, 110, 230)
-OkBtn.Font = Enum.Font.GothamBold
-OkBtn.TextScaled = true
-OkBtn.Text = "✓ OK / LOAD MAIN HUB"
-OkBtn.TextColor3 = Color3.new(1,1,1)
-OkBtn.AutoLocalize = false
-OkBtn.ZIndex = 2
-OkBtn.Parent = StartupUI
-Instance.new("UICorner", OkBtn).CornerRadius = UDim.new(0, 16)
-AddRainbowGlow(OkBtn, 3)
-
-OkBtn.MouseButton1Click:Connect(function()
-    StartupUI:Destroy()
-    task.wait(0.05)
-    LoadMainHub()
-end)
-
-print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
+    -- Console Button
+    local ConsoleBtn = Instance.new("TextButton")
+    ConsoleBtn.Size = UDim2.new(0,110,0,30)
+    ConsoleBtn.Position = UDim2.new(0,400,0,30)
+    ConsoleBtn.BackgroundColor3 = Color3.fromRGB(30,120,90)
+    ConsoleBtn.Text = "💻 CONSOLE"
+    ConsoleBtn.TextColor3 = Color3.new(1,1,1)
+    ConsoleBtn.Font = Enum.Font.GothamBold
+    ConsoleBtn.TextScaled = true
+    ConsoleBtn.Parent = MainFrame
+    Instance.new("UICorner", ConsoleBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowGlow(ConsoleBtn,2)
