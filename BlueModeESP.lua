@@ -361,30 +361,29 @@ function LoadMainHub()
         LocalPlayer.CharacterAdded:Connect(CheckCharacter)
     end
 
-    -- ✅ VOLUME FIXED: raw 0–1000, bypasses Roblox global volume
-local function UpdateVolume(newVol)
-    MusicVolume = math.clamp(tonumber(newVol) or LoadData(SAVE_KEY_VOLUME, 500), 0, VOLUME_MAX)
-    SaveData(SAVE_KEY_VOLUME, MusicVolume)
-    if CurrentSound then CurrentSound.Volume = MusicVolume end -- raw value, no division
-    local Val = tostring(math.floor(MusicVolume + 0.5))
-    if VolNumTextMain then VolNumTextMain.Text = Val end
-    if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
-    if VolNumMenu then VolNumMenu.Text = Val end
-    if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
-end
-UpdateVolume(MusicVolume)
+    -- ✅ VOLUME FIXED: Saves permanently, no accidental reset
+    local function UpdateVolume(newVol)
+        MusicVolume = math.clamp(tonumber(newVol) or LoadData(SAVE_KEY_VOLUME, 500), 0, VOLUME_MAX)
+        SaveData(SAVE_KEY_VOLUME, MusicVolume)
+        if CurrentSound then CurrentSound.Volume = MusicVolume / VOLUME_MAX end
+        local Val = tostring(math.floor(MusicVolume + 0.5))
+        if VolNumTextMain then VolNumTextMain.Text = Val end
+        if VolFillMain then VolFillMain.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
+        if VolNumMenu then VolNumMenu.Text = Val end
+        if VolFillMenu then VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0) end
+    end
+    UpdateVolume(MusicVolume)
 
-local function PlaySound(id)
-    pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
-    CurrentSound = Instance.new("Sound")
-    CurrentSound.SoundId = FormatSoundID(id)
-    CurrentSound.Volume = MusicVolume -- raw 0–1000
-    CurrentSound.Looped = true
-    CurrentSound.Parent = SoundService
-    SoundService.RespectFilteringEnabled = false -- ensure local override
-    SoundService.Volume = 1 -- force audible even if Roblox global volume = 0
-    pcall(function() CurrentSound:Play() end)
-end
+    local function FormatSoundID(input) return "rbxassetid://"..tostring(input):gsub("%D","") end
+    local function PlaySound(id)
+        pcall(function() if CurrentSound then CurrentSound:Destroy() end end)
+        CurrentSound = Instance.new("Sound")
+        CurrentSound.SoundId = FormatSoundID(id)
+        CurrentSound.Volume = MusicVolume / VOLUME_MAX
+        CurrentSound.Looped = true
+        CurrentSound.Parent = SoundService
+        pcall(function() CurrentSound:Play() end)
+    end
     local function StopSound() pcall(function() if CurrentSound then CurrentSound:Destroy() end end); CurrentSound = nil end
 
     local function ToggleBoomboxMenu()
