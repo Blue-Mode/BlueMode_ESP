@@ -237,9 +237,9 @@ end)
 print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
 
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 2/2 | NO LAG + ESP FIXED
--- ✅ MINIMUM CPU USAGE | NO WASTED CHECKS
--- ✅ ESP CLEARS 100% WHEN OFF
+-- 🔵 BLUE MODE HUB | PART 2/2 | FINAL FIX
+-- ✅ NO LAG | ESP CLEARS 100% | DOTS/TAGS REMOVE PROPERLY
+-- ✅ NO EXTRA FEATURES | ALL ORIGINAL FUNCTIONS KEPT
 -- ==============================================
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
@@ -267,7 +267,7 @@ function LoadMainHub()
         return Success and Result or false
     end
 
-    -- ✅ FAST CLEAR | NO UNNECESSARY SCANS
+    -- ✅ COMPLETE CLEAR: REMOVE ALL ESP + DOTS + TAGS
     local function ClearAllESP()
         for _, Player in ipairs(Players:GetPlayers()) do
             if Player and Player.Character then
@@ -279,6 +279,8 @@ function LoadMainHub()
                     if FriendDot then FriendDot:Destroy() end
                     local OwnerDot = Char:FindFirstChild("GoldenOwnerDot")
                     if OwnerDot then OwnerDot:Destroy() end
+                    local OwnerCrown = Char:FindFirstChild("OwnerCrown")
+                    if OwnerCrown then OwnerCrown:Destroy() end
                 end)
             end
         end
@@ -752,18 +754,21 @@ function LoadMainHub()
         if PingLabel then PingLabel.Text = "PING: "..GetClientPing().."ms" end
         if ServerPingLabel then ServerPingLabel.Text = "SP: "..GetServerPing().."ms" end
 
-        -- ✅ STOP ALL ESP WORK WHEN OFF
+        -- ✅ STOP ALL WORK WHEN ESP IS OFF
         if not ESP_Enabled then return end
 
         for _,P in ipairs(Players:GetPlayers()) do
             if P == LocalPlayer then continue end
             local Char = P.Character; if not Char then continue end
             local Hum = Char:FindFirstChild("Humanoid")
+
+            -- ✅ REMOVE EVERYTHING IF DEAD
             if not Hum or Hum.Health <= 0 then
                 pcall(function()
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                     if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
+                    if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
                 end)
                 continue
             end
@@ -784,18 +789,23 @@ function LoadMainHub()
             local IsFriend = IsPlayerFriend(P)
             local IsOwner = (P.UserId == OWNER_USERID)
 
+            -- ✅ FORCE REMOVE WRONG DOTS FIRST
+            local FriendDot = Char:FindFirstChild("FriendRainbowDot")
+            local OwnerDot = Char:FindFirstChild("GoldenOwnerDot")
+
             if IsOwner then
-                if not Char:FindFirstChild("GoldenOwnerDot") then
-                    local Dot = Instance.new("BillboardGui")
-                    Dot.Name = "GoldenOwnerDot"
-                    Dot.Size = UDim2.new(0,15,0,15)
-                    Dot.StudsOffset = Vector3.new(0,3,0)
-                    Dot.AlwaysOnTop = true
+                if FriendDot then FriendDot:Destroy() end
+                if not OwnerDot then
+                    OwnerDot = Instance.new("BillboardGui")
+                    OwnerDot.Name = "GoldenOwnerDot"
+                    OwnerDot.Size = UDim2.new(0,15,0,15)
+                    OwnerDot.StudsOffset = Vector3.new(0,3,0)
+                    OwnerDot.AlwaysOnTop = true
                     local Fr = Instance.new("Frame")
                     Fr.Size = UDim2.new(1,0,1,0)
                     Fr.BackgroundColor3 = Golden
                     Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
-                    Fr.Parent=Dot; Dot.Parent=Char.Head
+                    Fr.Parent=OwnerDot; OwnerDot.Parent=Char.Head
                 end
                 if IsFriend then
                     if not Char:FindFirstChild("FriendRainbowDot") then
@@ -811,29 +821,25 @@ function LoadMainHub()
                         Fr.Parent=Dot; Dot.Parent=Char.Head
                     end
                 else
-                    local D = Char:FindFirstChild("FriendRainbowDot")
-                    if D then D:Destroy() end
+                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                 end
             elseif IsFriend then
-                local D = Char:FindFirstChild("GoldenOwnerDot")
-                if D then D:Destroy() end
-                if not Char:FindFirstChild("FriendRainbowDot") then
-                    local Dot = Instance.new("BillboardGui")
-                    Dot.Name = "FriendRainbowDot"
-                    Dot.Size = UDim2.new(0,15,0,15)
-                    Dot.StudsOffset = Vector3.new(1.5,1,0)
-                    Dot.AlwaysOnTop = true
+                if OwnerDot then OwnerDot:Destroy() end
+                if not FriendDot then
+                    FriendDot = Instance.new("BillboardGui")
+                    FriendDot.Name = "FriendRainbowDot"
+                    FriendDot.Size = UDim2.new(0,15,0,15)
+                    FriendDot.StudsOffset = Vector3.new(1.5,1,0)
+                    FriendDot.AlwaysOnTop = true
                     local Fr = Instance.new("Frame")
                     Fr.Size = UDim2.new(1,0,1,0)
                     Fr.BackgroundColor3 = Rainbow
                     Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
-                    Fr.Parent=Dot; Dot.Parent=Char.Head
+                    Fr.Parent=FriendDot; FriendDot.Parent=Char.Head
                 end
             else
-                local D1 = Char:FindFirstChild("FriendRainbowDot")
-                if D1 then D1:Destroy() end
-                local D2 = Char:FindFirstChild("GoldenOwnerDot")
-                if D2 then D2:Destroy() end
+                if FriendDot then FriendDot:Destroy() end
+                if OwnerDot then OwnerDot:Destroy() end
             end
         end
     end)
