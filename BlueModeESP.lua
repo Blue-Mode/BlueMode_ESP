@@ -238,7 +238,7 @@ print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
 
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2 | DOTS REMOVE 100%
--- ✅ NO LAG | NOTHING ADDED | NOTHING REMOVED
+-- ✅ NO LAG | NO FEATURES ADDED/REMOVED
 -- ==============================================
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
@@ -264,20 +264,25 @@ function LoadMainHub()
         return Success and Result or false
     end
 
-    -- ✅ FULL CLEAR: REMOVE ALL ESP + ALL DOTS + ALL TAGS
+    -- ✅ COMPLETE CLEAR: REMOVE ALL ESP + ALL DOTS EVERYWHERE
     local function ClearAllESP()
         for _, Player in ipairs(Players:GetPlayers()) do
             if Player and Player.Character then
                 local Char = Player.Character
                 pcall(function()
-                    local Highlight = Char:FindFirstChild("BLUE_Outline")
-                    if Highlight then Highlight:Destroy() end
-                    local FriendDot = Char:FindFirstChild("FriendRainbowDot")
-                    if FriendDot then FriendDot:Destroy() end
-                    local OwnerDot = Char:FindFirstChild("GoldenOwnerDot")
-                    if OwnerDot then OwnerDot:Destroy() end
-                    local OwnerCrown = Char:FindFirstChild("OwnerCrown")
-                    if OwnerCrown then OwnerCrown:Destroy() end
+                    -- Remove outline
+                    if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
+                    -- Remove dots in character
+                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+                    if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
+                    -- Force check inside Head
+                    if Char:FindFirstChild("Head") then
+                        for _, Child in ipairs(Char.Head:GetChildren()) do
+                            if Child.Name == "FriendRainbowDot" or Child.Name == "GoldenOwnerDot" then
+                                Child:Destroy()
+                            end
+                        end
+                    end
                 end)
             end
         end
@@ -545,7 +550,7 @@ function LoadMainHub()
     ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40); ESPBtn.Text = "ESP: OFF"
     ESPBtn.TextColor3 = Color3.new(1,1,1); ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBtn,2)
+    AddRainbowGlow(ESPB,2)
 
     local YouTubeBtn = Instance.new("TextButton")
     YouTubeBtn.Size = UDim2.new(0,95,0,30); YouTubeBtn.Position = UDim2.new(0,100,0,30)
@@ -692,7 +697,7 @@ function LoadMainHub()
         ESP_Enabled = not ESP_Enabled
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        ClearAllESP() -- ✅ FORCE CLEAR ALL WHEN TOGGLE OFF
+        ClearAllESP() -- ✅ FORCE CLEAR WHEN TURNING OFF
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -706,7 +711,7 @@ function LoadMainHub()
     ExitBtn.MouseButton1Click:Connect(function()
         ShowExitConfirm(function()
             ESP_Enabled = false
-            ClearAllESP() -- ✅ FORCE CLEAR ALL BEFORE EXIT
+            ClearAllESP() -- ✅ FORCE CLEAR BEFORE EXIT
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -755,7 +760,13 @@ function LoadMainHub()
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                     if Char:FindFirstChild("GoldenOwnerDot") then Char.GoldenOwnerDot:Destroy() end
-                    if Char:FindFirstChild("OwnerCrown") then Char.OwnerCrown:Destroy() end
+                    if Char.Head then
+                        for _, v in ipairs(Char.Head:GetChildren()) do
+                            if v.Name == "FriendRainbowDot" or v.Name == "GoldenOwnerDot" then
+                                v:Destroy()
+                            end
+                        end
+                    end
                 end)
                 continue
             end
@@ -779,6 +790,12 @@ function LoadMainHub()
             -- ✅ DELETE WRONG DOTS FIRST
             local FriendDot = Char:FindFirstChild("FriendRainbowDot")
             local OwnerDot = Char:FindFirstChild("GoldenOwnerDot")
+            if Char.Head then
+                for _, v in ipairs(Char.Head:GetChildren()) do
+                    if v.Name == "FriendRainbowDot" then FriendDot = v end
+                    if v.Name == "GoldenOwnerDot" then OwnerDot = v end
+                end
+            end
 
             if IsOwner then
                 if FriendDot then FriendDot:Destroy() end
