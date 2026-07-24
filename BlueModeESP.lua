@@ -237,9 +237,8 @@ end)
 print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
 
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 2/2 | FINAL FIX
--- ✅ NO LAG | ESP CLEARS 100% | DOTS/TAGS REMOVE PROPERLY
--- ✅ NO EXTRA FEATURES | ALL ORIGINAL FUNCTIONS KEPT
+-- 🔵 BLUE MODE HUB | PART 2/2 | DOTS REMOVE 100%
+-- ✅ NO LAG | NOTHING ADDED | NOTHING REMOVED
 -- ==============================================
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
@@ -250,14 +249,12 @@ function LoadMainHub()
     local Buttons_Locked = false
     local Hue = 0
     local FPSCounter = 0
-    local LastFPSUpdate = os.clock()
     local LocalPlayer = game:GetService("Players").LocalPlayer
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local UserInputService = game:GetService("UserInputService")
     local SoundService = game:GetService("SoundService")
     local LOCAL_USERID = LocalPlayer.UserId
-    local LastServerLatency = 0
 
     local function IsPlayerFriend(Player)
         if not Player or Player == LocalPlayer then return false end
@@ -267,7 +264,7 @@ function LoadMainHub()
         return Success and Result or false
     end
 
-    -- ✅ COMPLETE CLEAR: REMOVE ALL ESP + DOTS + TAGS
+    -- ✅ FULL CLEAR: REMOVE ALL ESP + ALL DOTS + ALL TAGS
     local function ClearAllESP()
         for _, Player in ipairs(Players:GetPlayers()) do
             if Player and Player.Character then
@@ -378,15 +375,13 @@ function LoadMainHub()
         local CloseTop = Instance.new("TextButton")
         CloseTop.Size = UDim2.new(0,30,0,30); CloseTop.Position = UDim2.new(1,-35,0,5)
         CloseTop.BackgroundColor3 = Color3.fromRGB(170,30,30); CloseTop.Text = "✕"
-        CloseTop.TextColor3 = Color3.new(1,1,1); CloseTop.Font = Enum.Font.GothamBold
-        CloseTop.Parent = BoomFrame
+        CloseTop.TextColor3 = Color3.new(1,1,1); CloseTop.Parent = BoomFrame
         CloseTop.MouseButton1Click:Connect(ToggleBoomboxMenu)
 
         local Title = Instance.new("TextLabel")
         Title.Size = UDim2.new(1,-70,0,40); Title.Position = UDim2.new(0,12,0,8)
         Title.BackgroundTransparency = 1; Title.Text = "🎵 BOOMBOX & VOLUME"
-        Title.TextColor3 = Color3.new(1,1,1); Title.Font = Enum.Font.GothamBold
-        Title.Parent = BoomFrame
+        Title.TextColor3 = Color3.new(1,1,1); Title.Parent = BoomFrame
 
         local Input = Instance.new("TextBox")
         Input.Size = UDim2.new(1,-40,0,45); Input.Position = UDim2.new(0,20,0,55)
@@ -418,14 +413,10 @@ function LoadMainHub()
 
         local SliderActive = false
         VolBG.InputBegan:Connect(function(i)
-            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                SliderActive = true
-            end
+            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = true end
         end)
         UserInputService.InputEnded:Connect(function(i)
-            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                SliderActive = false
-            end
+            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActive = false end
         end)
         UserInputService.InputChanged:Connect(function(i)
             if SliderActive and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
@@ -639,14 +630,10 @@ function LoadMainHub()
 
     local SliderActiveMain = false
     VolBGMain.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-            SliderActiveMain = true
-        end
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActiveMain = true end
     end)
     UserInputService.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-            SliderActiveMain = false
-        end
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then SliderActiveMain = false end
     end)
     UserInputService.InputChanged:Connect(function(i)
         if SliderActiveMain and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
@@ -705,7 +692,7 @@ function LoadMainHub()
         ESP_Enabled = not ESP_Enabled
         ESPBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
         ESPBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-        ClearAllESP()
+        ClearAllESP() -- ✅ FORCE CLEAR ALL WHEN TOGGLE OFF
     end)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
@@ -719,7 +706,7 @@ function LoadMainHub()
     ExitBtn.MouseButton1Click:Connect(function()
         ShowExitConfirm(function()
             ESP_Enabled = false
-            ClearAllESP()
+            ClearAllESP() -- ✅ FORCE CLEAR ALL BEFORE EXIT
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
@@ -789,7 +776,7 @@ function LoadMainHub()
             local IsFriend = IsPlayerFriend(P)
             local IsOwner = (P.UserId == OWNER_USERID)
 
-            -- ✅ FORCE REMOVE WRONG DOTS FIRST
+            -- ✅ DELETE WRONG DOTS FIRST
             local FriendDot = Char:FindFirstChild("FriendRainbowDot")
             local OwnerDot = Char:FindFirstChild("GoldenOwnerDot")
 
