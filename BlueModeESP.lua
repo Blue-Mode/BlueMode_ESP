@@ -2,7 +2,6 @@
 -- 🔵 BLUE MODE HUB | PART 1/2 | FULL OPTIMIZED
 -- ✅ VOLUME BYPASS | NO LAG WHEN ESP OFF
 -- ✅ ALL FEATURES INTACT
--- ✅ OWNER: DARK → LIGHT BLUE LOOP ANIMATION
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -203,8 +202,8 @@ UpdateList.Text = [[• ✅ VOLUME BYPASSES ROBLOX MASTER VOLUME
 • ✅ NO LONGER BLOCKS ROBLOX MENUS
 • ✅ ALL BUTTONS RAINBOW OUTLINES
 • ✅ FPS / PING / SERVER PING
-• ✅ ESP: FILL + FRIEND DOT + OWNER BLUE GRADIENT
-• Creator: Dark Blue / Blue_Mode]]
+• ✅ ESP: FILL + FRIEND DOT + OWNER GOLD
+• Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
 local OkBtn = Instance.new("TextButton")
@@ -239,9 +238,7 @@ print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
 
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ ALL ORIGINAL FEATURES 100% PRESERVED
--- ✅ ONLY CHANGE: OWNER DOT = LOOPING DARK ↔ LIGHT BLUE
--- ✅ NO LAG | NO MISSING CODE
+-- ✅ ALL UNCHANGED | OWNER DOT: DARK BLUE ↔ LIGHT BLUE LOOP
 -- ==============================================
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
@@ -276,7 +273,7 @@ function LoadMainHub()
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                     if Char:FindFirstChild("BlueOwnerDot") then Char.BlueOwnerDot:Destroy() end
-                    if Char.Head then
+                    if Char:FindFirstChild("Head") then
                         for _, Child in ipairs(Char.Head:GetChildren()) do
                             if Child.Name == "FriendRainbowDot" or Child.Name == "BlueOwnerDot" then
                                 Child:Destroy()
@@ -413,8 +410,7 @@ function LoadMainHub()
 
         VolFillMenu = Instance.new("Frame")
         VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0)
-        VolFillMenu.BackgroundColor3 = Color3.fromRGB(100,100,100)
-        VolFillMenu.Parent = VolBG
+        VolFillMenu.BackgroundColor3 = Color3.fromRGB(100,100,100); VolFillMenu.Parent = VolBG
         Instance.new("UICorner", VolFillMenu).CornerRadius = UDim.new(0,12)
 
         local SliderActive = false
@@ -739,7 +735,6 @@ function LoadMainHub()
         Hue = (Hue + Delta * 0.5) % 1
         BlueAnimTime = (BlueAnimTime + Delta * 0.8) % 1
         local Rainbow = Color3.fromHSV(Hue,1,1)
-        
         local DarkBlue = Color3.fromRGB(0, 30, 120)
         local LightBlue = Color3.fromRGB(80, 190, 255)
         local BlueOwnerColor = DarkBlue:Lerp(LightBlue, math.abs(math.sin(BlueAnimTime * math.pi)))
@@ -849,6 +844,6 @@ function LoadMainHub()
                 if FriendDot then FriendDot:Destroy() end
                 if OwnerDot then OwnerDot:Destroy() end
             end
-        end)
+        end
     end)
 end
