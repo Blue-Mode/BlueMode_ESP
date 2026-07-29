@@ -1,244 +1,7 @@
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 1/2 | FULL OPTIMIZED
--- ✅ VOLUME BYPASS | NO LAG WHEN ESP OFF
--- ✅ ALL FEATURES INTACT
--- ==============================================
-if getgenv().BlueMode_Loaded then return end
-getgenv().BlueMode_Loaded = true
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local SoundService = game:GetService("SoundService")
-local CoreGui = game:GetService("CoreGui")
-local LocalPlayer = Players.LocalPlayer
-
--- GLOBALS SHARED BETWEEN PARTS
-CUSTOM_GUI_BG = "rbxassetid://101782008402770"
-PRIORITY = {
-    STARTUP = 800,
-    MAIN = 799,
-    BOOMBOX = 798,
-    CONSOLE = 797,
-    EXIT_POPUP = 9999
-}
-YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
-SAVE_KEY_VOLUME = "BlueMode_Volume_v22"
-VOLUME_MAX = 1000
-OWNER_USERID = 10820455655
-
-GuiContainer = Instance.new("Folder")
-GuiContainer.Name = "BLUE_MODE_HUB_ROOT"
-GuiContainer.Parent = CoreGui
-
-BoomboxUI_Open = false
-ConsoleUI_Open = false
-CurrentBoomboxUI = nil
-CurrentConsoleUI = nil
-IsMinimized = false
-GuiFocused = false
-GuiElements = {}
-
-local function SaveData(key, value) pcall(function() writefile(key..".txt", tostring(value)) end) end
-local function LoadData(key, default) local v=nil; pcall(function() v=readfile(key..".txt") end); return tonumber(v) or default end
-
-local function AddRainbowGlow(target, thickness)
-    if not target then return end
-    local Outline = Instance.new("UIStroke")
-    Outline.Name = "RainbowAura"
-    Outline.Thickness = thickness or 3
-    Outline.Transparency = 0
-    Outline.LineJoinMode = Enum.LineJoinMode.Round
-    Outline.Parent = target
-    table.insert(GuiElements, Outline)
-end
-
-local function ShowExitConfirm(OnConfirm)
-    local PopupUI = Instance.new("ScreenGui")
-    PopupUI.Name = "BLUE_MODE_EXIT_CONFIRM"
-    PopupUI.ResetOnSpawn = false
-    PopupUI.DisplayOrder = PRIORITY.EXIT_POPUP
-    PopupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    PopupUI.Parent = GuiContainer
-
-    local Popup = Instance.new("Frame")
-    Popup.Size = UDim2.new(0, 360, 0, 200)
-    Popup.Position = UDim2.new(0.5, -180, 0.5, -100)
-    Popup.BackgroundColor3 = Color3.fromRGB(15,15,25)
-    Popup.Active = true
-    Popup.Parent = PopupUI
-    Instance.new("UICorner", Popup).CornerRadius = UDim.new(0,16)
-
-    local PopupBg = Instance.new("ImageLabel")
-    PopupBg.Size = UDim2.new(1,0,1,0)
-    PopupBg.Position = UDim2.new(0,0,0,0)
-    PopupBg.BackgroundTransparency = 1
-    PopupBg.Image = CUSTOM_GUI_BG
-    PopupBg.ScaleType = Enum.ScaleType.Stretch
-    PopupBg.ZIndex = 1
-    PopupBg.Parent = Popup
-
-    AddRainbowGlow(Popup,4)
-
-    local PopupTitle = Instance.new("TextLabel")
-    PopupTitle.Size = UDim2.new(1,-20,0,45)
-    PopupTitle.Position = UDim2.new(0,10,0,15)
-    PopupTitle.BackgroundTransparency = 1
-    PopupTitle.Font = Enum.Font.GothamBold
-    PopupTitle.TextScaled = true
-    PopupTitle.Text = "⚠️ EXIT CONFIRM"
-    PopupTitle.TextColor3 = Color3.new(1,1,1)
-    PopupTitle.ZIndex = 2
-    PopupTitle.Parent = Popup
-
-    local PopupText = Instance.new("TextLabel")
-    PopupText.Size = UDim2.new(1,-30,0,40)
-    PopupText.Position = UDim2.new(0,15,0,70)
-    PopupText.BackgroundTransparency = 1
-    PopupText.Font = Enum.Font.Gotham
-    PopupText.TextScaled = true
-    PopupText.Text = "Close Blue Mode Hub?"
-    PopupText.TextColor3 = Color3.fromRGB(230,230,230)
-    PopupText.ZIndex = 2
-    PopupText.Parent = Popup
-
-    local YesBtn = Instance.new("TextButton")
-    YesBtn.Size = UDim2.new(0,140,0,50)
-    YesBtn.Position = UDim2.new(0,25,0,130)
-    YesBtn.BackgroundColor3 = Color3.fromRGB(220,40,40)
-    YesBtn.Font = Enum.Font.GothamBold
-    YesBtn.TextScaled = true
-    YesBtn.Text = "✅ YES EXIT"
-    YesBtn.TextColor3 = Color3.new(1,1,1)
-    YesBtn.ZIndex = 2
-    YesBtn.Parent = Popup
-    Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0,12)
-    AddRainbowGlow(YesBtn,3)
-
-    local NoBtn = Instance.new("TextButton")
-    NoBtn.Size = UDim2.new(0,140,0,50)
-    NoBtn.Position = UDim2.new(1,-165,0,130)
-    NoBtn.BackgroundColor3 = Color3.fromRGB(30,150,220)
-    NoBtn.Font = Enum.Font.GothamBold
-    NoBtn.TextScaled = true
-    NoBtn.Text = "❌ NO STAY"
-    NoBtn.TextColor3 = Color3.new(1,1,1)
-    NoBtn.ZIndex = 2
-    NoBtn.Parent = Popup
-    Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0,12)
-    AddRainbowGlow(NoBtn,3)
-
-    YesBtn.MouseButton1Click:Connect(function() PopupUI:Destroy(); OnConfirm() end)
-    NoBtn.MouseButton1Click:Connect(function() PopupUI:Destroy() end)
-end
-
--- STARTUP GUI
-local StartupUI = Instance.new("ScreenGui")
-StartupUI.Name = "BLUE_MODE_HUB_STARTUP"
-StartupUI.ResetOnSpawn = false
-StartupUI.DisplayOrder = PRIORITY.STARTUP
-StartupUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-StartupUI.Parent = GuiContainer
-
-local StartupBox = Instance.new("Frame")
-StartupBox.Size = UDim2.new(0, 420, 0, 420)
-StartupBox.Position = UDim2.new(0.5, -210, 0.5, -210)
-StartupBox.BackgroundColor3 = Color3.fromRGB(10,12,18)
-StartupBox.Active = true
-StartupBox.Parent = StartupUI
-Instance.new("UICorner", StartupBox).CornerRadius = UDim.new(0, 18)
-
-local StartupGuiBg = Instance.new("ImageLabel")
-StartupGuiBg.Size = UDim2.new(1, 0, 1, 0)
-StartupGuiBg.Position = UDim2.new(0, 0, 0, 0)
-StartupGuiBg.BackgroundTransparency = 1
-StartupGuiBg.Image = CUSTOM_GUI_BG
-StartupGuiBg.ScaleType = Enum.ScaleType.Stretch
-StartupGuiBg.ZIndex = 1
-StartupGuiBg.Parent = StartupBox
-
-local StartupBorder = Instance.new("UIStroke")
-StartupBorder.Thickness = 5
-StartupBorder.LineJoinMode = Enum.LineJoinMode.Round
-StartupBorder.ZIndex = 3
-StartupBorder.Parent = StartupBox
-
-local StartupTitle = Instance.new("TextLabel")
-StartupTitle.Size = UDim2.new(1, -40, 0, 50)
-StartupTitle.Position = UDim2.new(0, 20, 0, 15)
-StartupTitle.BackgroundTransparency = 1
-StartupTitle.Font = Enum.Font.GothamBlack
-StartupTitle.TextScaled = true
-StartupTitle.Text = "🔵 BLUE MODE HUB"
-StartupTitle.TextColor3 = Color3.fromRGB(0, 190, 255)
-StartupTitle.ZIndex = 2
-StartupTitle.Parent = StartupBox
-
-local UpdateHeader = Instance.new("TextLabel")
-UpdateHeader.Size = UDim2.new(1, -40, 0, 35)
-UpdateHeader.Position = UDim2.new(0, 20, 0, 75)
-UpdateHeader.BackgroundTransparency = 1
-UpdateHeader.Font = Enum.Font.GothamBold
-UpdateHeader.TextScaled = true
-UpdateHeader.Text = "📋 LATEST UPDATES:"
-UpdateHeader.TextColor3 = Color3.new(1,1,1)
-UpdateHeader.ZIndex = 2
-UpdateHeader.Parent = StartupBox
-
-local UpdateList = Instance.new("TextLabel")
-UpdateList.Size = UDim2.new(1, -50, 0, 180)
-UpdateList.Position = UDim2.new(0, 25, 0, 115)
-UpdateList.BackgroundTransparency = 1
-UpdateList.Font = Enum.Font.Gotham
-UpdateList.TextScaled = true
-UpdateList.TextWrapped = true
-UpdateList.TextXAlignment = Enum.TextXAlignment.Left
-UpdateList.TextYAlignment = Enum.TextYAlignment.Top
-UpdateList.TextColor3 = Color3.fromRGB(220,220,220)
-UpdateList.ZIndex = 2
-UpdateList.Text = [[• ✅ VOLUME BYPASSES ROBLOX MASTER VOLUME
-• ✅ FIXED: NO LAG WHEN ESP IS OFF
-• ✅ VOLUME SAVES PERMANENTLY
-• ✅ NO LONGER BLOCKS ROBLOX MENUS
-• ✅ ALL BUTTONS RAINBOW OUTLINES
-• ✅ FPS / PING / SERVER PING
-• ✅ ESP: FILL + FRIEND DOT + OWNER GOLD
-• Creator: Dwayne Kean / Blue_Mode]]
-UpdateList.Parent = StartupBox
-
-local OkBtn = Instance.new("TextButton")
-OkBtn.Size = UDim2.new(0, 260, 0, 60)
-OkBtn.Position = UDim2.new(0.5, -130, 0, 310)
-OkBtn.BackgroundColor3 = Color3.fromRGB(15, 110, 230)
-OkBtn.Font = Enum.Font.GothamBold
-OkBtn.TextScaled = true
-OkBtn.Text = "✓ OK / LOAD MAIN HUB"
-OkBtn.TextColor3 = Color3.new(1,1,1)
-OkBtn.AutoLocalize = false
-OkBtn.ZIndex = 2
-OkBtn.Parent = StartupBox
-Instance.new("UICorner", OkBtn).CornerRadius = UDim.new(0, 16)
-AddRainbowGlow(OkBtn, 3)
-
-local StartupHue = 0
-RunService.Heartbeat:Connect(function(dt)
-    StartupHue = (StartupHue + dt * 0.3) % 1
-    local Col = Color3.fromHSV(StartupHue, 1, 1)
-    StartupBorder.Color = Col
-    StartupTitle.TextColor3 = Col
-end)
-
-OkBtn.MouseButton1Click:Connect(function()
-    StartupUI:Destroy()
-    task.wait(0.05)
-    LoadMainHub()
-end)
-
-print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
-
--- ==============================================
--- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ ALL UNCHANGED | OWNER DOT: DARK BLUE ↔ LIGHT BLUE LOOP
+-- 🔵 BLUE MODE HUB | PART 2/2 | GREEN OWNER ADDED
+-- ✅ ALL UNCHANGED | BLUE + GREEN ANIMATED OWNER DOTS
+-- ✅ NO FEATURES REMOVED / NO EXTRA FEATURES
 -- ==============================================
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
@@ -249,6 +12,7 @@ function LoadMainHub()
     local Buttons_Locked = false
     local Hue = 0
     local BlueAnimTime = 0
+    local GreenAnimTime = 0
     local FPSCounter = 0
     local LocalPlayer = game:GetService("Players").LocalPlayer
     local Players = game:GetService("Players")
@@ -256,6 +20,8 @@ function LoadMainHub()
     local UserInputService = game:GetService("UserInputService")
     local SoundService = game:GetService("SoundService")
     local LOCAL_USERID = LocalPlayer.UserId
+    -- NEW: SECOND OWNER USERID
+    local SECOND_OWNER_USERID = 6070363279
 
     local function IsPlayerFriend(Player)
         if not Player or Player == LocalPlayer then return false end
@@ -273,9 +39,11 @@ function LoadMainHub()
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                     if Char:FindFirstChild("BlueOwnerDot") then Char.BlueOwnerDot:Destroy() end
+                    -- NEW: CLEAR GREEN DOT
+                    if Char:FindFirstChild("GreenOwnerDot") then Char.GreenOwnerDot:Destroy() end
                     if Char:FindFirstChild("Head") then
                         for _, Child in ipairs(Char.Head:GetChildren()) do
-                            if Child.Name == "FriendRainbowDot" or Child.Name == "BlueOwnerDot" then
+                            if Child.Name == "FriendRainbowDot" or Child.Name == "BlueOwnerDot" or Child.Name == "GreenOwnerDot" then
                                 Child:Destroy()
                             end
                         end
@@ -734,10 +502,16 @@ function LoadMainHub()
     RunService.Heartbeat:Connect(function(Delta)
         Hue = (Hue + Delta * 0.5) % 1
         BlueAnimTime = (BlueAnimTime + Delta * 0.8) % 1
+        -- NEW: GREEN ANIMATION TIMER
+        GreenAnimTime = (GreenAnimTime + Delta * 0.8) % 1
         local Rainbow = Color3.fromHSV(Hue,1,1)
         local DarkBlue = Color3.fromRGB(0, 30, 120)
         local LightBlue = Color3.fromRGB(80, 190, 255)
         local BlueOwnerColor = DarkBlue:Lerp(LightBlue, math.abs(math.sin(BlueAnimTime * math.pi)))
+        -- NEW: GREEN ANIMATED COLOR
+        local DarkGreen = Color3.fromRGB(0, 100, 20)
+        local LightGreen = Color3.fromRGB(50, 255, 80)
+        local GreenOwnerColor = DarkGreen:Lerp(LightGreen, math.abs(math.sin(GreenAnimTime * math.pi)))
 
         for _,e in ipairs(GuiElements) do e.Color = Rainbow end
         if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
@@ -758,9 +532,11 @@ function LoadMainHub()
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                     if Char:FindFirstChild("BlueOwnerDot") then Char.BlueOwnerDot:Destroy() end
+                    -- NEW: CLEAR GREEN DOT ON DEATH
+                    if Char:FindFirstChild("GreenOwnerDot") then Char.GreenOwnerDot:Destroy() end
                     if Char.Head then
                         for _, v in ipairs(Char.Head:GetChildren()) do
-                            if v.Name == "FriendRainbowDot" or v.Name == "BlueOwnerDot" then
+                            if v.Name == "FriendRainbowDot" or v.Name == "BlueOwnerDot" or v.Name == "GreenOwnerDot" then
                                 v:Destroy()
                             end
                         end
@@ -784,18 +560,25 @@ function LoadMainHub()
 
             local IsFriend = IsPlayerFriend(P)
             local IsOwner = (P.UserId == OWNER_USERID)
+            -- NEW: CHECK SECOND OWNER
+            local IsSecondOwner = (P.UserId == SECOND_OWNER_USERID)
 
             local FriendDot = Char:FindFirstChild("FriendRainbowDot")
             local OwnerDot = Char:FindFirstChild("BlueOwnerDot")
+            -- NEW: GREEN DOT VARIABLE
+            local GreenOwnerDot = Char:FindFirstChild("GreenOwnerDot")
             if Char.Head then
                 for _, v in ipairs(Char.Head:GetChildren()) do
                     if v.Name == "FriendRainbowDot" then FriendDot = v end
                     if v.Name == "BlueOwnerDot" then OwnerDot = v end
+                    -- NEW: FIND GREEN DOT
+                    if v.Name == "GreenOwnerDot" then GreenOwnerDot = v end
                 end
             end
 
             if IsOwner then
                 if FriendDot then FriendDot:Destroy() end
+                if GreenOwnerDot then GreenOwnerDot:Destroy() end
                 if not OwnerDot then
                     OwnerDot = Instance.new("BillboardGui")
                     OwnerDot.Name = "BlueOwnerDot"
@@ -826,8 +609,43 @@ function LoadMainHub()
                 else
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                 end
+            -- NEW: SECOND OWNER GREEN DOT LOGIC
+            elseif IsSecondOwner then
+                if FriendDot then FriendDot:Destroy() end
+                if OwnerDot then OwnerDot:Destroy() end
+                if not GreenOwnerDot then
+                    GreenOwnerDot = Instance.new("BillboardGui")
+                    GreenOwnerDot.Name = "GreenOwnerDot"
+                    GreenOwnerDot.Size = UDim2.new(0,15,0,15)
+                    GreenOwnerDot.StudsOffset = Vector3.new(0,3,0)
+                    GreenOwnerDot.AlwaysOnTop = true
+                    local Fr = Instance.new("Frame")
+                    Fr.Size = UDim2.new(1,0,1,0)
+                    Fr.BackgroundColor3 = GreenOwnerColor
+                    Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
+                    Fr.Parent=GreenOwnerDot; GreenOwnerDot.Parent=Char.Head
+                else
+                    GreenOwnerDot.Frame.BackgroundColor3 = GreenOwnerColor
+                end
+                if IsFriend then
+                    if not Char:FindFirstChild("FriendRainbowDot") then
+                        local Dot = Instance.new("BillboardGui")
+                        Dot.Name = "FriendRainbowDot"
+                        Dot.Size = UDim2.new(0,15,0,15)
+                        Dot.StudsOffset = Vector3.new(1.5,1,0)
+                        Dot.AlwaysOnTop = true
+                        local Fr = Instance.new("Frame")
+                        Fr.Size = UDim2.new(1,0,1,0)
+                        Fr.BackgroundColor3 = Rainbow
+                        Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
+                        Fr.Parent=Dot; Dot.Parent=Char.Head
+                    end
+                else
+                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+                end
             elseif IsFriend then
                 if OwnerDot then OwnerDot:Destroy() end
+                if GreenOwnerDot then GreenOwnerDot:Destroy() end
                 if not FriendDot then
                     FriendDot = Instance.new("BillboardGui")
                     FriendDot.Name = "FriendRainbowDot"
@@ -843,6 +661,7 @@ function LoadMainHub()
             else
                 if FriendDot then FriendDot:Destroy() end
                 if OwnerDot then OwnerDot:Destroy() end
+                if GreenOwnerDot then GreenOwnerDot:Destroy() end
             end
         end
     end)
