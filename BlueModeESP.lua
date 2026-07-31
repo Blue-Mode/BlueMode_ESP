@@ -235,11 +235,13 @@ OkBtn.MouseButton1Click:Connect(function()
 end)
 
 print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
-
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ ALL UNCHANGED | OWNER DOT: DARK BLUE ↔ LIGHT BLUE LOOP
+-- ✅ ALL FEATURES — ESP, VOLUME, MUSIC, CONSOLE, FPS/PING
+-- ✅ FRIEND DOT = RAINBOW | OWNER DOT = BLUE ↔ LIGHT BLUE LOOP
+-- ✅ ALL DOTS DISAPPEAR WHEN ESP OFF / EXIT
 -- ==============================================
+
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
     local CurrentSound = nil
@@ -273,7 +275,7 @@ function LoadMainHub()
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                     if Char:FindFirstChild("BlueOwnerDot") then Char.BlueOwnerDot:Destroy() end
-                    if Char:FindFirstChild("Head") then
+                    if Char.Head then
                         for _, Child in ipairs(Char.Head:GetChildren()) do
                             if Child.Name == "FriendRainbowDot" or Child.Name == "BlueOwnerDot" then
                                 Child:Destroy()
