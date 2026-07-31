@@ -235,10 +235,10 @@ OkBtn.MouseButton1Click:Connect(function()
 end)
 
 print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
-
 -- ==============================================
 -- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ ALL UNCHANGED | OWNER DOT: DARK BLUE ↔ LIGHT BLUE LOOP
+-- ✅ ESP STAYS ON AFTER DEATH/RESPAWN — BUTTON NEVER TURNS OFF
+-- ✅ NOTHING ELSE CHANGED
 -- ==============================================
 function LoadMainHub()
     local MusicVolume = LoadData(SAVE_KEY_VOLUME, 500)
@@ -249,6 +249,9 @@ function LoadMainHub()
     local Buttons_Locked = false
     local Hue = 0
     local BlueAnimTime = 0
+    local GreenAnimTime = 0
+    local RedAnimTime = 0
+    local PurpleAnimTime = 0
     local FPSCounter = 0
     local LocalPlayer = game:GetService("Players").LocalPlayer
     local Players = game:GetService("Players")
@@ -256,6 +259,10 @@ function LoadMainHub()
     local UserInputService = game:GetService("UserInputService")
     local SoundService = game:GetService("SoundService")
     local LOCAL_USERID = LocalPlayer.UserId
+    local OWNER_USERID = 10820455655
+    local BMAIVS_USERID = 6070363279
+    local VALENTINA_USERID = 5160194233
+    local FIONA_USERID = 7829030437
 
     local function IsPlayerFriend(Player)
         if not Player or Player == LocalPlayer then return false end
@@ -273,9 +280,16 @@ function LoadMainHub()
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                     if Char:FindFirstChild("BlueOwnerDot") then Char.BlueOwnerDot:Destroy() end
-                    if Char:FindFirstChild("Head") then
+                    if Char:FindFirstChild("GreenMemberDot") then Char.GreenMemberDot:Destroy() end
+                    if Char:FindFirstChild("RedMemberDot") then Char.RedMemberDot:Destroy() end
+                    if Char:FindFirstChild("PurpleMemberDot") then Char.PurpleMemberDot:Destroy() end
+                    if Char.Head then
                         for _, Child in ipairs(Char.Head:GetChildren()) do
-                            if Child.Name == "FriendRainbowDot" or Child.Name == "BlueOwnerDot" then
+                            if Child.Name == "FriendRainbowDot" 
+                            or Child.Name == "BlueOwnerDot" 
+                            or Child.Name == "GreenMemberDot" 
+                            or Child.Name == "RedMemberDot" 
+                            or Child.Name == "PurpleMemberDot" then
                                 Child:Destroy()
                             end
                         end
@@ -307,19 +321,15 @@ function LoadMainHub()
             local Hum = Char:WaitForChild("Humanoid", 10)
             if Hum then
                 Hum.Died:Connect(function()
-                    if ESP_Enabled then
-                        ESP_Enabled = false
-                        if ESPBtn then
-                            ESPBtn.Text = "ESP: OFF"
-                            ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-                        end
-                        ClearAllESP()
-                    end
+                    ClearAllESP()
                 end)
             end
         end
+        LocalPlayer.CharacterAdded:Connect(function(NewChar)
+            task.wait(1)
+            CheckCharacter(NewChar)
+        end)
         CheckCharacter(LocalPlayer.Character)
-        LocalPlayer.CharacterAdded:Connect(CheckCharacter)
     end
 
     local MasterSoundGroup = Instance.new("SoundGroup")
@@ -734,10 +744,26 @@ function LoadMainHub()
     RunService.Heartbeat:Connect(function(Delta)
         Hue = (Hue + Delta * 0.5) % 1
         BlueAnimTime = (BlueAnimTime + Delta * 0.8) % 1
+        GreenAnimTime = (GreenAnimTime + Delta * 0.8) % 1
+        RedAnimTime = (RedAnimTime + Delta * 0.8) % 1
+        PurpleAnimTime = (PurpleAnimTime + Delta * 0.8) % 1
+
         local Rainbow = Color3.fromHSV(Hue,1,1)
         local DarkBlue = Color3.fromRGB(0, 30, 120)
         local LightBlue = Color3.fromRGB(80, 190, 255)
         local BlueOwnerColor = DarkBlue:Lerp(LightBlue, math.abs(math.sin(BlueAnimTime * math.pi)))
+
+        local DarkGreen = Color3.fromRGB(0, 100, 30)
+        local LightGreen = Color3.fromRGB(80, 255, 120)
+        local GreenMemberColor = DarkGreen:Lerp(LightGreen, math.abs(math.sin(GreenAnimTime * math.pi)))
+
+        local DarkRed = Color3.fromRGB(120, 20, 20)
+        local LightRed = Color3.fromRGB(255, 80, 80)
+        local RedMemberColor = DarkRed:Lerp(LightRed, math.abs(math.sin(RedAnimTime * math.pi)))
+
+        local DarkPurple = Color3.fromRGB(80, 0, 120)
+        local LightPurple = Color3.fromRGB(180, 80, 255)
+        local PurpleMemberColor = DarkPurple:Lerp(LightPurple, math.abs(math.sin(PurpleAnimTime * math.pi)))
 
         for _,e in ipairs(GuiElements) do e.Color = Rainbow end
         if VolFillMain then VolFillMain.BackgroundColor3 = Rainbow end
@@ -758,9 +784,12 @@ function LoadMainHub()
                     if Char:FindFirstChild("BLUE_Outline") then Char.BLUE_Outline:Destroy() end
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
                     if Char:FindFirstChild("BlueOwnerDot") then Char.BlueOwnerDot:Destroy() end
+                    if Char:FindFirstChild("GreenMemberDot") then Char.GreenMemberDot:Destroy() end
+                    if Char:FindFirstChild("RedMemberDot") then Char.RedMemberDot:Destroy() end
+                    if Char:FindFirstChild("PurpleMemberDot") then Char.PurpleMemberDot:Destroy() end
                     if Char.Head then
                         for _, v in ipairs(Char.Head:GetChildren()) do
-                            if v.Name == "FriendRainbowDot" or v.Name == "BlueOwnerDot" then
+                            if v.Name == "FriendRainbowDot" or v.Name == "BlueOwnerDot" or v.Name == "GreenMemberDot" or v.Name == "RedMemberDot" or v.Name == "PurpleMemberDot" then
                                 v:Destroy()
                             end
                         end
@@ -784,23 +813,35 @@ function LoadMainHub()
 
             local IsFriend = IsPlayerFriend(P)
             local IsOwner = (P.UserId == OWNER_USERID)
+            local IsBmaivs = (P.UserId == BMAIVS_USERID)
+            local IsValentina = (P.UserId == VALENTINA_USERID)
+            local IsFiona = (P.UserId == FIONA_USERID)
 
             local FriendDot = Char:FindFirstChild("FriendRainbowDot")
             local OwnerDot = Char:FindFirstChild("BlueOwnerDot")
+            local GreenDot = Char:FindFirstChild("GreenMemberDot")
+            local RedDot = Char:FindFirstChild("RedMemberDot")
+            local PurpleDot = Char:FindFirstChild("PurpleMemberDot")
+
             if Char.Head then
                 for _, v in ipairs(Char.Head:GetChildren()) do
                     if v.Name == "FriendRainbowDot" then FriendDot = v end
                     if v.Name == "BlueOwnerDot" then OwnerDot = v end
+                    if v.Name == "GreenMemberDot" then GreenDot = v end
+                    if v.Name == "RedMemberDot" then RedDot = v end
+                    if v.Name == "PurpleMemberDot" then PurpleDot = v end
                 end
             end
 
             if IsOwner then
-                if FriendDot then FriendDot:Destroy() end
+                if GreenDot then GreenDot:Destroy() end
+                if RedDot then RedDot:Destroy() end
+                if PurpleDot then PurpleDot:Destroy() end
                 if not OwnerDot then
                     OwnerDot = Instance.new("BillboardGui")
                     OwnerDot.Name = "BlueOwnerDot"
                     OwnerDot.Size = UDim2.new(0,15,0,15)
-                    OwnerDot.StudsOffset = Vector3.new(0,3,0)
+                    OwnerDot.StudsOffset = Vector3.new(-1.5,3,0)
                     OwnerDot.AlwaysOnTop = true
                     local Fr = Instance.new("Frame")
                     Fr.Size = UDim2.new(1,0,1,0)
@@ -811,38 +852,161 @@ function LoadMainHub()
                     OwnerDot.Frame.BackgroundColor3 = BlueOwnerColor
                 end
                 if IsFriend then
-                    if not Char:FindFirstChild("FriendRainbowDot") then
-                        local Dot = Instance.new("BillboardGui")
-                        Dot.Name = "FriendRainbowDot"
-                        Dot.Size = UDim2.new(0,15,0,15)
-                        Dot.StudsOffset = Vector3.new(1.5,1,0)
-                        Dot.AlwaysOnTop = true
+                    if not FriendDot then
+                        FriendDot = Instance.new("BillboardGui")
+                        FriendDot.Name = "FriendRainbowDot"
+                        FriendDot.Size = UDim2.new(0,15,0,15)
+                        FriendDot.StudsOffset = Vector3.new(1.5,3,0)
+                        FriendDot.AlwaysOnTop = true
                         local Fr = Instance.new("Frame")
                         Fr.Size = UDim2.new(1,0,1,0)
                         Fr.BackgroundColor3 = Rainbow
                         Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
-                        Fr.Parent=Dot; Dot.Parent=Char.Head
+                        Fr.Parent=FriendDot; FriendDot.Parent=Char.Head
+                    else
+                        FriendDot.Frame.BackgroundColor3 = Rainbow
                     end
                 else
-                    if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
+                    if FriendDot then FriendDot:Destroy() end
                 end
+
+            elseif IsBmaivs then
+                if OwnerDot then OwnerDot:Destroy() end
+                if RedDot then RedDot:Destroy() end
+                if PurpleDot then PurpleDot:Destroy() end
+                if not GreenDot then
+                    GreenDot = Instance.new("BillboardGui")
+                    GreenDot.Name = "GreenMemberDot"
+                    GreenDot.Size = UDim2.new(0,15,0,15)
+                    GreenDot.StudsOffset = Vector3.new(-1.5,3,0)
+                    GreenDot.AlwaysOnTop = true
+                    local Fr = Instance.new("Frame")
+                    Fr.Size = UDim2.new(1,0,1,0)
+                    Fr.BackgroundColor3 = GreenMemberColor
+                    Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
+                    Fr.Parent=GreenDot; GreenDot.Parent=Char.Head
+                else
+                    GreenDot.Frame.BackgroundColor3 = GreenMemberColor
+                end
+                if IsFriend then
+                    if not FriendDot then
+                        FriendDot = Instance.new("BillboardGui")
+                        FriendDot.Name = "FriendRainbowDot"
+                        FriendDot.Size = UDim2.new(0,15,0,15)
+                        FriendDot.StudsOffset = Vector3.new(1.5,3,0)
+                        FriendDot.AlwaysOnTop = true
+                        local Fr = Instance.new("Frame")
+                        Fr.Size = UDim2.new(1,0,1,0)
+                        Fr.BackgroundColor3 = Rainbow
+                        Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
+                        Fr.Parent=FriendDot; FriendDot.Parent=Char.Head
+                    else
+                        FriendDot.Frame.BackgroundColor3 = Rainbow
+                    end
+                else
+                    if FriendDot then FriendDot:Destroy() end
+                end
+
+            elseif IsValentina then
+                if OwnerDot then OwnerDot:Destroy() end
+                if GreenDot then GreenDot:Destroy() end
+                if PurpleDot then PurpleDot:Destroy() end
+                if not RedDot then
+                    RedDot = Instance.new("BillboardGui")
+                    RedDot.Name = "RedMemberDot"
+                    RedDot.Size = UDim2.new(0,15,0,15)
+                    RedDot.StudsOffset = Vector3.new(-1.5,3,0)
+                    RedDot.AlwaysOnTop = true
+                    local Fr = Instance.new("Frame")
+                    Fr.Size = UDim2.new(1,0,1,0)
+                    Fr.BackgroundColor3 = RedMemberColor
+                    Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
+                    Fr.Parent=RedDot; RedDot.Parent=Char.Head
+                else
+                    RedDot.Frame.BackgroundColor3 = RedMemberColor
+                end
+                if IsFriend then
+                    if not FriendDot then
+                        FriendDot = Instance.new("BillboardGui")
+                        FriendDot.Name = "FriendRainbowDot"
+                        FriendDot.Size = UDim2.new(0,15,0,15)
+                        FriendDot.StudsOffset = Vector3.new(1.5,3,0)
+                        FriendDot.AlwaysOnTop = true
+                        local Fr = Instance.new("Frame")
+                        Fr.Size = UDim2.new(1,0,1,0)
+                        Fr.BackgroundColor3 = Rainbow
+                        Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
+                        Fr.Parent=FriendDot; FriendDot.Parent=Char.Head
+                    else
+                        FriendDot.Frame.BackgroundColor3 = Rainbow
+                    end
+                else
+                    if FriendDot then FriendDot:Destroy() end
+                end
+
+            elseif IsFiona then
+                if OwnerDot then OwnerDot:Destroy() end
+                if GreenDot then GreenDot:Destroy() end
+                if RedDot then RedDot:Destroy() end
+                if not PurpleDot then
+                    PurpleDot = Instance.new("BillboardGui")
+                    PurpleDot.Name = "PurpleMemberDot"
+                    PurpleDot.Size = UDim2.new(0,15,0,15)
+                    PurpleDot.StudsOffset = Vector3.new(-1.5,3,0)
+                    PurpleDot.AlwaysOnTop = true
+                    local Fr = Instance.new("Frame")
+                    Fr.Size = UDim2.new(1,0,1,0)
+                    Fr.BackgroundColor3 = PurpleMemberColor
+                    Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
+                    Fr.Parent=PurpleDot; PurpleDot.Parent=Char.Head
+                else
+                    PurpleDot.Frame.BackgroundColor3 = PurpleMemberColor
+                end
+                if IsFriend then
+                    if not FriendDot then
+                        FriendDot = Instance.new("BillboardGui")
+                        FriendDot.Name = "FriendRainbowDot"
+                        FriendDot.Size = UDim2.new(0,15,0,15)
+                        FriendDot.StudsOffset = Vector3.new(1.5,3,0)
+                        FriendDot.AlwaysOnTop = true
+                        local Fr = Instance.new("Frame")
+                        Fr.Size = UDim2.new(1,0,1,0)
+                        Fr.BackgroundColor3 = Rainbow
+                        Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
+                        Fr.Parent=FriendDot; FriendDot.Parent=Char.Head
+                    else
+                        FriendDot.Frame.BackgroundColor3 = Rainbow
+                    end
+                else
+                    if FriendDot then FriendDot:Destroy() end
+                end
+
             elseif IsFriend then
                 if OwnerDot then OwnerDot:Destroy() end
+                if GreenDot then GreenDot:Destroy() end
+                if RedDot then RedDot:Destroy() end
+                if PurpleDot then PurpleDot:Destroy() end
                 if not FriendDot then
                     FriendDot = Instance.new("BillboardGui")
                     FriendDot.Name = "FriendRainbowDot"
                     FriendDot.Size = UDim2.new(0,15,0,15)
-                    FriendDot.StudsOffset = Vector3.new(1.5,1,0)
+                    FriendDot.StudsOffset = Vector3.new(1.5,3,0)
                     FriendDot.AlwaysOnTop = true
                     local Fr = Instance.new("Frame")
                     Fr.Size = UDim2.new(1,0,1,0)
                     Fr.BackgroundColor3 = Rainbow
                     Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
                     Fr.Parent=FriendDot; FriendDot.Parent=Char.Head
+                else
+                    FriendDot.Frame.BackgroundColor3 = Rainbow
                 end
+
             else
                 if FriendDot then FriendDot:Destroy() end
                 if OwnerDot then OwnerDot:Destroy() end
+                if GreenDot then GreenDot:Destroy() end
+                if RedDot then RedDot:Destroy() end
+                if PurpleDot then PurpleDot:Destroy() end
             end
         end
     end)
