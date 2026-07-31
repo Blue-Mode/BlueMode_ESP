@@ -236,10 +236,10 @@ end)
 
 print("✅ BLUE MODE HUB STARTUP READY — CLICK OK TO LOAD")
 -- ==============================================
--- 🔵 BLUE MODE HUB | PART 2/2
--- ✅ ALL FEATURES — ESP, VOLUME, MUSIC, CONSOLE, FPS/PING
--- ✅ FRIEND DOT = RAINBOW | OWNER DOT = BLUE ↔ LIGHT BLUE LOOP
--- ✅ ALL DOTS DISAPPEAR WHEN ESP OFF / EXIT
+-- 🔵 BLUE MODE HUB | PART 2/2 — FIXED RAINBOW DOT
+-- ✅ FRIEND DOT = SMOOTH RAINBOW ANIMATION
+-- ✅ OWNER DOT = BLUE ↔ LIGHT BLUE LOOP
+-- ✅ ALL DOTS CLEAR WHEN ESP OFF / EXIT
 -- ==============================================
 
 function LoadMainHub()
@@ -251,6 +251,7 @@ function LoadMainHub()
     local Buttons_Locked = false
     local Hue = 0
     local BlueAnimTime = 0
+    local FriendHue = 0
     local FPSCounter = 0
     local LocalPlayer = game:GetService("Players").LocalPlayer
     local Players = game:GetService("Players")
@@ -736,7 +737,9 @@ function LoadMainHub()
     RunService.Heartbeat:Connect(function(Delta)
         Hue = (Hue + Delta * 0.5) % 1
         BlueAnimTime = (BlueAnimTime + Delta * 0.8) % 1
+        FriendHue = (FriendHue + Delta * 0.7) % 1  -- ✅ FRIEND DOT RAINBOW SPEED
         local Rainbow = Color3.fromHSV(Hue,1,1)
+        local FriendRainbow = Color3.fromHSV(FriendHue,1,1) -- ✅ UPDATES EVERY FRAME
         local DarkBlue = Color3.fromRGB(0, 30, 120)
         local LightBlue = Color3.fromRGB(80, 190, 255)
         local BlueOwnerColor = DarkBlue:Lerp(LightBlue, math.abs(math.sin(BlueAnimTime * math.pi)))
@@ -805,6 +808,7 @@ function LoadMainHub()
                     OwnerDot.StudsOffset = Vector3.new(0,3,0)
                     OwnerDot.AlwaysOnTop = true
                     local Fr = Instance.new("Frame")
+                    Fr.Name = "Frame"
                     Fr.Size = UDim2.new(1,0,1,0)
                     Fr.BackgroundColor3 = BlueOwnerColor
                     Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
@@ -820,10 +824,13 @@ function LoadMainHub()
                         Dot.StudsOffset = Vector3.new(1.5,1,0)
                         Dot.AlwaysOnTop = true
                         local Fr = Instance.new("Frame")
+                        Fr.Name = "Frame"
                         Fr.Size = UDim2.new(1,0,1,0)
-                        Fr.BackgroundColor3 = Rainbow
+                        Fr.BackgroundColor3 = FriendRainbow -- ✅ RAINBOW COLOR UPDATES
                         Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
                         Fr.Parent=Dot; Dot.Parent=Char.Head
+                    else
+                        FriendDot.Frame.BackgroundColor3 = FriendRainbow -- ✅ UPDATES EVERY FRAME
                     end
                 else
                     if Char:FindFirstChild("FriendRainbowDot") then Char.FriendRainbowDot:Destroy() end
@@ -837,10 +844,13 @@ function LoadMainHub()
                     FriendDot.StudsOffset = Vector3.new(1.5,1,0)
                     FriendDot.AlwaysOnTop = true
                     local Fr = Instance.new("Frame")
+                    Fr.Name = "Frame"
                     Fr.Size = UDim2.new(1,0,1,0)
-                    Fr.BackgroundColor3 = Rainbow
+                    Fr.BackgroundColor3 = FriendRainbow -- ✅ INITIAL RAINBOW
                     Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)
                     Fr.Parent=FriendDot; FriendDot.Parent=Char.Head
+                else
+                    FriendDot.Frame.BackgroundColor3 = FriendRainbow -- ✅ ANIMATES CONTINUOUSLY
                 end
             else
                 if FriendDot then FriendDot:Destroy() end
