@@ -563,7 +563,7 @@ function LoadMainHub()
 YouTubeBtn.Size = UDim2.new(0,95,0,30)
 YouTubeBtn.Position = UDim2.new(0,100,0,30)
 YouTubeBtn.BackgroundColor3 = Color3.fromRGB(30,100,220) -- 🔵 BLUE COLOR
-YouTubeBtn.Text = "📺 YOUTUBE"
+YouTubeBtn.Text = "Blue Mode Hub"
 YouTubeBtn.TextColor3 = Color3.new(1,1,1)
 YouTubeBtn.Parent = MainFrame
 Instance.new("UICorner", YouTubeBtn).CornerRadius = UDim.new(0,6)
@@ -712,7 +712,7 @@ AddRainbowGlow(YouTubeBtn,2)
 
     YouTubeBtn.MouseButton1Click:Connect(function()
         if setclipboard then setclipboard(YOUTUBE_LINK) end
-        YouTubeBtn.Text = "✅ COPIED!"; task.wait(1.5); YouTubeBtn.Text = "Blue_Mode Hub"
+        YouTubeBtn.Text = "✅ COPIED!"; task.wait(1.5); YouTubeBtn.Text = "Blue Mode Hub"
     end)
 
     MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)
