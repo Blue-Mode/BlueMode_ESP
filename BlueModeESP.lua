@@ -22,7 +22,7 @@ PRIORITY = {
     CONSOLE = 797,
     EXIT_POPUP = 9999
 }
-YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
+YOUTUBE_LINK = "https://bluemodehub.carrd.co/"
 SAVE_KEY_VOLUME = "BlueMode_Volume_v22"
 VOLUME_MAX = 1000
 OWNER_USERID = 10820455655
