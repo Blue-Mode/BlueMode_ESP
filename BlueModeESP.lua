@@ -709,7 +709,7 @@ function LoadMainHub()
 
     YouTubeBtn.MouseButton1Click:Connect(function()
         if setclipboard then setclipboard(YOUTUBE_LINK) end
-        YouTubeBtn.Text = "✅ COPIED!"; task.wait(1.5); YouTubeBtn.Text = "📺 YOUTUBE"
+        YouTubeBtn.Text = "✅ COPIED!"; task.wait(1.5); YouTubeBtn.Text = "Blue_Mode Hub"
     end)
 
     MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)
