@@ -560,11 +560,14 @@ function LoadMainHub()
     AddRainbowGlow(ESPB,2)
 
     local YouTubeBtn = Instance.new("TextButton")
-    YouTubeBtn.Size = UDim2.new(0,95,0,30); YouTubeBtn.Position = UDim2.new(0,100,0,30)
-    YouTubeBtn.BackgroundColor3 = Color3.fromRGB(200,30,30); YouTubeBtn.Text = "📺 YOUTUBE"
-    YouTubeBtn.TextColor3 = Color3.new(1,1,1); YouTubeBtn.Parent = MainFrame
-    Instance.new("UICorner", YouTubeBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(YouTubeBtn,2)
+YouTubeBtn.Size = UDim2.new(0,95,0,30)
+YouTubeBtn.Position = UDim2.new(0,100,0,30)
+YouTubeBtn.BackgroundColor3 = Color3.fromRGB(30,100,220) -- 🔵 BLUE COLOR
+YouTubeBtn.Text = "📺 YOUTUBE"
+YouTubeBtn.TextColor3 = Color3.new(1,1,1)
+YouTubeBtn.Parent = MainFrame
+Instance.new("UICorner", YouTubeBtn).CornerRadius = UDim.new(0,6)
+AddRainbowGlow(YouTubeBtn,2)
 
     local MusicBtn = Instance.new("TextButton")
     MusicBtn.Size = UDim2.new(0,90,0,30); MusicBtn.Position = UDim2.new(0,200,0,30)
