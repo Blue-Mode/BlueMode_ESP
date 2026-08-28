@@ -559,6 +559,54 @@ function LoadMainHub()
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
     AddRainbowGlow(ESPB,2)
 
+-- ==============================================
+-- 🟥 YOUTUBE BUTTON — MOVED DOWN | EXTRA BLACK SPACE ABOVE
+-- ✅ DIRECTLY UNDER EXIT WITH BLACK SPACE IN-BETWEEN
+-- ✅ SAME SIZE AS BLUE MODE HUB BUTTON
+-- ✅ SAME TEXT SIZE
+-- ✅ FULLY INSIDE BLACK BACKGROUND — NO OVERLAP, NO STICKING OUT
+-- ✅ RAINBOW OUTLINE ✅ COPY LINK ✅ HIDES ON MINIMIZE
+-- ==============================================
+
+local CustomRedBtn = Instance.new("TextButton")
+CustomRedBtn.Name = "CustomRedBtn"
+
+-- 🔴 SAME SIZE AS BLUE MODE HUB BUTTON
+CustomRedBtn.Size = UDim2.new(0, 110, 0, 32)
+
+-- 🔴 MOVED DOWN → BLACK SPACE BETWEEN EXIT & YOUTUBE
+CustomRedBtn.Position = UDim2.new(0, 495, 0, 65)  -- ⬇️ LOWERED FOR BLACK SPACE
+
+CustomRedBtn.BackgroundColor3 = Color3.fromRGB(210, 35, 35)
+CustomRedBtn.Text = "YOUTUBE"
+CustomRedBtn.TextColor3 = Color3.new(1, 1, 1)
+CustomRedBtn.Font = Enum.Font.GothamBold
+CustomRedBtn.TextScaled = false
+CustomRedBtn.TextSize = 14
+CustomRedBtn.AutoLocalize = false
+CustomRedBtn.ZIndex = 2
+CustomRedBtn.Parent = MainFrame
+
+-- ✅ SAME ROUNDED CORNERS
+Instance.new("UICorner", CustomRedBtn).CornerRadius = UDim.new(0, 6)
+
+-- ✅ RAINBOW OUTLINE
+AddRainbowGlow(CustomRedBtn, 2)
+
+-- 🔴 CLICK → COPY LINK
+CustomRedBtn.MouseButton1Click:Connect(function()
+    local LINK_TO_COPY = "https://youtube.com/@blue_mode"
+    if setclipboard then setclipboard(LINK_TO_COPY) end
+    CustomRedBtn.Text = "✅ COPIED!"
+    task.wait(1.5)
+    CustomRedBtn.Text = "YOUTUBE"
+end)
+
+
+
+
+
+
     local YouTubeBtn = Instance.new("TextButton")
 YouTubeBtn.Size = UDim2.new(0,95,0,30)
 YouTubeBtn.Position = UDim2.new(0,100,0,30)
@@ -687,21 +735,41 @@ AddRainbowGlow(YouTubeBtn,2)
         LockBtn.BackgroundColor3 = Buttons_Locked and Color3.fromRGB(180,40,40) or Color3.fromRGB(50,50,50)
     end)
 
-    MinBtn.MouseButton1Click:Connect(function()
-        IsMinimized = not IsMinimized
-        if IsMinimized then
-            MainFrame.Size = MINI_SIZE; ESPBtn.Visible=false; YouTubeBtn.Visible=false
-            MusicBtn.Visible=false; LockBtn.Visible=false; ConsoleBtn.Visible=false
-            ExitBtn.Visible=false; VolLabelMain.Visible=false; VolNumTextMain.Visible=false
-            VolBGMain.Visible=false; StatsBG.Visible=false; DragHandle.Text="BLUE MODE"; MinBtn.Text="➕"
-        else
-            MainFrame.Size = FULL_SIZE; ESPBtn.Visible=true; YouTubeBtn.Visible=true
-            MusicBtn.Visible=true; LockBtn.Visible=true; ConsoleBtn.Visible=true
-            ExitBtn.Visible=true; VolLabelMain.Visible=true; VolNumTextMain.Visible=true
-            VolBGMain.Visible=true; StatsBG.Visible=true
-            DragHandle.Text="🔵 BLUE MODE HUB | DRAG ME"; MinBtn.Text="➖"
-        end
-    end)
+MinBtn.MouseButton1Click:Connect(function()
+    IsMinimized = not IsMinimized
+    if IsMinimized then
+        MainFrame.Size = MINI_SIZE
+        ESPBtn.Visible = false
+        YouTubeBtn.Visible = false
+        CustomRedBtn.Visible = false   -- ✅ HIDE RED BUTTON
+        MusicBtn.Visible = false
+        LockBtn.Visible = false
+        ConsoleBtn.Visible = false
+        ExitBtn.Visible = false
+        VolLabelMain.Visible = false
+        VolNumTextMain.Visible = false
+        VolBGMain.Visible = false
+        StatsBG.Visible = false
+        DragHandle.Text = "BLUE MODE"
+        MinBtn.Text = "➕"
+    else
+        MainFrame.Size = FULL_SIZE
+        ESPBtn.Visible = true
+        YouTubeBtn.Visible = true
+        CustomRedBtn.Visible = true    -- ✅ SHOW RED BUTTON
+        MusicBtn.Visible = true
+        LockBtn.Visible = true
+        ConsoleBtn.Visible = true
+        ExitBtn.Visible = true
+        VolLabelMain.Visible = true
+        VolNumTextMain.Visible = true
+        VolBGMain.Visible = true
+        StatsBG.Visible = true
+        DragHandle.Text = "🔵 BLUE MODE HUB | DRAG ME"
+        MinBtn.Text = "➖"
+    end
+end)
+
 
     ESPBtn.MouseButton1Click:Connect(function()
         ESP_Enabled = not ESP_Enabled
