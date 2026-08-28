@@ -553,11 +553,12 @@ function LoadMainHub()
     AddRainbowGlow(MinBtn,2)
 
     ESPBtn = Instance.new("TextButton")
-    ESPBtn.Size = UDim2.new(0,85,0,30); ESPBtn.Position = UDim2.new(0,10,0,30)
-    ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40); ESPBtn.Text = "ESP: OFF"
-    ESPBtn.TextColor3 = Color3.new(1,1,1); ESPBtn.Parent = MainFrame
-    Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPB,2)
+ESPBtn.Size = UDim2.new(0,85,0,30); ESPBtn.Position = UDim2.new(0,10,0,30)
+ESPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40); ESPBtn.Text = "ESP: OFF"
+ESPBtn.TextColor3 = Color3.new(1,1,1); ESPBtn.Parent = MainFrame
+Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
+AddRainbowGlow(ESPBtn, 2)  -- ✅ FIXED
+
 
 -- ==============================================
 -- 🟥 YOUTUBE BUTTON — MOVED DOWN | EXTRA BLACK SPACE ABOVE
