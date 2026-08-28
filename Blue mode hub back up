@@ -22,7 +22,7 @@ PRIORITY = {
     CONSOLE = 797,
     EXIT_POPUP = 9999
 }
-YOUTUBE_LINK = "https://youtube.com/@blue_mode?si=aCGyj0FnwCMtTP1M"
+YOUTUBE_LINK = "https://bluemodehub.carrd.co/"
 SAVE_KEY_VOLUME = "BlueMode_Volume_v22"
 VOLUME_MAX = 1000
 OWNER_USERID = 10820455655
@@ -560,11 +560,14 @@ function LoadMainHub()
     AddRainbowGlow(ESPB,2)
 
     local YouTubeBtn = Instance.new("TextButton")
-    YouTubeBtn.Size = UDim2.new(0,95,0,30); YouTubeBtn.Position = UDim2.new(0,100,0,30)
-    YouTubeBtn.BackgroundColor3 = Color3.fromRGB(200,30,30); YouTubeBtn.Text = "📺 YOUTUBE"
-    YouTubeBtn.TextColor3 = Color3.new(1,1,1); YouTubeBtn.Parent = MainFrame
-    Instance.new("UICorner", YouTubeBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(YouTubeBtn,2)
+YouTubeBtn.Size = UDim2.new(0,95,0,30)
+YouTubeBtn.Position = UDim2.new(0,100,0,30)
+YouTubeBtn.BackgroundColor3 = Color3.fromRGB(30,100,220) -- 🔵 BLUE COLOR
+YouTubeBtn.Text = "Blue Mode Hub"
+YouTubeBtn.TextColor3 = Color3.new(1,1,1)
+YouTubeBtn.Parent = MainFrame
+Instance.new("UICorner", YouTubeBtn).CornerRadius = UDim.new(0,6)
+AddRainbowGlow(YouTubeBtn,2)
 
     local MusicBtn = Instance.new("TextButton")
     MusicBtn.Size = UDim2.new(0,90,0,30); MusicBtn.Position = UDim2.new(0,200,0,30)
@@ -709,7 +712,7 @@ function LoadMainHub()
 
     YouTubeBtn.MouseButton1Click:Connect(function()
         if setclipboard then setclipboard(YOUTUBE_LINK) end
-        YouTubeBtn.Text = "✅ COPIED!"; task.wait(1.5); YouTubeBtn.Text = "📺 YOUTUBE"
+        YouTubeBtn.Text = "✅ COPIED!"; task.wait(1.5); YouTubeBtn.Text = "Blue Mode Hub"
     end)
 
     MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)
