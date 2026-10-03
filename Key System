@@ -1,0 +1,170 @@
+-- Blue Mode Hub — RAINBOW Futuristic Key System
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui") or game:GetService("CoreGui")
+
+-- Cleanup old
+if PlayerGui:FindFirstChild("BlueMode_KeySystem") then
+    PlayerGui.BlueMode_KeySystem:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BlueMode_KeySystem"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = PlayerGui
+
+-- Main Container
+local MainContainer = Instance.new("Frame")
+MainContainer.Name = "MainContainer"
+MainContainer.Size = UDim2.new(0, 380, 0, 260)
+MainContainer.Position = UDim2.new(0.5, -190, 0.5, -130)
+MainContainer.BackgroundTransparency = 1
+MainContainer.Parent = ScreenGui
+
+-- Outer Rainbow Glow
+local GlowBg = Instance.new("Frame")
+GlowBg.Name = "GlowBg"
+GlowBg.Size = UDim2.new(1, 14, 1, 14)
+GlowBg.Position = UDim2.new(0, -7, 0, -7)
+GlowBg.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+GlowBg.BackgroundTransparency = 0.55
+GlowBg.BorderSizePixel = 0
+GlowBg.Parent = MainContainer
+
+local GlowCorner = Instance.new("UICorner")
+GlowCorner.CornerRadius = UDim.new(0, 18)
+GlowCorner.Parent = GlowBg
+
+-- Main Content Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(1, 0, 1, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(6, 8, 20)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = MainContainer
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 16)
+MainCorner.Parent = MainFrame
+
+-- Top Rainbow Bar
+local TopGlow = Instance.new("Frame")
+TopGlow.Name = "TopGlow"
+TopGlow.Size = UDim2.new(1, 0, 0, 4)
+TopGlow.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+TopGlow.Parent = MainFrame
+
+-- Title Bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 60)
+TitleBar.Position = UDim2.new(0, 0, 0, 4)
+TitleBar.BackgroundColor3 = Color3.fromRGB(12, 15, 35)
+TitleBar.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 1, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "🔑 BLUE MODE HUB — ACCESS KEY"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+Title.Parent = TitleBar
+
+-- Answer Display
+local AnswerDisplay = Instance.new("TextLabel")
+AnswerDisplay.Name = "AnswerDisplay"
+AnswerDisplay.Size = UDim2.new(0.9, 0, 0, 50)
+AnswerDisplay.Position = UDim2.new(0.05, 0, 0, 75)
+AnswerDisplay.BackgroundColor3 = Color3.fromRGB(10, 12, 30)
+AnswerDisplay.BorderSizePixel = 2
+AnswerDisplay.BorderColor3 = Color3.fromRGB(255, 0, 0)
+AnswerDisplay.Text = "✓ ANSWER: Hello World"
+AnswerDisplay.Font = Enum.Font.GothamBold
+AnswerDisplay.TextSize = 17
+AnswerDisplay.Parent = MainFrame
+
+-- Input Box
+local InputBox = Instance.new("TextBox")
+InputBox.Size = UDim2.new(0.9, 0, 0, 45)
+InputBox.Position = UDim2.new(0.05, 0, 0, 135)
+InputBox.BackgroundColor3 = Color3.fromRGB(20, 22, 45)
+InputBox.BorderSizePixel = 2
+InputBox.BorderColor3 = Color3.fromRGB(255, 0, 0)
+InputBox.PlaceholderText = "Type the answer here..."
+InputBox.Text = ""
+InputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+InputBox.Font = Enum.Font.Gotham
+InputBox.TextSize = 16
+InputBox.Parent = MainFrame
+
+-- Submit Button
+local SubmitBtn = Instance.new("TextButton")
+SubmitBtn.Name = "SubmitBtn"
+SubmitBtn.Size = UDim2.new(0.9, 0, 0, 45)
+SubmitBtn.Position = UDim2.new(0.05, 0, 0, 190)
+SubmitBtn.BackgroundColor3 = Color3.fromRGB(30, 32, 60)
+SubmitBtn.BorderSizePixel = 2
+SubmitBtn.BorderColor3 = Color3.fromRGB(255, 0, 0)
+SubmitBtn.Text = "✅ ANSWER & UNLOCK"
+SubmitBtn.Font = Enum.Font.GothamBold
+SubmitBtn.TextSize = 16
+SubmitBtn.Parent = MainFrame
+
+-- Status Text
+local StatusText = Instance.new("TextLabel")
+StatusText.Size = UDim2.new(1, 0, 0, 25)
+StatusText.Position = UDim2.new(0, 0, 1, -20)
+StatusText.BackgroundTransparency = 1
+StatusText.Text = ""
+StatusText.Font = Enum.Font.Gotham
+StatusText.TextSize = 14
+StatusText.Parent = MainFrame
+
+-- 🌈 RAINBOW ANIMATION
+local hue = 0
+RunService.Heartbeat:Connect(function()
+    hue = (hue + 0.003) % 1
+    local rainbowColor = Color3.fromHSV(hue, 1, 1)
+    local rainbowText = Color3.fromHSV((hue + 0.5) % 1, 1, 1)
+    
+    -- Glowing borders
+    GlowBg.BackgroundColor3 = rainbowColor
+    MainFrame.BorderColor3 = rainbowColor
+    TopGlow.BackgroundColor3 = rainbowColor
+    AnswerDisplay.BorderColor3 = rainbowColor
+    InputBox.BorderColor3 = rainbowColor
+    SubmitBtn.BorderColor3 = rainbowColor
+    
+    -- Rainbow text
+    Title.TextColor3 = rainbowText
+    AnswerDisplay.TextColor3 = rainbowColor
+    SubmitBtn.TextColor3 = rainbowColor
+end)
+
+-- ✅ Answer Logic
+local CORRECT_ANSWER = "hello world"
+
+SubmitBtn.MouseButton1Click:Connect(function()
+    local userInput = InputBox.Text:gsub("^%s*(.-)%s*$", "%1"):lower()
+    
+    if userInput == CORRECT_ANSWER then
+        StatusText.Text = "✅ CORRECT! LOADING HUB..."
+        StatusText.TextColor3 = Color3.fromRGB(0, 255, 100)
+        task.wait(1)
+        
+        -- Execute your script
+        loadstring(game:HttpGet("https://pastebin.com/raw/RXVVqCDv", true))()
+        
+        -- Remove key system
+        ScreenGui:Destroy()
+    else
+        StatusText.Text = "❌ WRONG ANSWER — TRY AGAIN"
+        StatusText.TextColor3 = Color3.fromRGB(255, 50, 50)
+        task.wait(2.5)
+        StatusText.Text = ""
+    end
+end)
