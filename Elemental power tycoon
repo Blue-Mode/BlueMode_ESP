@@ -1,0 +1,675 @@
+-- Universal Futuristic Elemental Executor GUI
+-- Press Q to toggle menu
+-- Features: draggable, lock/unlock, minimize, futuristic design
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local config = {
+	hotkey = Enum.KeyCode.Q,
+	guiOpen = false,
+	notificationDuration = 3.5,
+	minimized = false,
+	locked = false
+}
+
+local cooldowns = {}
+local killStats = {}
+
+local powerList = {
+	{
+		Name = "Fire Blast",
+		Element = "Fire",
+		Color = Color3.fromRGB(255, 110, 70),
+		Power = 48,
+		Cooldown = 2.2,
+		Icon = "🔥"
+	},
+	{
+		Name = "Water Wave",
+		Element = "Water",
+		Color = Color3.fromRGB(80, 170, 255),
+		Power = 40,
+		Cooldown = 2.8,
+		Icon = "💧"
+	},
+	{
+		Name = "Earth Slam",
+		Element = "Earth",
+		Color = Color3.fromRGB(155, 110, 60),
+		Power = 60,
+		Cooldown = 3.8,
+		Icon = "🌍"
+	},
+	{
+		Name = "Air Slash",
+		Element = "Air",
+		Color = Color3.fromRGB(180, 210, 255),
+		Power = 35,
+		Cooldown = 2.1,
+		Icon = "💨"
+	},
+	{
+		Name = "Lightning Bolt",
+		Element = "Lightning",
+		Color = Color3.fromRGB(255, 255, 90),
+		Power = 72,
+		Cooldown = 4.5,
+		Icon = "⚡"
+	},
+	{
+		Name = "Ice Nova",
+		Element = "Ice",
+		Color = Color3.fromRGB(180, 230, 255),
+		Power = 45,
+		Cooldown = 3.2,
+		Icon = "❄️"
+	}
+}
+
+local function notify(text, color)
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "Notify"
+	gui.ResetOnSpawn = false
+	gui.IgnoreGuiInset = true
+	gui.Parent = playerGui
+
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(0, 360, 0, 52)
+	frame.Position = UDim2.new(1, -382, 0, 20)
+	frame.BackgroundColor3 = Color3.fromRGB(18, 22, 36)
+	frame.BackgroundTransparency = 0.15
+	frame.BorderSizePixel = 0
+	frame.Parent = gui
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 14)
+	corner.Parent = frame
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = color
+	stroke.Thickness = 2
+	stroke.Transparency = 0.2
+	stroke.Parent = frame
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -20, 1, 0)
+	label.Position = UDim2.new(0, 10, 0, 0)
+	label.BackgroundTransparency = 1
+	label.Text = text
+	label.TextColor3 = color
+	label.Font = Enum.Font.GothamBold
+	label.TextSize = 14
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = frame
+
+	Debris:AddItem(gui, config.notificationDuration)
+end
+
+local function getAllPlayerWeapons(target)
+	local tools = {}
+
+	if target.Character then
+		for _, child in ipairs(target.Character:GetDescendants()) do
+			if child:IsA("Tool") then
+				table.insert(tools, child)
+			end
+		end
+	end
+
+	if target.Backpack then
+		for _, obj in ipairs(target.Backpack:GetChildren()) do
+			if obj:IsA("Tool") then
+				table.insert(tools, obj)
+			end
+		end
+	end
+
+	return tools
+end
+
+local function equipWeapon(tool)
+	if not tool or not player.Character then return end
+
+	local clone = tool:Clone()
+	clone.Parent = player.Character
+
+	local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid:EquipTool(clone)
+	end
+end
+
+local function executePower(power)
+	local now = tick()
+	if cooldowns[power.Name] and (now - cooldowns[power.Name]) < power.Cooldown then
+		notify("⏱️ " .. power.Name .. " is cooling down!", Color3.fromRGB(255, 120, 120))
+		return
+	end
+
+	cooldowns[power.Name] = now
+
+	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+		local hrp = player.Character.HumanoidRootPart
+		local effect = Instance.new("Part")
+		effect.Shape = Enum.PartType.Ball
+		effect.Material = Enum.Material.Neon
+		effect.Color = power.Color
+		effect.Size = Vector3.new(2.5, 2.5, 2.5)
+		effect.CanCollide = false
+		effect.Position = hrp.Position + hrp.CFrame.LookVector * 10
+		effect.Parent = workspace
+		Debris:AddItem(effect, 1.5)
+	end
+
+	notify(power.Icon .. " " .. power.Name .. " used! Damage: " .. power.Power, power.Color)
+end
+
+local function teleportToPlayer(playerName)
+	for _, target in ipairs(Players:GetPlayers()) do
+		if target.Name:lower():find(playerName:lower()) then
+			if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+				player.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 4, 0)
+				notify("✅ Teleported to " .. target.Name, Color3.fromRGB(90, 255, 180))
+				return true
+			end
+		end
+	end
+
+	notify("❌ Player not found!", Color3.fromRGB(255, 120, 120))
+	return false
+end
+
+local function killAllPlayers()
+	local targets = {}
+	for _, target in ipairs(Players:GetPlayers()) do
+		if target ~= player then
+			table.insert(targets, target)
+		end
+	end
+
+	if #targets == 0 then
+		notify("❌ No players to kill!", Color3.fromRGB(255, 120, 120))
+		return
+	end
+
+	local usableWeapons = {}
+	for _, target in ipairs(targets) do
+		for _, weapon in ipairs(getAllPlayerWeapons(target)) do
+			table.insert(usableWeapons, weapon)
+		end
+	end
+
+	if #usableWeapons > 0 then
+		equipWeapon(usableWeapons[1])
+	end
+
+	for _, target in ipairs(targets) do
+		if target.Character then
+			local hum = target.Character:FindFirstChildOfClass("Humanoid")
+			if hum then
+				hum.Health = 0
+				killStats[player.Name] = (killStats[player.Name] or 0) + 1
+			end
+		end
+	end
+
+	notify("💀 Kill All executed! " .. #targets .. " players eliminated.", Color3.fromRGB(255, 80, 80))
+end
+
+local function createRoundedButton(parent, text, bg, textColor, size, pos)
+	local btn = Instance.new("TextButton")
+	btn.Size = size
+	btn.Position = pos
+	btn.BackgroundColor3 = bg
+	btn.BorderSizePixel = 0
+	btn.Text = text
+	btn.TextColor3 = textColor
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 12
+	btn.Parent = parent
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 12)
+	corner.Parent = btn
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(135, 200, 255)
+	stroke.Transparency = 0.35
+	stroke.Thickness = 1.2
+	stroke.Parent = btn
+
+	return btn
+end
+
+local function createMainGui()
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "FuturisticExecutorMenu"
+	screenGui.ResetOnSpawn = false
+	screenGui.IgnoreGuiInset = true
+	screenGui.Parent = playerGui
+
+	local main = Instance.new("Frame")
+	main.Name = "MainFrame"
+	main.Size = UDim2.new(0, 520, 0, 650)
+	main.Position = UDim2.new(0.5, -260, 0.5, -325)
+	main.BackgroundColor3 = Color3.fromRGB(11, 16, 28)
+	main.BorderSizePixel = 0
+	main.Parent = screenGui
+
+	local mainCorner = Instance.new("UICorner")
+	mainCorner.CornerRadius = UDim.new(0, 20)
+	mainCorner.Parent = main
+
+	local mainStroke = Instance.new("UIStroke")
+	mainStroke.Color = Color3.fromRGB(90, 220, 255)
+	mainStroke.Transparency = 0.25
+	mainStroke.Thickness = 2
+	mainStroke.Parent = main
+
+	local header = Instance.new("Frame")
+	header.Size = UDim2.new(1, 0, 0, 50)
+	header.BackgroundColor3 = Color3.fromRGB(35, 20, 58)
+	header.BorderSizePixel = 0
+	header.Parent = main
+
+	local headerCorner = Instance.new("UICorner")
+	headerCorner.CornerRadius = UDim.new(0, 20)
+	headerCorner.Parent = header
+
+	local title = Instance.new("TextLabel")
+	title.Size = UDim2.new(0.7, 0, 1, 0)
+	title.BackgroundTransparency = 1
+	title.Text = "⚡ ELEMENTAL EXECUTOR"
+	title.TextColor3 = Color3.fromRGB(160, 230, 255)
+	title.Font = Enum.Font.GothamBlack
+	title.TextSize = 18
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.Parent = header
+
+	local controlArea = Instance.new("Frame")
+	controlArea.Size = UDim2.new(0.3, 0, 1, 0)
+	controlArea.Position = UDim2.new(0.7, 0, 0, 0)
+	controlArea.BackgroundTransparency = 1
+	controlArea.Parent = header
+
+	-- lock button
+	local lockBtn = Instance.new("TextButton")
+	lockBtn.Size = UDim2.new(0, 35, 0, 35)
+	lockBtn.Position = UDim2.new(0, 5, 0.5, -17.5)
+	lockBtn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+	lockBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	lockBtn.Text = "🔓"
+	lockBtn.Font = Enum.Font.GothamBold
+	lockBtn.TextSize = 16
+	lockBtn.BorderSizePixel = 0
+	lockBtn.Parent = controlArea
+
+	local lockCorner = Instance.new("UICorner")
+	lockCorner.CornerRadius = UDim.new(0, 8)
+	lockCorner.Parent = lockBtn
+
+	lockBtn.MouseButton1Click:Connect(function()
+		config.locked = not config.locked
+		if config.locked then
+			lockBtn.Text = "🔒"
+			lockBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+			notify("🔒 GUI Locked - Cannot move", Color3.fromRGB(255, 150, 100))
+		else
+			lockBtn.Text = "🔓"
+			lockBtn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+			notify("🔓 GUI Unlocked - Draggable", Color3.fromRGB(100, 200, 255))
+		end
+	end)
+
+	-- minimize button
+	local minimizeBtn = Instance.new("TextButton")
+	minimizeBtn.Size = UDim2.new(0, 35, 0, 35)
+	minimizeBtn.Position = UDim2.new(0, 45, 0.5, -17.5)
+	minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
+	minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	minimizeBtn.Text = "−"
+	minimizeBtn.Font = Enum.Font.GothamBold
+	minimizeBtn.TextSize = 20
+	minimizeBtn.BorderSizePixel = 0
+	minimizeBtn.Parent = controlArea
+
+	local minimizeCorner = Instance.new("UICorner")
+	minimizeCorner.CornerRadius = UDim.new(0, 8)
+	minimizeCorner.Parent = minimizeBtn
+
+	-- close button
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Size = UDim2.new(0, 35, 0, 35)
+	closeBtn.Position = UDim2.new(0, 85, 0.5, -17.5)
+	closeBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 90)
+	closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	closeBtn.Text = "✕"
+	closeBtn.Font = Enum.Font.GothamBold
+	closeBtn.TextSize = 16
+	closeBtn.BorderSizePixel = 0
+	closeBtn.Parent = controlArea
+
+	local closeCorner = Instance.new("UICorner")
+	closeCorner.CornerRadius = UDim.new(0, 8)
+	closeCorner.Parent = closeBtn
+
+	closeBtn.MouseButton1Click:Connect(function()
+		screenGui:Destroy()
+		config.guiOpen = false
+	end)
+
+	-- drag setup
+	local dragging = false
+	local dragStart = nil
+	local startPos = nil
+
+	local function beginDrag(input)
+		if config.locked then return end
+		dragging = true
+		dragStart = input.Position
+		startPos = main.Position
+	end
+
+	local function endDrag()
+		dragging = false
+	end
+
+	header.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			beginDrag(input)
+		end
+	end)
+
+	header.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			endDrag()
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement and dragging and not config.locked then
+			local delta = input.Position - dragStart
+			main.Position = startPos + UDim2.new(0, delta.X, 0, delta.Y)
+		end
+	end)
+
+	local contentWrapper = Instance.new("Frame")
+	contentWrapper.Size = UDim2.new(1, 0, 1, -50)
+	contentWrapper.Position = UDim2.new(0, 0, 0, 50)
+	contentWrapper.BackgroundTransparency = 1
+	contentWrapper.Parent = main
+
+	local tabBar = Instance.new("Frame")
+	tabBar.Size = UDim2.new(1, -24, 0, 48)
+	tabBar.Position = UDim2.new(0, 12, 0, 10)
+	tabBar.BackgroundColor3 = Color3.fromRGB(18, 24, 36)
+	tabBar.BorderSizePixel = 0
+	tabBar.Parent = contentWrapper
+
+	local tabCorner = Instance.new("UICorner")
+	tabCorner.CornerRadius = UDim.new(0, 12)
+	tabCorner.Parent = tabBar
+
+	local tabs = {}
+	local pages = {}
+
+	local function addTab(name, index, page)
+		local btn = createRoundedButton(tabBar, name, Color3.fromRGB(35, 42, 62), Color3.fromRGB(220, 230, 255), UDim2.new(0.32, -8, 1, -10), UDim2.new((index - 1) * 0.33, 6, 0, 5))
+		btn.MouseButton1Click:Connect(function()
+			for i, p in ipairs(pages) do
+				p.Visible = (i == index)
+			end
+
+			for _, b in ipairs(tabBar:GetChildren()) do
+				if b:IsA("TextButton") then
+					b.BackgroundColor3 = Color3.fromRGB(35, 42, 62)
+				end
+			end
+
+			btn.BackgroundColor3 = Color3.fromRGB(90, 120, 255)
+		end)
+
+		table.insert(tabs, btn)
+		table.insert(pages, page)
+	end
+
+	-- powers page
+	local powersPage = Instance.new("ScrollingFrame")
+	powersPage.Size = UDim2.new(1, -18, 1, -70)
+	powersPage.Position = UDim2.new(0, 9, 0, 60)
+	powersPage.BackgroundTransparency = 1
+	powersPage.BorderSizePixel = 0
+	powersPage.ScrollBarThickness = 8
+	powersPage.CanvasSize = UDim2.new(0, 0, 0, #powerList * 110)
+	powersPage.Parent = contentWrapper
+
+	addTab("POWERS", 1, powersPage)
+
+	for i, power in ipairs(powerList) do
+		local card = Instance.new("Frame")
+		card.Size = UDim2.new(1, -14, 0, 96)
+		card.Position = UDim2.new(0, 7, 0, (i - 1) * 106)
+		card.BackgroundColor3 = power.Color
+		card.BackgroundTransparency = 0.78
+		card.BorderSizePixel = 0
+		card.Parent = powersPage
+
+		local cardCorner = Instance.new("UICorner")
+		cardCorner.CornerRadius = UDim.new(0, 16)
+		cardCorner.Parent = card
+
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = power.Color
+		stroke.Thickness = 1.5
+		stroke.Transparency = 0.2
+		stroke.Parent = card
+
+		local name = Instance.new("TextLabel")
+		name.Size = UDim2.new(0.6, 0, 0, 26)
+		name.Position = UDim2.new(0, 12, 0, 10)
+		name.BackgroundTransparency = 1
+		name.Text = power.Icon .. " " .. power.Name
+		name.TextColor3 = Color3.fromRGB(255, 255, 255)
+		name.Font = Enum.Font.GothamBold
+		name.TextSize = 16
+		name.TextXAlignment = Enum.TextXAlignment.Left
+		name.Parent = card
+
+		local element = Instance.new("TextLabel")
+		element.Size = UDim2.new(0.25, 0, 0, 20)
+		element.Position = UDim2.new(0.68, 0, 0, 12)
+		element.BackgroundColor3 = Color3.fromRGB(12, 18, 28)
+		element.Text = power.Element
+		element.TextColor3 = power.Color
+		element.Font = Enum.Font.GothamBold
+		element.TextSize = 11
+		element.Parent = card
+
+		local stat = Instance.new("TextLabel")
+		stat.Size = UDim2.new(0.7, 0, 0, 18)
+		stat.Position = UDim2.new(0, 12, 0, 42)
+		stat.BackgroundTransparency = 1
+		stat.Text = "Damage: " .. power.Power .. " | Cooldown: " .. power.Cooldown .. "s"
+		stat.TextColor3 = Color3.fromRGB(230, 230, 230)
+		stat.Font = Enum.Font.Gotham
+		stat.TextSize = 11
+		stat.TextXAlignment = Enum.TextXAlignment.Left
+		stat.Parent = card
+
+		local useBtn = createRoundedButton(card, "USE", Color3.fromRGB(20, 180, 110), Color3.fromRGB(255, 255, 255), UDim2.new(0, 110, 0, 28), UDim2.new(0.7, 0, 0.5, -16))
+		useBtn.MouseButton1Click:Connect(function()
+			executePower(power)
+		end)
+	end
+
+	-- tp page
+	local tpPage = Instance.new("Frame")
+	tpPage.Size = UDim2.new(1, -18, 1, -70)
+	tpPage.Position = UDim2.new(0, 9, 0, 60)
+	tpPage.BackgroundTransparency = 1
+	tpPage.Visible = false
+	tpPage.Parent = contentWrapper
+
+	addTab("TP", 2, tpPage)
+
+	local tpList = Instance.new("ScrollingFrame")
+	tpList.Size = UDim2.new(1, 0, 1, 0)
+	tpList.BackgroundTransparency = 1
+	tpList.BorderSizePixel = 0
+	tpList.CanvasSize = UDim2.new(0, 0, 0, 300)
+	tpList.ScrollBarThickness = 8
+	tpList.Parent = tpPage
+
+	local function refreshPlayers()
+		tpList:ClearAllChildren()
+		local index = 0
+
+		for _, target in ipairs(Players:GetPlayers()) do
+			if target ~= player then
+				local row = Instance.new("Frame")
+				row.Size = UDim2.new(1, -8, 0, 42)
+				row.Position = UDim2.new(0, 4, 0, index * 46)
+				row.BackgroundColor3 = Color3.fromRGB(20, 30, 45)
+				row.BorderSizePixel = 0
+				row.Parent = tpList
+
+				local rowCorner = Instance.new("UICorner")
+				rowCorner.CornerRadius = UDim.new(0, 10)
+				rowCorner.Parent = row
+
+				local name = Instance.new("TextLabel")
+				name.Size = UDim2.new(0.62, 0, 1, 0)
+				name.BackgroundTransparency = 1
+				name.Text = target.Name
+				name.TextColor3 = Color3.fromRGB(220, 220, 220)
+				name.Font = Enum.Font.GothamBold
+				name.TextSize = 15
+				name.TextXAlignment = Enum.TextXAlignment.Left
+				name.Parent = row
+
+				local tpBtn = createRoundedButton(row, "TP", Color3.fromRGB(72, 140, 255), Color3.fromRGB(255, 255, 255), UDim2.new(0, 80, 0, 24), UDim2.new(0.72, 0, 0.5, -12))
+				tpBtn.MouseButton1Click:Connect(function()
+					teleportToPlayer(target.Name)
+				end)
+
+				index += 1
+			end
+		end
+	end
+
+	refreshPlayers()
+	Players.PlayerAdded:Connect(refreshPlayers)
+	Players.PlayerRemoving:Connect(refreshPlayers)
+
+	-- kill all page
+	local killPage = Instance.new("Frame")
+	killPage.Size = UDim2.new(1, -18, 1, -70)
+	killPage.Position = UDim2.new(0, 9, 0, 60)
+	killPage.BackgroundTransparency = 1
+	killPage.Visible = false
+	killPage.Parent = contentWrapper
+
+	addTab("KILL ALL", 3, killPage)
+
+	local warning = Instance.new("TextLabel")
+	warning.Size = UDim2.new(1, 0, 0, 90)
+	warning.BackgroundColor3 = Color3.fromRGB(28, 18, 30)
+	warning.Text = "⚠ WARNING: This will eliminate all active players.\nUse only in a test/private server."
+	warning.TextColor3 = Color3.fromRGB(255, 110, 110)
+	warning.Font = Enum.Font.GothamBold
+	warning.TextSize = 14
+	warning.TextWrapped = true
+	warning.Parent = killPage
+
+	local warnCorner = Instance.new("UICorner")
+	warnCorner.CornerRadius = UDim.new(0, 14)
+	warnCorner.Parent = warning
+
+	local warnStroke = Instance.new("UIStroke")
+	warnStroke.Color = Color3.fromRGB(255, 90, 90)
+	warnStroke.Transparency = 0.3
+	warnStroke.Thickness = 1.5
+	warnStroke.Parent = warning
+
+	local executeBtn = createRoundedButton(killPage, "EXECUTE KILL ALL", Color3.fromRGB(255, 60, 70), Color3.fromRGB(255, 255, 255), UDim2.new(0.7, 0, 0, 44), UDim2.new(0.15, 0, 0, 110))
+	executeBtn.MouseButton1Click:Connect(function()
+		killAllPlayers()
+	end)
+
+	local statsBox = Instance.new("TextLabel")
+	statsBox.Size = UDim2.new(1, 0, 0, 120)
+	statsBox.Position = UDim2.new(0, 0, 0, 180)
+	statsBox.BackgroundColor3 = Color3.fromRGB(18, 26, 38)
+	statsBox.TextColor3 = Color3.fromRGB(120, 220, 255)
+	statsBox.Font = Enum.Font.Gotham
+	statsBox.TextSize = 13
+	statsBox.Text = "Players online: " .. (#Players:GetPlayers() - 1) .. "\nKills: " .. (killStats[player.Name] or 0)
+	statsBox.TextWrapped = true
+	statsBox.Parent = killPage
+
+	local statsCorner = Instance.new("UICorner")
+	statsCorner.CornerRadius = UDim.new(0, 14)
+	statsCorner.Parent = statsBox
+
+	local statsStroke = Instance.new("UIStroke")
+	statsStroke.Color = Color3.fromRGB(90, 220, 255)
+	statsStroke.Transparency = 0.2
+	statsStroke.Thickness = 1.5
+	statsStroke.Parent = statsBox
+
+	RunService.RenderStepped:Connect(function()
+		statsBox.Text = "Players online: " .. (#Players:GetPlayers() - 1) .. "\nKills: " .. (killStats[player.Name] or 0)
+	end)
+
+	for _, b in ipairs(tabs) do
+		b.BackgroundColor3 = Color3.fromRGB(35, 42, 62)
+	end
+
+	if tabs[1] then
+		tabs[1].BackgroundColor3 = Color3.fromRGB(90, 120, 255)
+	end
+
+	-- Minimize button logic
+	minimizeBtn.MouseButton1Click:Connect(function()
+		config.minimized = not config.minimized
+
+		if config.minimized then
+			minimizeBtn.Text = "+"
+			contentWrapper.Visible = false
+			local tween = TweenService:Create(main, TweenInfo.new(0.3), {Size = UDim2.new(0, 520, 0, 50)})
+			tween:Play()
+			notify("📦 GUI Minimized", Color3.fromRGB(255, 180, 0))
+		else
+			minimizeBtn.Text = "−"
+			contentWrapper.Visible = true
+			local tween = TweenService:Create(main, TweenInfo.new(0.3), {Size = UDim2.new(0, 520, 0, 650)})
+			tween:Play()
+			notify("📂 GUI Expanded", Color3.fromRGB(100, 200, 255))
+		end
+	end)
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == config.hotkey then
+		config.guiOpen = not config.guiOpen
+
+		local existing = playerGui:FindFirstChild("FuturisticExecutorMenu")
+		if existing then
+			existing:Destroy()
+		end
+
+		if config.guiOpen then
+			createMainGui()
+		end
+	end
+end)
+
+notify("✨ Futuristic Executor loaded. Press Q to open.", Color3.fromRGB(95, 220, 255))
