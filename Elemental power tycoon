@@ -1,6 +1,6 @@
--- Universal Futuristic Elemental Executor GUI
--- Press Q to toggle menu
--- Features: draggable, lock/unlock, minimize, futuristic design
+-- Mobile/Android Compatible Futuristic Elemental Executor GUI
+-- Floating button opens the menu
+-- Also works on PC with Q key
 
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
@@ -11,12 +11,16 @@ local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+local isMobile = UserInputService.TouchEnabled
+local isAndroid = string.find(tostring(game:GetService("RunService"):GetRobloxVersion()), "Android") ~= nil
+
 local config = {
 	hotkey = Enum.KeyCode.Q,
 	guiOpen = false,
 	notificationDuration = 3.5,
 	minimized = false,
-	locked = false
+	locked = false,
+	isMobile = isMobile or isAndroid
 }
 
 local cooldowns = {}
@@ -114,12 +118,9 @@ end
 
 local function getAllPlayerWeapons(target)
 	local tools = {}
-
-	if target.Character then
-		for _, child in ipairs(target.Character:GetDescendants()) do
-			if child:IsA("Tool") then
-				table.insert(tools, child)
-			end
+	for _, child in ipairs(target.Character and target.Character:GetDescendants() or {}) do
+		if child:IsA("Tool") then
+			table.insert(tools, child)
 		end
 	end
 
@@ -140,9 +141,9 @@ local function equipWeapon(tool)
 	local clone = tool:Clone()
 	clone.Parent = player.Character
 
-	local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-	if humanoid then
-		humanoid:EquipTool(clone)
+	local hum = player.Character:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum:EquipTool(clone)
 	end
 end
 
@@ -171,9 +172,9 @@ local function executePower(power)
 	notify(power.Icon .. " " .. power.Name .. " used! Damage: " .. power.Power, power.Color)
 end
 
-local function teleportToPlayer(playerName)
+local function teleportToPlayer(targetName)
 	for _, target in ipairs(Players:GetPlayers()) do
-		if target.Name:lower():find(playerName:lower()) then
+		if target.Name:lower():find(targetName:lower()) then
 			if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
 				player.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 4, 0)
 				notify("✅ Teleported to " .. target.Name, Color3.fromRGB(90, 255, 180))
@@ -199,15 +200,15 @@ local function killAllPlayers()
 		return
 	end
 
-	local usableWeapons = {}
+	local weapons = {}
 	for _, target in ipairs(targets) do
 		for _, weapon in ipairs(getAllPlayerWeapons(target)) do
-			table.insert(usableWeapons, weapon)
+			table.insert(weapons, weapon)
 		end
 	end
 
-	if #usableWeapons > 0 then
-		equipWeapon(usableWeapons[1])
+	if #weapons > 0 then
+		equipWeapon(weapons[1])
 	end
 
 	for _, target in ipairs(targets) do
@@ -255,10 +256,15 @@ local function createMainGui()
 	screenGui.IgnoreGuiInset = true
 	screenGui.Parent = playerGui
 
+	local guiWidth = config.isMobile and 430 or 520
+	local guiHeight = config.isMobile and 560 or 650
+	local xOffset = config.isMobile and -215 or -260
+	local yOffset = config.isMobile and -280 or -325
+
 	local main = Instance.new("Frame")
 	main.Name = "MainFrame"
-	main.Size = UDim2.new(0, 520, 0, 650)
-	main.Position = UDim2.new(0.5, -260, 0.5, -325)
+	main.Size = UDim2.new(0, guiWidth, 0, guiHeight)
+	main.Position = UDim2.new(0.5, xOffset, 0.5, yOffset)
 	main.BackgroundColor3 = Color3.fromRGB(11, 16, 28)
 	main.BorderSizePixel = 0
 	main.Parent = screenGui
@@ -284,30 +290,29 @@ local function createMainGui()
 	headerCorner.Parent = header
 
 	local title = Instance.new("TextLabel")
-	title.Size = UDim2.new(0.7, 0, 1, 0)
+	title.Size = UDim2.new(0.65, 0, 1, 0)
 	title.BackgroundTransparency = 1
 	title.Text = "⚡ ELEMENTAL EXECUTOR"
 	title.TextColor3 = Color3.fromRGB(160, 230, 255)
 	title.Font = Enum.Font.GothamBlack
-	title.TextSize = 18
+	title.TextSize = config.isMobile and 14 or 18
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = header
 
 	local controlArea = Instance.new("Frame")
-	controlArea.Size = UDim2.new(0.3, 0, 1, 0)
-	controlArea.Position = UDim2.new(0.7, 0, 0, 0)
+	controlArea.Size = UDim2.new(0.35, 0, 1, 0)
+	controlArea.Position = UDim2.new(0.65, 0, 0, 0)
 	controlArea.BackgroundTransparency = 1
 	controlArea.Parent = header
 
-	-- lock button
 	local lockBtn = Instance.new("TextButton")
-	lockBtn.Size = UDim2.new(0, 35, 0, 35)
-	lockBtn.Position = UDim2.new(0, 5, 0.5, -17.5)
+	lockBtn.Size = UDim2.new(0, 32, 0, 32)
+	lockBtn.Position = UDim2.new(0, 3, 0.5, -16)
 	lockBtn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 	lockBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	lockBtn.Text = "🔓"
 	lockBtn.Font = Enum.Font.GothamBold
-	lockBtn.TextSize = 16
+	lockBtn.TextSize = 14
 	lockBtn.BorderSizePixel = 0
 	lockBtn.Parent = controlArea
 
@@ -320,23 +325,22 @@ local function createMainGui()
 		if config.locked then
 			lockBtn.Text = "🔒"
 			lockBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
-			notify("🔒 GUI Locked - Cannot move", Color3.fromRGB(255, 150, 100))
+			notify("🔒 GUI Locked", Color3.fromRGB(255, 150, 100))
 		else
 			lockBtn.Text = "🔓"
 			lockBtn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-			notify("🔓 GUI Unlocked - Draggable", Color3.fromRGB(100, 200, 255))
+			notify("🔓 GUI Unlocked", Color3.fromRGB(100, 200, 255))
 		end
 	end)
 
-	-- minimize button
 	local minimizeBtn = Instance.new("TextButton")
-	minimizeBtn.Size = UDim2.new(0, 35, 0, 35)
-	minimizeBtn.Position = UDim2.new(0, 45, 0.5, -17.5)
+	minimizeBtn.Size = UDim2.new(0, 32, 0, 32)
+	minimizeBtn.Position = UDim2.new(0, 38, 0.5, -16)
 	minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
 	minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	minimizeBtn.Text = "−"
 	minimizeBtn.Font = Enum.Font.GothamBold
-	minimizeBtn.TextSize = 20
+	minimizeBtn.TextSize = 18
 	minimizeBtn.BorderSizePixel = 0
 	minimizeBtn.Parent = controlArea
 
@@ -344,15 +348,14 @@ local function createMainGui()
 	minimizeCorner.CornerRadius = UDim.new(0, 8)
 	minimizeCorner.Parent = minimizeBtn
 
-	-- close button
 	local closeBtn = Instance.new("TextButton")
-	closeBtn.Size = UDim2.new(0, 35, 0, 35)
-	closeBtn.Position = UDim2.new(0, 85, 0.5, -17.5)
+	closeBtn.Size = UDim2.new(0, 32, 0, 32)
+	closeBtn.Position = UDim2.new(0, 73, 0.5, -16)
 	closeBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 90)
 	closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	closeBtn.Text = "✕"
 	closeBtn.Font = Enum.Font.GothamBold
-	closeBtn.TextSize = 16
+	closeBtn.TextSize = 14
 	closeBtn.BorderSizePixel = 0
 	closeBtn.Parent = controlArea
 
@@ -365,47 +368,41 @@ local function createMainGui()
 		config.guiOpen = false
 	end)
 
-	-- drag setup
+	-- Dragging
 	local dragging = false
 	local dragStart = nil
 	local startPos = nil
 
-	local function beginDrag(input)
-		if config.locked then return end
-		dragging = true
-		dragStart = input.Position
-		startPos = main.Position
-	end
-
-	local function endDrag()
-		dragging = false
-	end
-
 	header.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			beginDrag(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			if config.locked then return end
+			dragging = true
+			dragStart = input.Position
+			startPos = main.Position
 		end
 	end)
 
 	header.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			endDrag()
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
 		end
 	end)
 
 	UserInputService.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement and dragging and not config.locked then
+		if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging and not config.locked then
 			local delta = input.Position - dragStart
 			main.Position = startPos + UDim2.new(0, delta.X, 0, delta.Y)
 		end
 	end)
 
+	-- Content wrapper
 	local contentWrapper = Instance.new("Frame")
 	contentWrapper.Size = UDim2.new(1, 0, 1, -50)
 	contentWrapper.Position = UDim2.new(0, 0, 0, 50)
 	contentWrapper.BackgroundTransparency = 1
 	contentWrapper.Parent = main
 
+	-- Tabs
 	local tabBar = Instance.new("Frame")
 	tabBar.Size = UDim2.new(1, -24, 0, 48)
 	tabBar.Position = UDim2.new(0, 12, 0, 10)
@@ -417,8 +414,8 @@ local function createMainGui()
 	tabCorner.CornerRadius = UDim.new(0, 12)
 	tabCorner.Parent = tabBar
 
-	local tabs = {}
 	local pages = {}
+	local tabs = {}
 
 	local function addTab(name, index, page)
 		local btn = createRoundedButton(tabBar, name, Color3.fromRGB(35, 42, 62), Color3.fromRGB(220, 230, 255), UDim2.new(0.32, -8, 1, -10), UDim2.new((index - 1) * 0.33, 6, 0, 5))
@@ -440,7 +437,7 @@ local function createMainGui()
 		table.insert(pages, page)
 	end
 
-	-- powers page
+	-- Powers page
 	local powersPage = Instance.new("ScrollingFrame")
 	powersPage.Size = UDim2.new(1, -18, 1, -70)
 	powersPage.Position = UDim2.new(0, 9, 0, 60)
@@ -478,7 +475,7 @@ local function createMainGui()
 		name.Text = power.Icon .. " " .. power.Name
 		name.TextColor3 = Color3.fromRGB(255, 255, 255)
 		name.Font = Enum.Font.GothamBold
-		name.TextSize = 16
+		name.TextSize = 14
 		name.TextXAlignment = Enum.TextXAlignment.Left
 		name.Parent = card
 
@@ -499,17 +496,17 @@ local function createMainGui()
 		stat.Text = "Damage: " .. power.Power .. " | Cooldown: " .. power.Cooldown .. "s"
 		stat.TextColor3 = Color3.fromRGB(230, 230, 230)
 		stat.Font = Enum.Font.Gotham
-		stat.TextSize = 11
+		stat.TextSize = 10
 		stat.TextXAlignment = Enum.TextXAlignment.Left
 		stat.Parent = card
 
-		local useBtn = createRoundedButton(card, "USE", Color3.fromRGB(20, 180, 110), Color3.fromRGB(255, 255, 255), UDim2.new(0, 110, 0, 28), UDim2.new(0.7, 0, 0.5, -16))
+		local useBtn = createRoundedButton(card, "USE", Color3.fromRGB(20, 180, 110), Color3.fromRGB(255, 255, 255), UDim2.new(0, 100, 0, 28), UDim2.new(0.7, 0, 0.5, -16))
 		useBtn.MouseButton1Click:Connect(function()
 			executePower(power)
 		end)
 	end
 
-	-- tp page
+	-- TP page
 	local tpPage = Instance.new("Frame")
 	tpPage.Size = UDim2.new(1, -18, 1, -70)
 	tpPage.Position = UDim2.new(0, 9, 0, 60)
@@ -550,11 +547,11 @@ local function createMainGui()
 				name.Text = target.Name
 				name.TextColor3 = Color3.fromRGB(220, 220, 220)
 				name.Font = Enum.Font.GothamBold
-				name.TextSize = 15
+				name.TextSize = 13
 				name.TextXAlignment = Enum.TextXAlignment.Left
 				name.Parent = row
 
-				local tpBtn = createRoundedButton(row, "TP", Color3.fromRGB(72, 140, 255), Color3.fromRGB(255, 255, 255), UDim2.new(0, 80, 0, 24), UDim2.new(0.72, 0, 0.5, -12))
+				local tpBtn = createRoundedButton(row, "TP", Color3.fromRGB(72, 140, 255), Color3.fromRGB(255, 255, 255), UDim2.new(0, 70, 0, 24), UDim2.new(0.72, 0, 0.5, -12))
 				tpBtn.MouseButton1Click:Connect(function()
 					teleportToPlayer(target.Name)
 				end)
@@ -568,7 +565,7 @@ local function createMainGui()
 	Players.PlayerAdded:Connect(refreshPlayers)
 	Players.PlayerRemoving:Connect(refreshPlayers)
 
-	-- kill all page
+	-- Kill All tab
 	local killPage = Instance.new("Frame")
 	killPage.Size = UDim2.new(1, -18, 1, -70)
 	killPage.Position = UDim2.new(0, 9, 0, 60)
@@ -584,7 +581,7 @@ local function createMainGui()
 	warning.Text = "⚠ WARNING: This will eliminate all active players.\nUse only in a test/private server."
 	warning.TextColor3 = Color3.fromRGB(255, 110, 110)
 	warning.Font = Enum.Font.GothamBold
-	warning.TextSize = 14
+	warning.TextSize = 12
 	warning.TextWrapped = true
 	warning.Parent = killPage
 
@@ -598,7 +595,7 @@ local function createMainGui()
 	warnStroke.Thickness = 1.5
 	warnStroke.Parent = warning
 
-	local executeBtn = createRoundedButton(killPage, "EXECUTE KILL ALL", Color3.fromRGB(255, 60, 70), Color3.fromRGB(255, 255, 255), UDim2.new(0.7, 0, 0, 44), UDim2.new(0.15, 0, 0, 110))
+	local executeBtn = createRoundedButton(killPage, "EXECUTE", Color3.fromRGB(255, 60, 70), Color3.fromRGB(255, 255, 255), UDim2.new(0.6, 0, 0, 40), UDim2.new(0.2, 0, 0, 110))
 	executeBtn.MouseButton1Click:Connect(function()
 		killAllPlayers()
 	end)
@@ -609,8 +606,8 @@ local function createMainGui()
 	statsBox.BackgroundColor3 = Color3.fromRGB(18, 26, 38)
 	statsBox.TextColor3 = Color3.fromRGB(120, 220, 255)
 	statsBox.Font = Enum.Font.Gotham
-	statsBox.TextSize = 13
-	statsBox.Text = "Players online: " .. (#Players:GetPlayers() - 1) .. "\nKills: " .. (killStats[player.Name] or 0)
+	statsBox.TextSize = 12
+	statsBox.Text = "Players: " .. (#Players:GetPlayers() - 1) .. "\nKills: " .. (killStats[player.Name] or 0)
 	statsBox.TextWrapped = true
 	statsBox.Parent = killPage
 
@@ -625,7 +622,7 @@ local function createMainGui()
 	statsStroke.Parent = statsBox
 
 	RunService.RenderStepped:Connect(function()
-		statsBox.Text = "Players online: " .. (#Players:GetPlayers() - 1) .. "\nKills: " .. (killStats[player.Name] or 0)
+		statsBox.Text = "Players: " .. (#Players:GetPlayers() - 1) .. "\nKills: " .. (killStats[player.Name] or 0)
 	end)
 
 	for _, b in ipairs(tabs) do
@@ -636,40 +633,116 @@ local function createMainGui()
 		tabs[1].BackgroundColor3 = Color3.fromRGB(90, 120, 255)
 	end
 
-	-- Minimize button logic
 	minimizeBtn.MouseButton1Click:Connect(function()
 		config.minimized = not config.minimized
 
 		if config.minimized then
 			minimizeBtn.Text = "+"
 			contentWrapper.Visible = false
-			local tween = TweenService:Create(main, TweenInfo.new(0.3), {Size = UDim2.new(0, 520, 0, 50)})
+			local tween = TweenService:Create(main, TweenInfo.new(0.3), {Size = UDim2.new(0, guiWidth, 0, 50)})
 			tween:Play()
-			notify("📦 GUI Minimized", Color3.fromRGB(255, 180, 0))
+			notify("📦 Minimized", Color3.fromRGB(255, 180, 0))
 		else
 			minimizeBtn.Text = "−"
 			contentWrapper.Visible = true
-			local tween = TweenService:Create(main, TweenInfo.new(0.3), {Size = UDim2.new(0, 520, 0, 650)})
+			local tween = TweenService:Create(main, TweenInfo.new(0.3), {Size = UDim2.new(0, guiWidth, 0, guiHeight)})
 			tween:Play()
-			notify("📂 GUI Expanded", Color3.fromRGB(100, 200, 255))
+			notify("📂 Expanded", Color3.fromRGB(100, 200, 255))
 		end
 	end)
 end
 
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then return end
-	if input.KeyCode == config.hotkey then
-		config.guiOpen = not config.guiOpen
+local function createMobileButton()
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "MobileExecutorButton"
+	screenGui.ResetOnSpawn = false
+	screenGui.IgnoreGuiInset = true
+	screenGui.Parent = playerGui
 
-		local existing = playerGui:FindFirstChild("FuturisticExecutorMenu")
-		if existing then
-			existing:Destroy()
+	local floatingBtn = Instance.new("TextButton")
+	floatingBtn.Name = "FloatingButton"
+	floatingBtn.Size = UDim2.new(0, 60, 0, 60)
+	floatingBtn.Position = UDim2.new(1, -80, 1, -100)
+	floatingBtn.BackgroundColor3 = Color3.fromRGB(100, 50, 255)
+	floatingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	floatingBtn.Text = "⚡"
+	floatingBtn.Font = Enum.Font.GothamBold
+	floatingBtn.TextSize = 28
+	floatingBtn.BorderSizePixel = 0
+	floatingBtn.Parent = screenGui
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 30)
+	corner.Parent = floatingBtn
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(150, 100, 255)
+	stroke.Thickness = 2
+	stroke.Transparency = 0.3
+	stroke.Parent = floatingBtn
+
+	local dragging = false
+	local dragStart = nil
+	local startPos = nil
+
+	floatingBtn.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = floatingBtn.Position
 		end
+	end)
 
-		if config.guiOpen then
-			createMainGui()
+	floatingBtn.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			if dragging then
+				dragging = false
+			else
+				config.guiOpen = not config.guiOpen
+
+				local existing = playerGui:FindFirstChild("FuturisticExecutorMenu")
+				if existing then
+					existing:Destroy()
+				end
+
+				if config.guiOpen then
+					createMainGui()
+				end
+			end
 		end
-	end
-end)
+	end)
 
-notify("✨ Futuristic Executor loaded. Press Q to open.", Color3.fromRGB(95, 220, 255))
+	UserInputService.InputChanged:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
+			local delta = input.Position - dragStart
+			floatingBtn.Position = startPos + UDim2.new(0, delta.X, 0, delta.Y)
+		end
+	end)
+end
+
+-- PC toggle
+if not config.isMobile then
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then return end
+		if input.KeyCode == config.hotkey then
+			config.guiOpen = not config.guiOpen
+
+			local existing = playerGui:FindFirstChild("FuturisticExecutorMenu")
+			if existing then
+				existing:Destroy()
+			end
+
+			if config.guiOpen then
+				createMainGui()
+			end
+		end
+	end)
+end
+
+-- Initialize
+if config.isMobile then
+	createMobileButton()
+	notify("📱 Mobile Executor loaded. Tap ⚡ to open.", Color3.fromRGB(95, 220, 255))
+else
+	notify("✨ Executor loaded. Press Q to open.", Color3.fromRGB(95, 220, 255))
+end
