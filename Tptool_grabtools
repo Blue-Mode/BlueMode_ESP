@@ -654,7 +654,7 @@ function LoadMainHub()
         end)
     end
 
-    local FULL_SIZE = UDim2.new(0,750,0,105)
+    local FULL_SIZE = UDim2.new(0,680,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
 
     local MainUI = Instance.new("ScreenGui")
@@ -713,7 +713,7 @@ function LoadMainHub()
     local CustomRedBtn = Instance.new("TextButton")
     CustomRedBtn.Name = "CustomRedBtn"
     CustomRedBtn.Size = UDim2.new(0,110,0,32)
-    CustomRedBtn.Position = UDim2.new(0,565,0,65)
+    CustomRedBtn.Position = UDim2.new(0,495,0,65)
     CustomRedBtn.BackgroundColor3 = Color3.fromRGB(210,35,35)
     CustomRedBtn.Text = "YOUTUBE"
     CustomRedBtn.TextColor3 = Color3.new(1,1,1)
@@ -777,8 +777,8 @@ function LoadMainHub()
     AddRainbowGlow(ConsoleBtn,2)
 
     local ExitBtn = Instance.new("TextButton")
-    ExitBtn.Size = UDim2.new(0,30,0,30)
-    ExitBtn.Position = UDim2.new(0,710,0,30)
+    ExitBtn.Size = UDim2.new(0,35,0,30)
+    ExitBtn.Position = UDim2.new(0,640,0,30)
     ExitBtn.BackgroundColor3 = Color3.fromRGB(140,20,20)
     ExitBtn.Text = "🗑️"
     ExitBtn.TextColor3 = Color3.new(1,1,1)
@@ -854,25 +854,6 @@ function LoadMainHub()
     ServerPingLabel.TextColor3 = Color3.fromRGB(255,100,100)
     ServerPingLabel.Parent = StatsBG
 
-    local function TeleportToScreenClick()
-        local Mouse = LocalPlayer:GetMouse()
-        local Target = Mouse.Target
-        if not Target then return end
-
-        local Character = Target.Parent
-        local Humanoid = Character:FindFirstChild("Humanoid")
-        if not Humanoid then return end
-
-        local TargetRoot = Character:FindFirstChild("HumanoidRootPart")
-        if not TargetRoot then return end
-
-        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if not myRoot then return end
-
-        -- Teleport to where the player clicked
-        myRoot.CFrame = TargetRoot.CFrame
-    end
-
     TPToolBtn.MouseButton1Click:Connect(function()
         TPTool_Enabled = not TPTool_Enabled
         TPToolBtn.Text = TPTool_Enabled and "TP: ON" or "TP: OFF"
@@ -880,9 +861,25 @@ function LoadMainHub()
     end)
 
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        if TPTool_Enabled and input.UserInputType == Enum.UserInputType.MouseButton1 then
-            TeleportToScreenClick()
+        if not TPTool_Enabled then return end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local Mouse = LocalPlayer:GetMouse()
+            local Target = Mouse.Target
+            
+            if not Target then return end
+            
+            local Character = Target.Parent
+            local Humanoid = Character:FindFirstChild("Humanoid")
+            if not Humanoid then return end
+            
+            local TargetRoot = Character:FindFirstChild("HumanoidRootPart")
+            if not TargetRoot then return end
+            
+            local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not myRoot then return end
+            
+            -- Teleport to where the player clicked
+            myRoot.CFrame = TargetRoot.CFrame
         end
     end)
 
