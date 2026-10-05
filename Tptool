@@ -1,0 +1,425 @@
+-- Advanced Teleport Tool with Animated GUI
+-- Features: Click-to-teleport, On/Off toggle, Draggable GUI, Minimize, Delete script
+-- Works on PC and Mobile
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local mouse = player:GetMouse()
+
+local config = {
+	tpEnabled = false,
+	guiMinimized = false,
+	tpAnimationDuration = 0.5,
+	particle_color = Color3.fromRGB(100, 200, 255),
+	isMobile = UserInputService.TouchEnabled
+}
+
+-- Notification System
+local function notify(text, color, duration)
+	duration = duration or 3
+	color = color or Color3.fromRGB(100, 200, 255)
+
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "TPNotify"
+	gui.ResetOnSpawn = false
+	gui.IgnoreGuiInset = true
+	gui.Parent = playerGui
+
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(0, 380, 0, 55)
+	frame.Position = UDim2.new(0.5, -190, 0, 20)
+	frame.BackgroundColor3 = Color3.fromRGB(15, 20, 35)
+	frame.BackgroundTransparency = 0.1
+	frame.BorderSizePixel = 0
+	frame.Parent = gui
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 16)
+	corner.Parent = frame
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = color
+	stroke.Thickness = 2
+	stroke.Transparency = 0.15
+	stroke.Parent = frame
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -20, 1, 0)
+	label.Position = UDim2.new(0, 10, 0, 0)
+	label.BackgroundTransparency = 1
+	label.Text = text
+	label.TextColor3 = color
+	label.Font = Enum.Font.GothamBold
+	label.TextSize = 16
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = frame
+
+	Debris:AddItem(gui, duration)
+end
+
+-- Create teleport particles/effect
+local function createTeleportEffect(position, color)
+	local effect = Instance.new("Part")
+	effect.Shape = Enum.PartType.Ball
+	effect.Material = Enum.Material.Neon
+	effect.Color = color
+	effect.Size = Vector3.new(2, 2, 2)
+	effect.CanCollide = false
+	effect.Position = position
+	effect.TopSurface = Enum.SurfaceType.Smooth
+	effect.BottomSurface = Enum.SurfaceType.Smooth
+	effect.Parent = workspace
+
+	-- Expand and fade effect
+	local tween = TweenService:Create(
+		effect,
+		TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{Size = Vector3.new(4, 4, 4), Transparency = 1}
+	)
+	tween:Play()
+
+	Debris:AddItem(effect, 0.6)
+end
+
+-- Animate character to teleport location
+local function animateTeleport(targetPosition)
+	if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+
+	local hrp = player.Character.HumanoidRootPart
+	local startPos = hrp.Position
+
+	-- Create departure effect
+	createTeleportEffect(startPos, config.particle_color)
+
+	-- Animate character disappearing
+	local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		-- Fade out animation
+		for _, part in ipairs(player.Character:GetDescendants()) do
+			if part:IsA("BasePart") then
+				local tween = TweenService:Create(
+					part,
+					TweenInfo.new(config.tpAnimationDuration * 0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+					{Transparency = part.Transparency + 0.5}
+				)
+				tween:Play()
+			end
+		end
+	end
+
+	wait(config.tpAnimationDuration * 0.5)
+
+	-- Teleport to target
+	hrp.CFrame = CFrame.new(targetPosition + Vector3.new(0, 3, 0))
+
+	-- Create arrival effect
+	createTeleportEffect(targetPosition, config.particle_color)
+
+	-- Fade in animation
+	if humanoid then
+		for _, part in ipairs(player.Character:GetDescendants()) do
+			if part:IsA("BasePart") then
+				local tween = TweenService:Create(
+					part,
+					TweenInfo.new(config.tpAnimationDuration * 0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+					{Transparency = part.Transparency - 0.5}
+				)
+				tween:Play()
+			end
+		end
+	end
+end
+
+-- Create Main GUI
+local function createMainGui()
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "TeleportToolGUI"
+	screenGui.ResetOnSpawn = false
+	screenGui.IgnoreGuiInset = true
+	screenGui.Parent = playerGui
+
+	local main = Instance.new("Frame")
+	main.Name = "MainFrame"
+	main.Size = UDim2.new(0, 380, 0, 200)
+	main.Position = UDim2.new(0.5, -190, 0.5, -100)
+	main.BackgroundColor3 = Color3.fromRGB(15, 18, 32)
+	main.BorderSizePixel = 0
+	main.Parent = screenGui
+
+	local mainCorner = Instance.new("UICorner")
+	mainCorner.CornerRadius = UDim.new(0, 20)
+	mainCorner.Parent = main
+
+	local mainStroke = Instance.new("UIStroke")
+	mainStroke.Color = Color3.fromRGB(100, 200, 255)
+	mainStroke.Transparency = 0.2
+	mainStroke.Thickness = 2
+	mainStroke.Parent = main
+
+	-- Header
+	local header = Instance.new("Frame")
+	header.Size = UDim2.new(1, 0, 0, 50)
+	header.BackgroundColor3 = Color3.fromRGB(25, 35, 55)
+	header.BorderSizePixel = 0
+	header.Parent = main
+
+	local headerCorner = Instance.new("UICorner")
+	headerCorner.CornerRadius = UDim.new(0, 20)
+	headerCorner.Parent = header
+
+	local headerStroke = Instance.new("UIStroke")
+	headerStroke.Color = Color3.fromRGB(100, 200, 255)
+	headerStroke.Transparency = 0.3
+	headerStroke.Thickness = 2
+	headerStroke.Parent = header
+
+	local title = Instance.new("TextLabel")
+	title.Size = UDim2.new(0.65, 0, 1, 0)
+	title.BackgroundTransparency = 1
+	title.Text = "📍 TELEPORT TOOL"
+	title.TextColor3 = Color3.fromRGB(100, 220, 255)
+	title.Font = Enum.Font.GothamBlack
+	title.TextSize = 16
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.Parent = header
+
+	-- Control buttons
+	local controlContainer = Instance.new("Frame")
+	controlContainer.Size = UDim2.new(0.35, 0, 1, 0)
+	controlContainer.Position = UDim2.new(0.65, 0, 0, 0)
+	controlContainer.BackgroundTransparency = 1
+	controlContainer.Parent = header
+
+	-- Minimize button
+	local minimizeBtn = Instance.new("TextButton")
+	minimizeBtn.Size = UDim2.new(0, 32, 0, 32)
+	minimizeBtn.Position = UDim2.new(0, 5, 0.5, -16)
+	minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
+	minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	minimizeBtn.Text = "−"
+	minimizeBtn.Font = Enum.Font.GothamBold
+	minimizeBtn.TextSize = 18
+	minimizeBtn.BorderSizePixel = 0
+	minimizeBtn.Parent = controlContainer
+
+	local minimizeCorner = Instance.new("UICorner")
+	minimizeCorner.CornerRadius = UDim.new(0, 8)
+	minimizeCorner.Parent = minimizeBtn
+
+	local minimizeStroke = Instance.new("UIStroke")
+	minimizeStroke.Color = Color3.fromRGB(255, 200, 100)
+	minimizeStroke.Thickness = 1.5
+	minimizeStroke.Parent = minimizeBtn
+
+	-- Delete button
+	local deleteBtn = Instance.new("TextButton")
+	deleteBtn.Size = UDim2.new(0, 32, 0, 32)
+	deleteBtn.Position = UDim2.new(0, 40, 0.5, -16)
+	deleteBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+	deleteBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	deleteBtn.Text = "✕"
+	deleteBtn.Font = Enum.Font.GothamBold
+	deleteBtn.TextSize = 16
+	deleteBtn.BorderSizePixel = 0
+	deleteBtn.Parent = controlContainer
+
+	local deleteCorner = Instance.new("UICorner")
+	deleteCorner.CornerRadius = UDim.new(0, 8)
+	deleteCorner.Parent = deleteBtn
+
+	local deleteStroke = Instance.new("UIStroke")
+	deleteStroke.Color = Color3.fromRGB(255, 120, 120)
+	deleteStroke.Thickness = 1.5
+	deleteStroke.Parent = deleteBtn
+
+	-- Content wrapper
+	local contentWrapper = Instance.new("Frame")
+	contentWrapper.Size = UDim2.new(1, 0, 1, -50)
+	contentWrapper.Position = UDim2.new(0, 0, 0, 50)
+	contentWrapper.BackgroundTransparency = 1
+	contentWrapper.Parent = main
+
+	-- Status label
+	local statusLabel = Instance.new("TextLabel")
+	statusLabel.Size = UDim2.new(1, -30, 0, 30)
+	statusLabel.Position = UDim2.new(0, 15, 0, 10)
+	statusLabel.BackgroundTransparency = 1
+	statusLabel.Text = "Status: OFF"
+	statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+	statusLabel.Font = Enum.Font.GothamBold
+	statusLabel.TextSize = 14
+	statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+	statusLabel.Parent = contentWrapper
+
+	-- On/Off toggle button
+	local toggleBtn = Instance.new("TextButton")
+	toggleBtn.Size = UDim2.new(0, 140, 0, 44)
+	toggleBtn.Position = UDim2.new(0, 15, 0, 50)
+	toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+	toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	toggleBtn.Text = "TURN ON"
+	toggleBtn.Font = Enum.Font.GothamBold
+	toggleBtn.TextSize = 14
+	toggleBtn.BorderSizePixel = 0
+	toggleBtn.Parent = contentWrapper
+
+	local toggleCorner = Instance.new("UICorner")
+	toggleCorner.CornerRadius = UDim.new(0, 12)
+	toggleCorner.Parent = toggleBtn
+
+	local toggleStroke = Instance.new("UIStroke")
+	toggleStroke.Color = Color3.fromRGB(255, 120, 120)
+	toggleStroke.Thickness = 2
+	toggleStroke.Parent = toggleBtn
+
+	-- Info label
+	local infoLabel = Instance.new("TextLabel")
+	infoLabel.Size = UDim2.new(0.5, -20, 0, 40)
+	infoLabel.Position = UDim2.new(0.5, 10, 0, 50)
+	infoLabel.BackgroundColor3 = Color3.fromRGB(25, 35, 55)
+	infoLabel.TextColor3 = Color3.fromRGB(150, 200, 255)
+	infoLabel.Text = "📍 Click anywhere to teleport"
+	infoLabel.Font = Enum.Font.Gotham
+	infoLabel.TextSize = 11
+	infoLabel.TextWrapped = true
+	infoLabel.BorderSizePixel = 0
+	infoLabel.Parent = contentWrapper
+
+	local infoCorner = Instance.new("UICorner")
+	infoCorner.CornerRadius = UDim.new(0, 10)
+	infoCorner.Parent = infoLabel
+
+	local infoStroke = Instance.new("UIStroke")
+	infoStroke.Color = Color3.fromRGB(100, 150, 200)
+	infoStroke.Thickness = 1
+	infoStroke.Parent = infoLabel
+
+	-- Dragging
+	local dragging = false
+	local dragStart = nil
+	local startPos = nil
+
+	local function startDrag()
+		dragging = true
+		dragStart = UserInputService:GetMouseLocation()
+		startPos = main.Position
+	end
+
+	local function stopDrag()
+		dragging = false
+	end
+
+	header.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			startDrag()
+		end
+	end)
+
+	header.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			stopDrag()
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
+			local currentMouse = UserInputService:GetMouseLocation()
+			local delta = currentMouse - dragStart
+			main.Position = startPos + UDim2.new(0, delta.X, 0, delta.Y)
+		end
+	end)
+
+	-- Toggle button logic
+	local function updateToggleButton()
+		if config.tpEnabled then
+			toggleBtn.BackgroundColor3 = Color3.fromRGB(80, 200, 80)
+			toggleBtn.Text = "TURN OFF"
+			toggleStroke.Color = Color3.fromRGB(120, 255, 120)
+			statusLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
+			statusLabel.Text = "Status: ON ✓"
+			infoLabel.Text = "🎯 Click anywhere to teleport"
+			notify("✅ Teleport ENABLED - Click anywhere to TP", Color3.fromRGB(80, 220, 120))
+		else
+			toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+			toggleBtn.Text = "TURN ON"
+			toggleStroke.Color = Color3.fromRGB(255, 120, 120)
+			statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+			statusLabel.Text = "Status: OFF"
+			infoLabel.Text = "📍 Click to enable teleport"
+			notify("❌ Teleport DISABLED", Color3.fromRGB(255, 150, 100))
+		end
+	end
+
+	toggleBtn.MouseButton1Click:Connect(function()
+		config.tpEnabled = not config.tpEnabled
+		updateToggleButton()
+	end)
+
+	-- Minimize logic
+	minimizeBtn.MouseButton1Click:Connect(function()
+		config.guiMinimized = not config.guiMinimized
+
+		if config.guiMinimized then
+			minimizeBtn.Text = "+"
+			contentWrapper.Visible = false
+			local tween = TweenService:Create(main, TweenInfo.new(0.3), {Size = UDim2.new(0, 380, 0, 50)})
+			tween:Play()
+			notify("📦 GUI Minimized", Color3.fromRGB(255, 180, 0))
+		else
+			minimizeBtn.Text = "−"
+			contentWrapper.Visible = true
+			local tween = TweenService:Create(main, TweenInfo.new(0.3), {Size = UDim2.new(0, 380, 0, 200)})
+			tween:Play()
+			notify("📂 GUI Expanded", Color3.fromRGB(100, 200, 255))
+		end
+	end)
+
+	-- Delete button logic
+	deleteBtn.MouseButton1Click:Connect(function()
+		notify("🗑️ Teleport Tool Deleted - Script removed", Color3.fromRGB(255, 100, 100), 2)
+		wait(0.5)
+		screenGui:Destroy()
+		-- Remove click handler
+		mouse.Button1Down:Disconnect()
+	end)
+
+	return screenGui, main
+end
+
+-- Create the GUI
+local gui, mainFrame = createMainGui()
+
+-- Mouse click handler for teleportation
+local teleportConnection
+teleportConnection = mouse.Button1Down:Connect(function()
+	if not config.tpEnabled then return end
+
+	local targetPosition = mouse.Hit.Position
+
+	-- Validate position
+	if targetPosition == Vector3.new(0, 0, 0) then
+		notify("❌ Invalid target location", Color3.fromRGB(255, 100, 100))
+		return
+	end
+
+	-- Teleport with animation
+	animateTeleport(targetPosition)
+	notify("✨ Teleported to " .. tostring(targetPosition), Color3.fromRGB(100, 220, 255), 2)
+end)
+
+-- Cleanup on player leaving
+Players.PlayerRemoving:Connect(function(leftPlayer)
+	if leftPlayer == player then
+		teleportConnection:Disconnect()
+		gui:Destroy()
+	end
+end)
+
+notify("📍 Teleport Tool Loaded - Click the button to enable teleport", Color3.fromRGB(100, 200, 255), 3)
+print("[Teleport Tool] Script loaded successfully")
