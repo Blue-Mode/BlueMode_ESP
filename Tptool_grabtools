@@ -2,7 +2,8 @@
 -- 🔵 BLUE MODE HUB | PART 1/2 | FULL OPTIMIZED
 -- ✅ VOLUME BYPASS | NO LAG WHEN ESP OFF
 -- ✅ ALL FEATURES INTACT
--- ✅ TP TOOL FIXED
+-- ✅ TP TOOL FIXED - CLICK TO TP
+-- ✅ EXIT BUTTON INSIDE BLACK BOX
 -- ==============================================
 if getgenv().BlueMode_Loaded then return end
 getgenv().BlueMode_Loaded = true
@@ -653,7 +654,7 @@ function LoadMainHub()
         end)
     end
 
-    local FULL_SIZE = UDim2.new(0,680,0,105)
+    local FULL_SIZE = UDim2.new(0,750,0,105)
     local MINI_SIZE = UDim2.new(0,110,0,36)
 
     local MainUI = Instance.new("ScreenGui")
@@ -700,7 +701,7 @@ function LoadMainHub()
     AddRainbowGlow(ESPBtn,2)
 
     TPToolBtn = Instance.new("TextButton")
-    TPToolBtn.Size = UDim2.new(0,60,0,30)
+    TPToolBtn.Size = UDim2.new(0,85,0,30)
     TPToolBtn.Position = UDim2.new(0,100,0,30)
     TPToolBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     TPToolBtn.Text = "TP: OFF"
@@ -712,7 +713,7 @@ function LoadMainHub()
     local CustomRedBtn = Instance.new("TextButton")
     CustomRedBtn.Name = "CustomRedBtn"
     CustomRedBtn.Size = UDim2.new(0,110,0,32)
-    CustomRedBtn.Position = UDim2.new(0,495,0,65)
+    CustomRedBtn.Position = UDim2.new(0,565,0,65)
     CustomRedBtn.BackgroundColor3 = Color3.fromRGB(210,35,35)
     CustomRedBtn.Text = "YOUTUBE"
     CustomRedBtn.TextColor3 = Color3.new(1,1,1)
@@ -737,7 +738,7 @@ function LoadMainHub()
 
     local YouTubeBtn = Instance.new("TextButton")
     YouTubeBtn.Size = UDim2.new(0,95,0,30)
-    YouTubeBtn.Position = UDim2.new(0,170,0,30)
+    YouTubeBtn.Position = UDim2.new(0,195,0,30)
     YouTubeBtn.BackgroundColor3 = Color3.fromRGB(30,100,220)
     YouTubeBtn.Text = "Blue Mode Hub"
     YouTubeBtn.TextColor3 = Color3.new(1,1,1)
@@ -747,7 +748,7 @@ function LoadMainHub()
 
     local MusicBtn = Instance.new("TextButton")
     MusicBtn.Size = UDim2.new(0,90,0,30)
-    MusicBtn.Position = UDim2.new(0,275,0,30)
+    MusicBtn.Position = UDim2.new(0,300,0,30)
     MusicBtn.BackgroundColor3 = Color3.fromRGB(40,80,160)
     MusicBtn.Text = "🎵 MUSIC"
     MusicBtn.TextColor3 = Color3.new(1,1,1)
@@ -757,7 +758,7 @@ function LoadMainHub()
 
     local LockBtn = Instance.new("TextButton")
     LockBtn.Size = UDim2.new(0,90,0,30)
-    LockBtn.Position = UDim2.new(0,380,0,30)
+    LockBtn.Position = UDim2.new(0,405,0,30)
     LockBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
     LockBtn.Text = "🔓 UNLOCK"
     LockBtn.TextColor3 = Color3.new(1,1,1)
@@ -767,7 +768,7 @@ function LoadMainHub()
 
     local ConsoleBtn = Instance.new("TextButton")
     ConsoleBtn.Size = UDim2.new(0,110,0,30)
-    ConsoleBtn.Position = UDim2.new(0,480,0,30)
+    ConsoleBtn.Position = UDim2.new(0,505,0,30)
     ConsoleBtn.BackgroundColor3 = Color3.fromRGB(30,120,90)
     ConsoleBtn.Text = "💻 CONSOLE"
     ConsoleBtn.TextColor3 = Color3.new(1,1,1)
@@ -776,10 +777,10 @@ function LoadMainHub()
     AddRainbowGlow(ConsoleBtn,2)
 
     local ExitBtn = Instance.new("TextButton")
-    ExitBtn.Size = UDim2.new(0,90,0,30)
-    ExitBtn.Position = UDim2.new(0,600,0,30)
+    ExitBtn.Size = UDim2.new(0,30,0,30)
+    ExitBtn.Position = UDim2.new(0,710,0,30)
     ExitBtn.BackgroundColor3 = Color3.fromRGB(140,20,20)
-    ExitBtn.Text = "🗑️ EXIT"
+    ExitBtn.Text = "🗑️"
     ExitBtn.TextColor3 = Color3.new(1,1,1)
     ExitBtn.Parent = MainFrame
     Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
@@ -853,29 +854,23 @@ function LoadMainHub()
     ServerPingLabel.TextColor3 = Color3.fromRGB(255,100,100)
     ServerPingLabel.Parent = StatsBG
 
-    local function TeleportToClosest()
+    local function TeleportToScreenClick()
+        local Mouse = LocalPlayer:GetMouse()
+        local Target = Mouse.Target
+        if not Target then return end
+
+        local Character = Target.Parent
+        local Humanoid = Character:FindFirstChild("Humanoid")
+        if not Humanoid then return end
+
+        local TargetRoot = Character:FindFirstChild("HumanoidRootPart")
+        if not TargetRoot then return end
+
         local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if not myRoot then return end
 
-        local closestTarget = nil
-        local closestDist = math.huge
-
-        for _, P in ipairs(Players:GetPlayers()) do
-            if P ~= LocalPlayer and P.Character then
-                local targetRoot = P.Character:FindFirstChild("HumanoidRootPart")
-                if targetRoot then
-                    local dist = (myRoot.Position - targetRoot.Position).Magnitude
-                    if dist < closestDist then
-                        closestDist = dist
-                        closestTarget = targetRoot
-                    end
-                end
-            end
-        end
-
-        if closestTarget then
-            myRoot.CFrame = closestTarget.CFrame + Vector3.new(0, 3, 0)
-        end
+        -- Teleport to where the player clicked
+        myRoot.CFrame = TargetRoot.CFrame
     end
 
     TPToolBtn.MouseButton1Click:Connect(function()
@@ -886,8 +881,8 @@ function LoadMainHub()
 
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
-        if TPTool_Enabled and input.KeyCode == Enum.KeyCode.T then
-            TeleportToClosest()
+        if TPTool_Enabled and input.UserInputType == Enum.UserInputType.MouseButton1 then
+            TeleportToScreenClick()
         end
     end)
 
