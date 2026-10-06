@@ -14,6 +14,7 @@ local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
+local TeleportService = game:GetService("TeleportService")
 
 CUSTOM_GUI_BG = "rbxassetid://101782008402770"
 PRIORITY = {
@@ -25,6 +26,10 @@ PRIORITY = {
 }
 YOUTUBE_LINK = "https://bluemodehub.carrd.co/"
 SAVE_KEY_VOLUME = "BlueMode_Volume_v22"
+SAVE_KEY_SPEED = "BlueMode_Speed_v1"
+SAVE_KEY_JUMP = "BlueMode_Jump_v1"
+SAVE_KEY_SPEED_ENABLED = "BlueMode_SpeedEnabled_v1"
+SAVE_KEY_JUMP_ENABLED = "BlueMode_JumpEnabled_v1"
 VOLUME_MAX = 1000
 OWNER_USERID = 10820455655
 
@@ -36,6 +41,7 @@ BoomboxUI_Open = false
 ConsoleUI_Open = false
 CurrentBoomboxUI = nil
 CurrentConsoleUI = nil
+CurrentMovementUI = nil
 IsMinimized = false
 GuiFocused = false
 GuiElements = {}
@@ -52,6 +58,16 @@ local function LoadData(key, default)
         v = readfile(key..".txt")
     end)
     return tonumber(v) or default
+end
+
+local function LoadBoolData(key, default)
+    local v = nil
+    pcall(function()
+        v = readfile(key..".txt")
+    end)
+    if v == "true" then return true end
+    if v == "false" then return false end
+    return default
 end
 
 local function AddRainbowGlow(target, thickness)
@@ -220,6 +236,7 @@ UpdateList.Text = [[• ✅ VOLUME BYPASSES ROBLOX MASTER VOLUME
 • ✅ ALL BUTTONS RAINBOW OUTLINES
 • ✅ FPS / PING / SERVER PING
 • ✅ ESP: FILL + FRIEND DOT + OWNER GOLD
+• ✅ JOIN PLAYERS IN OTHER GAMES!
 • Creator: Dwayne Kean / Blue_Mode]]
 UpdateList.Parent = StartupBox
 
@@ -436,6 +453,8 @@ function LoadMainHub()
         CloseTop.Text = "✕"
         CloseTop.TextColor3 = Color3.new(1,1,1)
         CloseTop.Parent = BoomFrame
+        Instance.new("UICorner", CloseTop).CornerRadius = UDim.new(0,8)
+        AddRainbowGlow(CloseTop,3)
         CloseTop.MouseButton1Click:Connect(ToggleBoomboxMenu)
 
         local Title = Instance.new("TextLabel")
@@ -454,7 +473,7 @@ function LoadMainHub()
         Input.TextColor3 = Color3.new(1,1,1)
         Input.Parent = BoomFrame
         Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
-        AddRainbowGlow(Input,2)
+        AddRainbowGlow(Input,3)
 
         local VolLabel = Instance.new("TextLabel")
         VolLabel.Size = UDim2.new(0,150,0,30)
@@ -479,7 +498,7 @@ function LoadMainHub()
         VolBG.Active = true
         VolBG.Parent = BoomFrame
         Instance.new("UICorner", VolBG).CornerRadius = UDim.new(0,12)
-        AddRainbowGlow(VolBG,2)
+        AddRainbowGlow(VolBG,3)
 
         VolFillMenu = Instance.new("Frame")
         VolFillMenu.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0)
@@ -513,7 +532,7 @@ function LoadMainHub()
         PlayBtn.TextColor3 = Color3.new(1,1,1)
         PlayBtn.Parent = BoomFrame
         Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0,8)
-        AddRainbowGlow(PlayBtn,2)
+        AddRainbowGlow(PlayBtn,3)
         PlayBtn.MouseButton1Click:Connect(function()
             if Input.Text ~= "" then
                 PlaySound(Input.Text)
@@ -528,7 +547,7 @@ function LoadMainHub()
         StopBtn.TextColor3 = Color3.new(1,1,1)
         StopBtn.Parent = BoomFrame
         Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0,8)
-        AddRainbowGlow(StopBtn,2)
+        AddRainbowGlow(StopBtn,3)
         StopBtn.MouseButton1Click:Connect(StopSound)
     end
 
@@ -571,6 +590,8 @@ function LoadMainHub()
         CloseTop.Text = "✕"
         CloseTop.TextColor3 = Color3.new(1,1,1)
         CloseTop.Parent = Frame
+        Instance.new("UICorner", CloseTop).CornerRadius = UDim.new(0,8)
+        AddRainbowGlow(CloseTop,3)
         CloseTop.MouseButton1Click:Connect(ToggleConsole)
 
         local Title = Instance.new("TextLabel")
@@ -598,7 +619,7 @@ function LoadMainHub()
         Input.MultiLine = true
         Input.Parent = Frame
         Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
-        AddRainbowGlow(Input,2)
+        AddRainbowGlow(Input,3)
 
         local ExecBtn = Instance.new("TextButton")
         ExecBtn.Size = UDim2.new(0,120,0,40)
@@ -608,7 +629,7 @@ function LoadMainHub()
         ExecBtn.TextColor3 = Color3.new(1,1,1)
         ExecBtn.Parent = Frame
         Instance.new("UICorner", ExecBtn).CornerRadius = UDim.new(0,8)
-        AddRainbowGlow(ExecBtn,2)
+        AddRainbowGlow(ExecBtn,3)
 
         local ClearBtn = Instance.new("TextButton")
         ClearBtn.Size = UDim2.new(0,120,0,40)
@@ -618,7 +639,7 @@ function LoadMainHub()
         ClearBtn.TextColor3 = Color3.new(1,1,1)
         ClearBtn.Parent = Frame
         Instance.new("UICorner", ClearBtn).CornerRadius = UDim.new(0,8)
-        AddRainbowGlow(ClearBtn,2)
+        AddRainbowGlow(ClearBtn,3)
 
         ExecBtn.MouseButton1Click:Connect(function()
             local ScriptCode = Input.Text
@@ -651,6 +672,335 @@ function LoadMainHub()
         ClearBtn.MouseButton1Click:Connect(function()
             Input.Text = ""
             Output.Text = "✅ Cleared!"
+        end)
+    end
+
+    local function ToggleMovementMenu()
+        if CurrentMovementUI then
+            CurrentMovementUI:Destroy()
+            CurrentMovementUI = nil
+            GuiFocused = false
+            return
+        end
+
+        GuiFocused = true
+        local MoveUI = Instance.new("ScreenGui")
+        MoveUI.Name = "BLUE_MODE_HUB_MOVEMENT"
+        MoveUI.ResetOnSpawn = false
+        MoveUI.DisplayOrder = PRIORITY.CONSOLE
+        MoveUI.Parent = GuiContainer
+        CurrentMovementUI = MoveUI
+
+        local Frame = Instance.new("Frame")
+        Frame.Size = UDim2.new(0, 450, 0, 500)
+        Frame.Position = UDim2.new(0.5, -225, 0.5, -250)
+        Frame.BackgroundColor3 = Color3.fromRGB(22,22,22)
+        Frame.Active = true
+        Frame.Parent = MoveUI
+        Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
+        local MoveGuiBg = Instance.new("ImageLabel")
+        MoveGuiBg.Size = UDim2.new(1,0,1,0)
+        MoveGuiBg.BackgroundTransparency = 1
+        MoveGuiBg.Image = CUSTOM_GUI_BG
+        MoveGuiBg.Parent = Frame
+        AddRainbowGlow(Frame,5)
+
+        local lastClick = 0
+        Frame.InputBegan:Connect(function(input)
+            if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+            local now = tick()
+            if now - lastClick <= 0.3 then
+                if CurrentMovementUI then
+                    CurrentMovementUI:Destroy()
+                    CurrentMovementUI = nil
+                    GuiFocused = false
+                end
+            else
+                lastClick = now
+            end
+        end)
+
+        local Title = Instance.new("TextLabel")
+        Title.Size = UDim2.new(1,-50,0,35)
+        Title.Position = UDim2.new(0,15,0,6)
+        Title.BackgroundTransparency = 1
+        Title.Text = "👾 MOVEMENT"
+        Title.TextColor3 = Color3.new(1,1,1)
+        Title.Parent = Frame
+
+        -- Load saved values
+        local SavedSpeedValue = LoadData(SAVE_KEY_SPEED, 16)
+        local SavedJumpValue = LoadData(SAVE_KEY_JUMP, 50)
+        local SavedSpeedEnabled = LoadBoolData(SAVE_KEY_SPEED_ENABLED, false)
+        local SavedJumpEnabled = LoadBoolData(SAVE_KEY_JUMP_ENABLED, false)
+
+        local function CreateMoveRow(labelText, yPos, defaultValue)
+            local Row = Instance.new("Frame")
+            Row.Size = UDim2.new(1,-30,0,72)
+            Row.Position = UDim2.new(0,15,0,yPos)
+            Row.BackgroundTransparency = 1
+            Row.Parent = Frame
+
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(0,120,0,24)
+            Label.Position = UDim2.new(0,0,0,0)
+            Label.BackgroundTransparency = 1
+            Label.Font = Enum.Font.GothamBold
+            Label.Text = labelText
+            Label.TextColor3 = Color3.new(1,1,1)
+            Label.Parent = Row
+
+            local ToggleBtn = Instance.new("TextButton")
+            ToggleBtn.Size = UDim2.new(0,110,0,30)
+            ToggleBtn.Position = UDim2.new(0,0,0,28)
+            ToggleBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+            ToggleBtn.Text = "OFF"
+            ToggleBtn.TextColor3 = Color3.new(1,1,1)
+            ToggleBtn.Parent = Row
+            Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0,8)
+            AddRainbowGlow(ToggleBtn,3)
+
+            local NumberBox = Instance.new("TextBox")
+            NumberBox.Size = UDim2.new(0,100,0,30)
+            NumberBox.Position = UDim2.new(0,125,0,28)
+            NumberBox.BackgroundColor3 = Color3.fromRGB(38,38,38)
+            NumberBox.Text = tostring(defaultValue)
+            NumberBox.PlaceholderText = "value"
+            NumberBox.TextColor3 = Color3.new(1,1,1)
+            NumberBox.Parent = Row
+            Instance.new("UICorner", NumberBox).CornerRadius = UDim.new(0,8)
+            AddRainbowGlow(NumberBox,3)
+
+            local ResetBtn = Instance.new("TextButton")
+            ResetBtn.Size = UDim2.new(0,85,0,30)
+            ResetBtn.Position = UDim2.new(0,235,0,28)
+            ResetBtn.BackgroundColor3 = Color3.fromRGB(160,90,0)
+            ResetBtn.Text = "RESET"
+            ResetBtn.TextColor3 = Color3.new(1,1,1)
+            ResetBtn.Parent = Row
+            Instance.new("UICorner", ResetBtn).CornerRadius = UDim.new(0,8)
+            AddRainbowGlow(ResetBtn,3)
+
+            return {
+                ToggleBtn = ToggleBtn,
+                NumberBox = NumberBox,
+                ResetBtn = ResetBtn,
+                Enabled = false,
+                DefaultValue = defaultValue
+            }
+        end
+
+        local SpeedRow = CreateMoveRow("SPEED", 55, SavedSpeedValue)
+        local JumpRow = CreateMoveRow("JUMP", 150, SavedJumpValue)
+
+        -- Set initial states from saved data
+        SpeedRow.Enabled = SavedSpeedEnabled
+        JumpRow.Enabled = SavedJumpEnabled
+        SpeedRow.ToggleBtn.Text = SavedSpeedEnabled and "ON" or "OFF"
+        JumpRow.ToggleBtn.Text = SavedJumpEnabled and "ON" or "OFF"
+        SpeedRow.ToggleBtn.BackgroundColor3 = SavedSpeedEnabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(50,50,50)
+        JumpRow.ToggleBtn.BackgroundColor3 = SavedJumpEnabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(50,50,50)
+
+        local function ApplySpeedValue()
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if not hum then return end
+            if SpeedRow.Enabled then
+                local value = tonumber(SpeedRow.NumberBox.Text) or SpeedRow.DefaultValue
+                hum.WalkSpeed = math.max(0, value)
+                SaveData(SAVE_KEY_SPEED, value)
+            else
+                hum.WalkSpeed = 16
+            end
+        end
+
+        local function ApplyJumpValue()
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if not hum then return end
+            if JumpRow.Enabled then
+                local value = tonumber(JumpRow.NumberBox.Text) or JumpRow.DefaultValue
+                hum.JumpPower = math.max(0, value)
+                SaveData(SAVE_KEY_JUMP, value)
+            else
+                hum.JumpPower = 50
+            end
+        end
+
+        SpeedRow.ToggleBtn.MouseButton1Click:Connect(function()
+            SpeedRow.Enabled = not SpeedRow.Enabled
+            SpeedRow.ToggleBtn.Text = SpeedRow.Enabled and "ON" or "OFF"
+            SpeedRow.ToggleBtn.BackgroundColor3 = SpeedRow.Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(50,50,50)
+            SaveData(SAVE_KEY_SPEED_ENABLED, tostring(SpeedRow.Enabled))
+            ApplySpeedValue()
+        end)
+
+        JumpRow.ToggleBtn.MouseButton1Click:Connect(function()
+            JumpRow.Enabled = not JumpRow.Enabled
+            JumpRow.ToggleBtn.Text = JumpRow.Enabled and "ON" or "OFF"
+            JumpRow.ToggleBtn.BackgroundColor3 = JumpRow.Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(50,50,50)
+            SaveData(SAVE_KEY_JUMP_ENABLED, tostring(JumpRow.Enabled))
+            ApplyJumpValue()
+        end)
+
+        SpeedRow.ResetBtn.MouseButton1Click:Connect(function()
+            SpeedRow.NumberBox.Text = tostring(SpeedRow.DefaultValue)
+            if SpeedRow.Enabled then ApplySpeedValue() end
+        end)
+
+        JumpRow.ResetBtn.MouseButton1Click:Connect(function()
+            JumpRow.NumberBox.Text = tostring(JumpRow.DefaultValue)
+            if JumpRow.Enabled then ApplyJumpValue() end
+        end)
+
+        SpeedRow.NumberBox.FocusLost:Connect(function()
+            local value = tonumber(SpeedRow.NumberBox.Text) or SpeedRow.DefaultValue
+            SpeedRow.NumberBox.Text = tostring(math.max(0, value))
+            if SpeedRow.Enabled then ApplySpeedValue() end
+        end)
+
+        JumpRow.NumberBox.FocusLost:Connect(function()
+            local value = tonumber(JumpRow.NumberBox.Text) or JumpRow.DefaultValue
+            JumpRow.NumberBox.Text = tostring(math.max(0, value))
+            if JumpRow.Enabled then ApplyJumpValue() end
+        end)
+
+        -- USERNAME CHECKER SECTION
+        local UsernameTitle = Instance.new("TextLabel")
+        UsernameTitle.Size = UDim2.new(1,-30,0,25)
+        UsernameTitle.Position = UDim2.new(0,15,0,255)
+        UsernameTitle.BackgroundTransparency = 1
+        UsernameTitle.Font = Enum.Font.GothamBold
+        UsernameTitle.Text = "👤 PLAYER CHECKER"
+        UsernameTitle.TextColor3 = Color3.new(1,1,1)
+        UsernameTitle.Parent = Frame
+
+        local UsernameBox = Instance.new("TextBox")
+        UsernameBox.Size = UDim2.new(1,-30,0,35)
+        UsernameBox.Position = UDim2.new(0,15,0,290)
+        UsernameBox.BackgroundColor3 = Color3.fromRGB(38,38,38)
+        UsernameBox.PlaceholderText = "Enter username..."
+        UsernameBox.TextColor3 = Color3.new(1,1,1)
+        UsernameBox.Parent = Frame
+        Instance.new("UICorner", UsernameBox).CornerRadius = UDim.new(0,8)
+        AddRainbowGlow(UsernameBox,3)
+
+        local StatusLabel = Instance.new("TextLabel")
+        StatusLabel.Size = UDim2.new(1,-30,0,25)
+        StatusLabel.Position = UDim2.new(0,15,0,335)
+        StatusLabel.BackgroundTransparency = 1
+        StatusLabel.Font = Enum.Font.Gotham
+        StatusLabel.Text = "Status: None"
+        StatusLabel.TextColor3 = Color3.fromRGB(200,200,200)
+        StatusLabel.Parent = Frame
+
+        local JoinBtn = Instance.new("TextButton")
+        JoinBtn.Size = UDim2.new(0,200,0,35)
+        JoinBtn.Position = UDim2.new(0,15,0,370)
+        JoinBtn.BackgroundColor3 = Color3.fromRGB(25,140,255)
+        JoinBtn.Text = "🔍 ANALYZE"
+        JoinBtn.TextColor3 = Color3.new(1,1,1)
+        JoinBtn.Font = Enum.Font.GothamBold
+        JoinBtn.Parent = Frame
+        Instance.new("UICorner", JoinBtn).CornerRadius = UDim.new(0,8)
+        AddRainbowGlow(JoinBtn,3)
+
+        local TeleportBtn = Instance.new("TextButton")
+        TeleportBtn.Size = UDim2.new(0,200,0,35)
+        TeleportBtn.Position = UDim2.new(0,225,0,370)
+        TeleportBtn.BackgroundColor3 = Color3.fromRGB(30,180,100)
+        TeleportBtn.Text = "📍 JOIN PLAYER"
+        TeleportBtn.TextColor3 = Color3.new(1,1,1)
+        TeleportBtn.Font = Enum.Font.GothamBold
+        TeleportBtn.Parent = Frame
+        Instance.new("UICorner", TeleportBtn).CornerRadius = UDim.new(0,8)
+        AddRainbowGlow(TeleportBtn,3)
+
+        JoinBtn.MouseButton1Click:Connect(function()
+            local username = UsernameBox.Text:gsub("%s+", "")
+            if username == "" then
+                StatusLabel.Text = "Status: Enter a username!"
+                StatusLabel.TextColor3 = Color3.fromRGB(255,100,100)
+                return
+            end
+
+            StatusLabel.Text = "Status: Checking..."
+            StatusLabel.TextColor3 = Color3.fromRGB(255,200,50)
+
+            local found = false
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player.Name:lower() == username:lower() then
+                    found = true
+                    if player.Character then
+                        StatusLabel.Text = "Status: 🟢 IN THIS GAME"
+                        StatusLabel.TextColor3 = Color3.fromRGB(80,255,120)
+                    else
+                        StatusLabel.Text = "Status: 🟡 LOADING..."
+                        StatusLabel.TextColor3 = Color3.fromRGB(255,255,100)
+                    end
+                    break
+                end
+            end
+
+            if not found then
+                StatusLabel.Text = "Status: 🔴 NOT IN THIS SERVER"
+                StatusLabel.TextColor3 = Color3.fromRGB(255,100,100)
+            end
+        end)
+
+        TeleportBtn.MouseButton1Click:Connect(function()
+            local username = UsernameBox.Text:gsub("%s+", "")
+            if username == "" then
+                StatusLabel.Text = "Status: Enter a username!"
+                StatusLabel.TextColor3 = Color3.fromRGB(255,100,100)
+                return
+            end
+
+            StatusLabel.Text = "Status: Attempting..."
+            StatusLabel.TextColor3 = Color3.fromRGB(255,200,50)
+
+            -- Try joining in same game first
+            local targetPlayer = nil
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player.Name:lower() == username:lower() then
+                    targetPlayer = player
+                    break
+                end
+            end
+
+            if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if myRoot then
+                    myRoot.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(5, 0, 0)
+                    StatusLabel.Text = "Status: ✅ Teleported!"
+                    StatusLabel.TextColor3 = Color3.fromRGB(80,255,120)
+                end
+                return
+            end
+
+            -- If not in same game, try to teleport to their game
+            StatusLabel.Text = "Status: Joining their game..."
+            StatusLabel.TextColor3 = Color3.fromRGB(255,200,50)
+            
+            pcall(function()
+                TeleportService:Teleport(game.PlaceId, LocalPlayer)
+                StatusLabel.Text = "Status: ✅ Teleporting..."
+                StatusLabel.TextColor3 = Color3.fromRGB(80,255,120)
+            end)
+            
+            task.wait(2)
+            if targetPlayer == nil or not targetPlayer.Parent then
+                StatusLabel.Text = "Status: Player not found in game!"
+                StatusLabel.TextColor3 = Color3.fromRGB(255,100,100)
+            end
+        end)
+
+        -- Apply saved states on load
+        if SavedSpeedEnabled then ApplySpeedValue() end
+        if SavedJumpEnabled then ApplyJumpValue() end
+
+        LocalPlayer.CharacterAdded:Connect(function()
+            task.wait(0.2)
+            if SpeedRow.Enabled then ApplySpeedValue() end
+            if JumpRow.Enabled then ApplyJumpValue() end
         end)
     end
 
@@ -698,7 +1048,7 @@ function LoadMainHub()
     ESPBtn.TextColor3 = Color3.new(1,1,1)
     ESPBtn.Parent = MainFrame
     Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ESPBtn,2)
+    AddRainbowGlow(ESPBtn,3)
 
     TPToolBtn = Instance.new("TextButton")
     TPToolBtn.Size = UDim2.new(0,85,0,30)
@@ -708,7 +1058,7 @@ function LoadMainHub()
     TPToolBtn.TextColor3 = Color3.new(1,1,1)
     TPToolBtn.Parent = MainFrame
     Instance.new("UICorner", TPToolBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(TPToolBtn,2)
+    AddRainbowGlow(TPToolBtn,3)
 
     local CustomRedBtn = Instance.new("TextButton")
     CustomRedBtn.Name = "CustomRedBtn"
@@ -724,7 +1074,7 @@ function LoadMainHub()
     CustomRedBtn.ZIndex = 2
     CustomRedBtn.Parent = MainFrame
     Instance.new("UICorner", CustomRedBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(CustomRedBtn,2)
+    AddRainbowGlow(CustomRedBtn,3)
 
     CustomRedBtn.MouseButton1Click:Connect(function()
         local LINK_TO_COPY = "https://youtube.com/@blue_mode"
@@ -744,7 +1094,7 @@ function LoadMainHub()
     YouTubeBtn.TextColor3 = Color3.new(1,1,1)
     YouTubeBtn.Parent = MainFrame
     Instance.new("UICorner", YouTubeBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(YouTubeBtn,2)
+    AddRainbowGlow(YouTubeBtn,3)
 
     local MusicBtn = Instance.new("TextButton")
     MusicBtn.Size = UDim2.new(0,90,0,30)
@@ -754,7 +1104,7 @@ function LoadMainHub()
     MusicBtn.TextColor3 = Color3.new(1,1,1)
     MusicBtn.Parent = MainFrame
     Instance.new("UICorner", MusicBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(MusicBtn,2)
+    AddRainbowGlow(MusicBtn,3)
 
     local LockBtn = Instance.new("TextButton")
     LockBtn.Size = UDim2.new(0,90,0,30)
@@ -764,7 +1114,7 @@ function LoadMainHub()
     LockBtn.TextColor3 = Color3.new(1,1,1)
     LockBtn.Parent = MainFrame
     Instance.new("UICorner", LockBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(LockBtn,2)
+    AddRainbowGlow(LockBtn,3)
 
     local ConsoleBtn = Instance.new("TextButton")
     ConsoleBtn.Size = UDim2.new(0,110,0,30)
@@ -774,17 +1124,27 @@ function LoadMainHub()
     ConsoleBtn.TextColor3 = Color3.new(1,1,1)
     ConsoleBtn.Parent = MainFrame
     Instance.new("UICorner", ConsoleBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ConsoleBtn,2)
+    AddRainbowGlow(ConsoleBtn,3)
+
+    local MoveBtn = Instance.new("TextButton")
+    MoveBtn.Size = UDim2.new(0, 30, 0, 28)
+    MoveBtn.Position = UDim2.new(0, 620, 0, 65)
+    MoveBtn.BackgroundColor3 = Color3.fromRGB(72, 28, 110)
+    MoveBtn.Text = "👾"
+    MoveBtn.TextColor3 = Color3.new(1,1,1)
+    MoveBtn.Parent = MainFrame
+    Instance.new("UICorner", MoveBtn).CornerRadius = UDim.new(0,6)
+    AddRainbowGlow(MoveBtn,3)
 
     local ExitBtn = Instance.new("TextButton")
-    ExitBtn.Size = UDim2.new(0,35,0,30)
-    ExitBtn.Position = UDim2.new(0,640,0,30)
+    ExitBtn.Size = UDim2.new(0, 30, 0, 28)
+    ExitBtn.Position = UDim2.new(0, 620, 0, 31)
     ExitBtn.BackgroundColor3 = Color3.fromRGB(140,20,20)
     ExitBtn.Text = "🗑️"
     ExitBtn.TextColor3 = Color3.new(1,1,1)
     ExitBtn.Parent = MainFrame
     Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0,6)
-    AddRainbowGlow(ExitBtn,2)
+    AddRainbowGlow(ExitBtn,3)
 
     local VolLabelMain = Instance.new("TextLabel")
     VolLabelMain.Size = UDim2.new(0,100,0,25)
@@ -809,7 +1169,7 @@ function LoadMainHub()
     VolBGMain.Active = true
     VolBGMain.Parent = MainFrame
     Instance.new("UICorner", VolBGMain).CornerRadius = UDim.new(0,9)
-    AddRainbowGlow(VolBGMain,2)
+    AddRainbowGlow(VolBGMain,3)
 
     VolFillMain = Instance.new("Frame")
     VolFillMain.Size = UDim2.new(MusicVolume/VOLUME_MAX,0,1,0)
@@ -823,7 +1183,7 @@ function LoadMainHub()
     StatsBG.BackgroundColor3 = Color3.fromRGB(50,50,50)
     StatsBG.Parent = MainFrame
     Instance.new("UICorner", StatsBG).CornerRadius = UDim.new(0,9)
-    AddRainbowGlow(StatsBG,2)
+    AddRainbowGlow(StatsBG,3)
 
     FPSLabel = Instance.new("TextLabel")
     FPSLabel.Size = UDim2.new(0.33,0,1,0)
@@ -854,34 +1214,47 @@ function LoadMainHub()
     ServerPingLabel.TextColor3 = Color3.fromRGB(255,100,100)
     ServerPingLabel.Parent = StatsBG
 
-    TPToolBtn.MouseButton1Click:Connect(function()
-        TPTool_Enabled = not TPTool_Enabled
-        TPToolBtn.Text = TPTool_Enabled and "TP: ON" or "TP: OFF"
-        TPToolBtn.BackgroundColor3 = TPTool_Enabled and Color3.fromRGB(25,120,25) or Color3.fromRGB(40,40,40)
-    end)
+-- ==============================================
+-- 🔘 TP TOGGLE BUTTON — ON/OFF
+-- ==============================================
+TPToolBtn.MouseButton1Click:Connect(function()
+    TPTool_Enabled = not TPTool_Enabled
+    if TPTool_Enabled then
+        TPToolBtn.Text = "TP: ON"
+        TPToolBtn.BackgroundColor3 = Color3.fromRGB(25, 120, 25)
+    else
+        TPToolBtn.Text = "TP: OFF"
+        TPToolBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    end
+end)
 
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not TPTool_Enabled then return end
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local Mouse = LocalPlayer:GetMouse()
-            local Target = Mouse.Target
-            
-            if not Target then return end
-            
-            local Character = Target.Parent
-            local Humanoid = Character:FindFirstChild("Humanoid")
-            if not Humanoid then return end
-            
-            local TargetRoot = Character:FindFirstChild("HumanoidRootPart")
-            if not TargetRoot then return end
-            
-            local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not myRoot then return end
-            
-            -- Teleport to where the player clicked
-            myRoot.CFrame = TargetRoot.CFrame
+-- ==============================================
+-- 🚀 TELEPORT WHEN ON + CLICK GROUND
+-- ==============================================
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not TPTool_Enabled or gameProcessed then return end
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1 
+    or input.UserInputType == Enum.UserInputType.Touch then
+        
+        local myRoot = LocalPlayer.Character 
+            and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not myRoot then return end
+
+        local Mouse = LocalPlayer:GetMouse()
+        
+        -- Don't teleport if clicking the menu
+        if Mouse.Target and Mouse.Target:IsDescendantOf(GuiContainer) then
+            return
         end
-    end)
+
+        -- Teleport to where you clicked
+        if Mouse.Hit then
+            local pos = Vector3.new(Mouse.Hit.X, Mouse.Hit.Y + 2.5, Mouse.Hit.Z)
+            myRoot.CFrame = CFrame.new(pos)
+        end
+    end
+end)
 
     local SliderActiveMain = false
     VolBGMain.InputBegan:Connect(function(i)
@@ -942,6 +1315,7 @@ function LoadMainHub()
             ESPBtn.Visible = false
             TPToolBtn.Visible = false
             YouTubeBtn.Visible = false
+            MoveBtn.Visible = false
             CustomRedBtn.Visible = false
             MusicBtn.Visible = false
             LockBtn.Visible = false
@@ -958,6 +1332,7 @@ function LoadMainHub()
             ESPBtn.Visible = true
             TPToolBtn.Visible = true
             YouTubeBtn.Visible = true
+            MoveBtn.Visible = true
             CustomRedBtn.Visible = true
             MusicBtn.Visible = true
             LockBtn.Visible = true
@@ -988,6 +1363,7 @@ function LoadMainHub()
         YouTubeBtn.Text = "Blue Mode Hub"
     end)
 
+    MoveBtn.MouseButton1Click:Connect(ToggleMovementMenu)
     MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)
     ConsoleBtn.MouseButton1Click:Connect(ToggleConsole)
 
@@ -999,6 +1375,7 @@ function LoadMainHub()
             StopSound()
             if CurrentBoomboxUI then CurrentBoomboxUI:Destroy() end
             if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
+            if CurrentMovementUI then CurrentMovementUI:Destroy() end
             MainUI:Destroy()
             getgenv().BlueMode_Loaded = nil
         end)
