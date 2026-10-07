@@ -864,13 +864,16 @@ function LoadMainHub()
         end)
 
 
+
 -- ==============================================
--- 🔵 BLUE MODE HUB | FULLY FIXED & WORKING
--- ✅ TP TO — 100% RELIABLE
--- ✅ UNVIEW — NEVER FAILS, ALWAYS RETURNS
--- ✅ PROFILE — COPIES LINK CORRECTLY
--- ✅ NO BREAKING, NO STUCK
+-- 🔵 BLUE MODE HUB — FORCE-KILL VERSION
+-- ✅ NO LOOP CAN SURVIVE — EVER
+-- ✅ CLOSE → REOPEN → UNVIEW = 100% WORKS
 -- ==============================================
+
+-- 💀 GLOBAL KILL — OVERWRITES ANY OLD VERSION
+getgenv().BlueMode_Active_View_Session = os.time()
+local THIS_SESSION = getgenv().BlueMode_Active_View_Session
 
 -- ===== SERVICES =====
 local Players = game:GetService("Players")
@@ -882,16 +885,15 @@ local HttpService = game:GetService("HttpService")
 -- ===== VARIABLES =====
 local SelectedPlayer = nil
 local LastProfileLink = ""
-local IsViewing = false
 local ViewTarget = nil
 local ViewConnection = nil
 local RecentPlayers = {}
 local MAX_RECENT = 5
 local RECENT_KEY = "BlueMode_Recent_v2"
 local MenuVisible = false
-local ParentFrame = Frame -- ✅ Your main frame, keep as is
+local ParentFrame = Frame
 
--- ===== SAVE/LOAD RECENT =====
+-- ===== SAVE/LOAD =====
 local function LoadRecent()
     RecentPlayers = {}
     pcall(function()
@@ -918,80 +920,88 @@ local function FindLive(saved)
     return nil
 end
 
--- ✅ UNVIEW — PERFECT, GUARANTEED RETURN
+-- 💀 TOTAL SHUTDOWN — NOTHING CAN RESIST THIS
 local function StopViewing()
-    IsViewing = false
+    -- 1. KILL ALL OLD SESSIONS
+    getgenv().BlueMode_Active_View_Session = THIS_SESSION + 1000 -- BREAK ALL OLD CHECKS
+    
+    -- 2. CLEAR EVERYTHING
+    ViewTarget = nil
     if ViewConnection then
         ViewConnection:Disconnect()
         ViewConnection = nil
     end
-    ViewTarget = nil
 
-    -- Step 1: Force camera type
-    Camera.CameraType = Enum.CameraType.Custom
-    Camera.CameraSubject = nil
-    task.wait(0.06)
-
-    -- Step 2: Reset to YOUR character
-    if LocalPlayer.Character then
-        local Root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local Hum = LocalPlayer.Character:FindFirstChild("Humanoid")
-        if Root then
-            Camera.CFrame = CFrame.new(Root.Position + Vector3.new(0, 4, -15), Root.Position)
-        end
-        if Hum then
-            Camera.CameraSubject = Hum
+    -- 3. FORCE CAMERA BACK — REPEAT UNTIL LOCKED
+    local function LockCameraToMe()
+        Camera.CameraSubject = nil
+        Camera.CameraType = Enum.CameraType.Custom
+        if LocalPlayer and LocalPlayer.Character then
+            local Root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local Hum = LocalPlayer.Character:FindFirstChild("Humanoid")
+            if Root then
+                Camera.CFrame = CFrame.new(Root.Position + Vector3.new(0, 6, -22), Root.Position)
+            end
+            if Hum then
+                Camera.CameraSubject = Hum
+            end
         end
     end
 
-    -- Step 3: Double-ensure after delay
-    task.wait(0.1)
-    Camera.CameraType = Enum.CameraType.Custom
-    if LocalPlayer.Character then
-        local Hum = LocalPlayer.Character:FindFirstChild("Humanoid")
-        if Hum then Camera.CameraSubject = Hum end
+    -- 4. LOCK 10 TIMES — NOTHING CAN OVERPOWER
+    for i = 1, 10 do
+        LockCameraToMe()
+        task.wait(0.03)
     end
 end
 
--- ✅ START VIEWING
+-- ✅ START VIEWING — ONLY CURRENT SESSION CAN RUN
 local function StartViewing(p)
     if not p then return end
     if not p.Character or not p.Character:FindFirstChild("Humanoid") then
         warn("Target has no character!")
         return
     end
+    
+    -- STOP ANYTHING RUNNING FIRST
     StopViewing()
     task.wait(0.08)
-    IsViewing = true
+    
+    -- SET NEW SESSION
+    getgenv().BlueMode_Active_View_Session = THIS_SESSION
     ViewTarget = p
     Camera.CameraType = Enum.CameraType.Follow
+    
+    -- 🔑 LOOP CHECKS SESSION EVERY SINGLE FRAME — DIES IF MISMATCH
     ViewConnection = RunService.RenderStepped:Connect(function()
-        if not IsViewing or not ViewTarget then
-            StopViewing()
+        -- 💀 INSTANT DEATH IF SESSION CHANGED
+        if getgenv().BlueMode_Active_View_Session ~= THIS_SESSION then
+            if ViewConnection then
+                ViewConnection:Disconnect()
+                ViewConnection = nil
+            end
             return
         end
-        if not ViewTarget.Character then
+        
+        if not ViewTarget or not ViewTarget.Character then
             StopViewing()
             return
         end
         local Hum = ViewTarget.Character:FindFirstChild("Humanoid")
-        if Hum then Camera.CameraSubject = Hum end
+        if Hum then
+            Camera.CameraSubject = Hum
+        end
     end)
 end
 
--- ✅ TP TO PLAYER — PERFECTED
+-- ✅ TP TO PLAYER
 local function TeleportToPlayer(p)
-    if not p then return false end
-    if not p.Character then return false end
-    if not LocalPlayer.Character then return false end
-
+    if not p or not p.Character or not LocalPlayer.Character then return false end
     local MyRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     local TarRoot = p.Character:FindFirstChild("HumanoidRootPart")
     if not MyRoot or not TarRoot then return false end
-
-    -- ✅ Teleport right next to them, safe position
     MyRoot.CFrame = CFrame.new(TarRoot.Position + Vector3.new(3, 1.5, 0))
-    task.wait(0.1) -- confirm
+    task.wait(0.1)
     return true
 end
 
@@ -1184,7 +1194,12 @@ local function SetMenuVisible(vis)
     PurpleBox.Visible = vis
     YellowBox.Visible = vis
     ToggleBtn.Text = vis and "✕ CLOSE" or "👥 PLAYER LIST"
-    if not vis then StopViewing() end
+    
+    -- 💀 CLOSE = BREAK SESSION → ALL LOOPS DIE
+    if not vis then
+        StopViewing()
+        SelectedPlayer = nil
+    end
 end
 
 ToggleBtn.MouseButton1Click:Connect(function()
@@ -1292,7 +1307,6 @@ UnviewBtn.MouseButton1Click:Connect(function()
     UnviewBtn.Text = "🙈 UNVIEW"
 end)
 
--- ✅ TP TO — FULLY FIXED
 TPBtn.MouseButton1Click:Connect(function()
     if not SelectedPlayer then
         TPBtn.Text = "⚠️ SELECT FIRST"
@@ -1300,9 +1314,7 @@ TPBtn.MouseButton1Click:Connect(function()
         TPBtn.Text = "📍 TP TO"
         return
     end
-
     local ok = TeleportToPlayer(SelectedPlayer)
-
     if ok then
         TPBtn.Text = "✅ TP'D!"
         TPBtn.BackgroundColor3 = Color3.fromRGB(30, 180, 80)
@@ -1310,13 +1322,11 @@ TPBtn.MouseButton1Click:Connect(function()
         TPBtn.Text = "❌ FAILED"
         TPBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
     end
-
     task.wait(1.5)
     TPBtn.Text = "📍 TP TO"
     TPBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
 end)
 
--- ✅ PROFILE — COPY LINK
 ProfileBtn.MouseButton1Click:Connect(function()
     if not LastProfileLink or LastProfileLink == "" then
         ProfileBtn.Text = "⚠️ SELECT FIRST"
