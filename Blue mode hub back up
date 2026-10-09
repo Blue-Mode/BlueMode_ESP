@@ -866,14 +866,14 @@ function LoadMainHub()
 
 
 
+
+
 -- ==============================================
--- 🔵 BLUE MODE HUB — FULL VERSION
--- ✅ CREATED DATE LOADS
--- ✅ SEARCH MODE SWITCH (USERNAME / DISPLAY)
+-- 🔵 BLUE MODE HUB — COPY BUTTONS VERSION
+-- ✅ 🔤 USERNAME = Copy Username to Clipboard
+-- ✅ ✨ DISPLAY = Copy Display Name to Clipboard
 -- ✅ VIEW / UNVIEW / TP / PROFILE
--- ✅ 💀 KILL — TP TO THEM + HIT WITH WEAPON + RETURN
--- ✅ ☠️ KILL ALL — TP TO EACH, HIT, RETURN
--- ✅ 🛡️ SPARE — KILL ALL EXCEPT SELECTED
+-- ✅ SEARCH MODE BUTTON still works separately
 -- ✅ ALL STATE SAVES WORKING
 -- ==============================================
 
@@ -890,6 +890,8 @@ local HttpService = game:GetService("HttpService")
 
 -- ===== VARIABLES =====
 local SelectedPlayer = nil
+local SelectedUsername = ""
+local SelectedDisplayName = ""
 local LastProfileLink = ""
 local ViewTarget = nil
 local ViewConnection = nil
@@ -902,42 +904,6 @@ local SavedMenuVisible = false
 local ParentFrame = Frame
 local SearchText = ""
 local SearchMode = "USERNAME"
-
--- ===== MONTH NAMES =====
-local MonthNames = {
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-}
-
--- ===== FORMAT DATE =====
-local function FormatAccountDate(timestamp)
-    if not timestamp or timestamp <= 0 then return "Unknown" end
-    local dt = os.date("*t", timestamp)
-    return MonthNames[dt.month] .. " " .. dt.day .. ", " .. dt.year
-end
-
--- ===== GET ACCOUNT CREATION DATE =====
-local function GetAccountCreationDate(userId)
-    if not userId or userId <= 0 then return nil end
-    local success, result = pcall(function()
-        local url = "https://users.roblox.com/v1/users/" .. tostring(userId)
-        local response = HttpService:GetAsync(url, true)
-        local data = HttpService:JSONDecode(response)
-        if data and data.created then
-            local year, month, day = string.match(data.created, "(%d+)-(%d+)-(%d+)T")
-            if year and month and day then
-                return os.time({
-                    year = tonumber(year),
-                    month = tonumber(month),
-                    day = tonumber(day)
-                })
-            end
-        end
-        return nil
-    end)
-    if success and result then return result end
-    return nil
-end
 
 -- ===== SAVE/LOAD ALL SETTINGS =====
 local function LoadSettings()
@@ -1039,74 +1005,6 @@ local function TeleportToPlayer(p)
     return true
 end
 
--- ===== 🗡️ KILL FUNCTIONS — TP + HIT WITH WEAPON + RETURN =====
-local function KillPlayer(p)
-    if not p or not p.Character or not LocalPlayer.Character then return end
-    local myChar = LocalPlayer.Character
-    local myHR = myChar:FindFirstChild("HumanoidRootPart")
-    local pHR = p.Character:FindFirstChild("HumanoidRootPart")
-    local pHum = p.Character:FindFirstChild("Humanoid")
-    if not myHR or not pHR or not pHum or not myChar then return end
-    
-    -- Save my position
-    local originalPos = myHR.CFrame
-    
-    -- Find weapon in Backpack or equipped
-    local weapon = myChar:FindFirstChildOfClass("Tool")
-    local weaponWasEquipped = true
-    if not weapon then
-        weaponWasEquipped = false
-        for _, tool in ipairs(LocalPlayer.Backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                weapon = tool
-                break
-            end
-        end
-    end
-    
-    -- Equip if found in backpack
-    if weapon and not weaponWasEquipped then
-        weapon.Parent = myChar
-        task.wait(0.06)
-    end
-    
-    -- Teleport behind target
-    myHR.CFrame = pHR.CFrame * CFrame.new(0, 1, -2.5)
-    task.wait(0.08)
-    
-    -- Swing/attack with weapon
-    local equipped = myChar:FindFirstChildOfClass("Tool")
-    if equipped then
-        pcall(function() equipped:Activate() end)
-        task.wait(0.1)
-        pcall(function() equipped:Deactivate() end)
-    end
-    
-    -- Damage to ensure kill
-    pHum:TakeDamage(100)
-    
-    task.wait(0.08)
-    
-    -- Teleport back to original position
-    myHR.CFrame = originalPos
-    
-    -- Put weapon back to backpack if it wasn't equipped before
-    if weapon and not weaponWasEquipped then
-        weapon.Parent = LocalPlayer.Backpack
-    end
-end
-
-local function KillAllPlayers(sparePlayer)
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p ~= sparePlayer and p.Character then
-            task.spawn(function()
-                KillPlayer(p)
-                task.wait(0.15) -- slight delay so it doesn't lag
-            end)
-        end
-    end
-end
-
 -- ===== UPDATE COUNTS =====
 local PlayerCountLabel, FriendCountLabel = nil, nil
 local function UpdateCounts()
@@ -1132,7 +1030,7 @@ end
 
 -- ===== UI REFERENCES =====
 local SearchBox, SearchModeBtn, PlayerCountBox, FriendCountBox, GreenBox, BlueBox, PurpleBox, YellowBox, InfoLabels, PlayerListScroller, RecentScroller, ToggleBtn
-local KillBtn, KillAllBtn, SurviveKillBtn
+local UsernameBtn, DisplayBtn
 
 -- ===== TOGGLE MENU =====
 local function SetMenuVisible(vis)
@@ -1176,26 +1074,22 @@ local function ShowPlayerInfo(p)
             local base = string.split(lbl.Text, ":")[1]
             lbl.Text = base..": —"
         end
+        SelectedUsername = ""
+        SelectedDisplayName = ""
         LastProfileLink = ""
         SelectedPlayer = nil
         return
     end
     SelectedPlayer = p
+    SelectedUsername = p.Name
+    SelectedDisplayName = p.DisplayName
     AddToRecent(p)
     LastProfileLink = "https://www.roblox.com/users/" .. p.UserId .. "/profile"
     
     InfoLabels[1].Text = "👤 Username: " .. p.Name
     InfoLabels[2].Text = "✨ Display: " .. p.DisplayName
     InfoLabels[3].Text = "📡 User ID: " .. p.UserId
-    InfoLabels[4].Text = "📅 Created: Loading..."
-    InfoLabels[5].Text = "🔗 Profile: roblox.com/users/" .. p.UserId .. "/profile"
-    
-    task.spawn(function()
-        local createdDate = GetAccountCreationDate(p.UserId)
-        if InfoLabels[4] then
-            InfoLabels[4].Text = "📅 Created: " .. (createdDate and FormatAccountDate(createdDate) or "Unknown")
-        end
-    end)
+    InfoLabels[4].Text = "🔗 Profile: roblox.com/users/" .. p.UserId .. "/profile"
 end
 
 -- ===== REFRESH LISTS =====
@@ -1248,12 +1142,13 @@ local function RefreshRecentList()
                 ShowPlayerInfo(live)
             else
                 SelectedPlayer = nil
+                SelectedUsername = saved.name
+                SelectedDisplayName = saved.displayName
                 LastProfileLink = "https://www.roblox.com/users/" .. saved.userId .. "/profile"
                 InfoLabels[1].Text = "👤 Username: " .. saved.name
                 InfoLabels[2].Text = "✨ Display: " .. saved.displayName
                 InfoLabels[3].Text = "📡 User ID: " .. saved.userId
-                InfoLabels[4].Text = "📅 Created: —"
-                InfoLabels[5].Text = "🔗 Profile: roblox.com/users/" .. saved.userId .. "/profile"
+                InfoLabels[4].Text = "🔗 Profile: roblox.com/users/" .. saved.userId .. "/profile"
             end
         end)
         y += 32
@@ -1408,7 +1303,7 @@ RecentScroller.Parent = BlueBox
 -- 🟪 PLAYER INFO
 PurpleBox = Instance.new("Frame")
 PurpleBox.Name = "PlayerMenu_Info"
-PurpleBox.Size = UDim2.new(1, -24, 0, 150)
+PurpleBox.Size = UDim2.new(1, -24, 0, 130)
 PurpleBox.Position = UDim2.new(0, 12, 0, 265)
 PurpleBox.BackgroundColor3 = Color3.fromRGB(120,70,180)
 PurpleBox.Visible = false
@@ -1416,11 +1311,11 @@ PurpleBox.Parent = ParentFrame
 Instance.new("UICorner", PurpleBox).CornerRadius = UDim.new(0, 12)
 
 InfoLabels = {}
-local InfoNames = {"👤 Username:", "✨ Display:", "📡 User ID:", "📅 Account Created:", "🔗 Profile Link:"}
+local InfoNames = {"👤 Username:", "✨ Display:", "📡 User ID:", "🔗 Profile Link:"}
 for i, text in ipairs(InfoNames) do
     local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, -20, 0, 22)
-    lbl.Position = UDim2.new(0, 10, 0, 8 + (i-1)*26)
+    lbl.Size = UDim2.new(1, -20, 0, 26)
+    lbl.Position = UDim2.new(0, 10, 0, 8 + (i-1)*30)
     lbl.BackgroundTransparency = 1
     lbl.Font = Enum.Font.Gotham
     lbl.Text = text.." —"
@@ -1435,7 +1330,7 @@ end
 YellowBox = Instance.new("Frame")
 YellowBox.Name = "PlayerMenu_Buttons"
 YellowBox.Size = UDim2.new(1, -24, 0, 50)
-YellowBox.Position = UDim2.new(0, 12, 0, 430)
+YellowBox.Position = UDim2.new(0, 12, 0, 410)
 YellowBox.BackgroundColor3 = Color3.fromRGB(230,200,40)
 YellowBox.Visible = false
 YellowBox.Parent = ParentFrame
@@ -1443,25 +1338,25 @@ Instance.new("UICorner", YellowBox).CornerRadius = UDim.new(0, 10)
 
 local function MakeButton(name, x, color)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.14, -6, 0, 36)
+    btn.Size = UDim2.new(0.155, -6, 0, 36)
     btn.Position = UDim2.new(x, 3, 0, 7)
     btn.BackgroundColor3 = color
     btn.Text = name
     btn.TextColor3 = Color3.new(1,1,1)
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 10
+    btn.TextSize = 9
     btn.Parent = YellowBox
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
     return btn
 end
 
-local ViewBtn = MakeButton("👁 VIEW", 0.00, Color3.fromRGB(80,140,220))
-local UnviewBtn = MakeButton("🙈 UNVIEW", 0.14, Color3.fromRGB(200,70,90))
-local TPBtn = MakeButton("📍 TP TO", 0.28, Color3.fromRGB(40,160,90))
-KillBtn = MakeButton("💀 KILL", 0.42, Color3.fromRGB(220,40,40))
-KillAllBtn = MakeButton("☠️ ALL", 0.56, Color3.fromRGB(0,0,0))
-SurviveKillBtn = MakeButton("🛡️ SPARE", 0.70, Color3.fromRGB(30,140,60))
-local ProfileBtn = MakeButton("👤 PROFILE", 0.84, Color3.fromRGB(160,90,210))
+-- ✅ 6 BUTTONS
+UsernameBtn = MakeButton("📋 USERNAME", 0.00, Color3.fromRGB(40, 160, 90))
+DisplayBtn = MakeButton("📋 DISPLAY", 0.17, Color3.fromRGB(180, 80, 210))
+local ViewBtn = MakeButton("👁 VIEW", 0.34, Color3.fromRGB(80,140,220))
+local UnviewBtn = MakeButton("🙈 UNVIEW", 0.51, Color3.fromRGB(200,70,90))
+local TPBtn = MakeButton("📍 TP TO", 0.68, Color3.fromRGB(40,160,90))
+local ProfileBtn = MakeButton("👤 PROFILE", 0.85, Color3.fromRGB(160,90,210))
 
 -- ===== BUTTON CONNECTIONS =====
 
@@ -1475,7 +1370,57 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- SEARCH MODE BUTTON
+-- 🔤 COPY USERNAME
+UsernameBtn.MouseButton1Click:Connect(function()
+    if SelectedUsername == "" then
+        UsernameBtn.Text = "⚠️ SELECT"
+        task.wait(1.2)
+        UsernameBtn.Text = "📋 USERNAME"
+        return
+    end
+    local copied = false
+    pcall(function()
+        setclipboard(SelectedUsername)
+        copied = true
+    end)
+    if copied then
+        UsernameBtn.Text = "✅ COPIED"
+        UsernameBtn.BackgroundColor3 = Color3.fromRGB(30, 180, 80)
+    else
+        UsernameBtn.Text = "❌ FAILED"
+        UsernameBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    end
+    task.wait(1.5)
+    UsernameBtn.Text = "📋 USERNAME"
+    UsernameBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
+end)
+
+-- ✨ COPY DISPLAY NAME
+DisplayBtn.MouseButton1Click:Connect(function()
+    if SelectedDisplayName == "" then
+        DisplayBtn.Text = "⚠️ SELECT"
+        task.wait(1.2)
+        DisplayBtn.Text = "📋 DISPLAY"
+        return
+    end
+    local copied = false
+    pcall(function()
+        setclipboard(SelectedDisplayName)
+        copied = true
+    end)
+    if copied then
+        DisplayBtn.Text = "✅ COPIED"
+        DisplayBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 180)
+    else
+        DisplayBtn.Text = "❌ FAILED"
+        DisplayBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    end
+    task.wait(1.5)
+    DisplayBtn.Text = "📋 DISPLAY"
+    DisplayBtn.BackgroundColor3 = Color3.fromRGB(180, 80, 210)
+end)
+
+-- SEARCH MODE BUTTON (top-right one — still works for searching)
 SearchModeBtn.MouseButton1Click:Connect(function()
     if SearchMode == "USERNAME" then
         SearchMode = "DISPLAY"
@@ -1534,42 +1479,6 @@ TPBtn.MouseButton1Click:Connect(function()
     TPBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
 end)
 
--- 💀 KILL
-KillBtn.MouseButton1Click:Connect(function()
-    if not SelectedPlayer then
-        KillBtn.Text = "⚠️ SELECT"
-        task.wait(1.2)
-        KillBtn.Text = "💀 KILL"
-        return
-    end
-    KillPlayer(SelectedPlayer)
-    KillBtn.Text = "✅ KILLED"
-    task.wait(1)
-    KillBtn.Text = "💀 KILL"
-end)
-
--- ☠️ KILL ALL
-KillAllBtn.MouseButton1Click:Connect(function()
-    KillAllPlayers(nil)
-    KillAllBtn.Text = "✅ DONE"
-    task.wait(1.5)
-    KillAllBtn.Text = "☠️ ALL"
-end)
-
--- 🛡️ SPARE / SURVIVE KILL
-SurviveKillBtn.MouseButton1Click:Connect(function()
-    if not SelectedPlayer then
-        SurviveKillBtn.Text = "⚠️ SELECT"
-        task.wait(1.2)
-        SurviveKillBtn.Text = "🛡️ SPARE"
-        return
-    end
-    KillAllPlayers(SelectedPlayer)
-    SurviveKillBtn.Text = "✅ SPARED"
-    task.wait(1.5)
-    SurviveKillBtn.Text = "🛡️ SPARE"
-end)
-
 -- Profile
 ProfileBtn.MouseButton1Click:Connect(function()
     if not LastProfileLink or LastProfileLink == "" then
@@ -1613,6 +1522,7 @@ Players.PlayerRemoving:Connect(function(p)
     RefreshServerList()
     RefreshRecentList()
 end)
+
 
 
 
@@ -2313,4 +2223,3 @@ end)
         end
     end)
 end
-
