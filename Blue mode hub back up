@@ -864,13 +864,22 @@ function LoadMainHub()
         end)
 
 
+
+
 -- ==============================================
--- 🔵 BLUE MODE HUB | FULLY FIXED & WORKING
--- ✅ TP TO — 100% RELIABLE
--- ✅ UNVIEW — NEVER FAILS, ALWAYS RETURNS
--- ✅ PROFILE — COPIES LINK CORRECTLY
--- ✅ NO BREAKING, NO STUCK
+-- 🔵 BLUE MODE HUB — FULL VERSION
+-- ✅ CREATED DATE LOADS
+-- ✅ SEARCH MODE SWITCH (USERNAME / DISPLAY)
+-- ✅ VIEW / UNVIEW / TP / PROFILE
+-- ✅ 💀 KILL — TP TO THEM + HIT WITH WEAPON + RETURN
+-- ✅ ☠️ KILL ALL — TP TO EACH, HIT, RETURN
+-- ✅ 🛡️ SPARE — KILL ALL EXCEPT SELECTED
+-- ✅ ALL STATE SAVES WORKING
 -- ==============================================
+
+-- 💀 GLOBAL KILL
+getgenv().BlueMode_Active_View_Session = os.time()
+local THIS_SESSION = getgenv().BlueMode_Active_View_Session
 
 -- ===== SERVICES =====
 local Players = game:GetService("Players")
@@ -882,14 +891,77 @@ local HttpService = game:GetService("HttpService")
 -- ===== VARIABLES =====
 local SelectedPlayer = nil
 local LastProfileLink = ""
-local IsViewing = false
 local ViewTarget = nil
 local ViewConnection = nil
 local RecentPlayers = {}
 local MAX_RECENT = 5
-local RECENT_KEY = "BlueMode_Recent_v2"
+local RECENT_KEY = "BlueMode_Recent_v5"
+local SETTINGS_KEY = "BlueMode_Settings_v3"
 local MenuVisible = false
-local ParentFrame = Frame -- ✅ Your main frame, keep as is
+local SavedMenuVisible = false
+local ParentFrame = Frame
+local SearchText = ""
+local SearchMode = "USERNAME"
+
+-- ===== MONTH NAMES =====
+local MonthNames = {
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+}
+
+-- ===== FORMAT DATE =====
+local function FormatAccountDate(timestamp)
+    if not timestamp or timestamp <= 0 then return "Unknown" end
+    local dt = os.date("*t", timestamp)
+    return MonthNames[dt.month] .. " " .. dt.day .. ", " .. dt.year
+end
+
+-- ===== GET ACCOUNT CREATION DATE =====
+local function GetAccountCreationDate(userId)
+    if not userId or userId <= 0 then return nil end
+    local success, result = pcall(function()
+        local url = "https://users.roblox.com/v1/users/" .. tostring(userId)
+        local response = HttpService:GetAsync(url, true)
+        local data = HttpService:JSONDecode(response)
+        if data and data.created then
+            local year, month, day = string.match(data.created, "(%d+)-(%d+)-(%d+)T")
+            if year and month and day then
+                return os.time({
+                    year = tonumber(year),
+                    month = tonumber(month),
+                    day = tonumber(day)
+                })
+            end
+        end
+        return nil
+    end)
+    if success and result then return result end
+    return nil
+end
+
+-- ===== SAVE/LOAD ALL SETTINGS =====
+local function LoadSettings()
+    pcall(function()
+        local s = readfile(SETTINGS_KEY)
+        if s then
+            local data = HttpService:JSONDecode(s)
+            if data then
+                SearchMode = data.SearchMode or "USERNAME"
+                SearchText = data.SearchText or ""
+                SavedMenuVisible = data.MenuVisible or false
+            end
+        end
+    end)
+end
+local function SaveSettings()
+    pcall(function()
+        writefile(SETTINGS_KEY, HttpService:JSONEncode({
+            SearchMode = SearchMode,
+            SearchText = SearchText,
+            MenuVisible = MenuVisible
+        }))
+    end)
+end
 
 -- ===== SAVE/LOAD RECENT =====
 local function LoadRecent()
@@ -918,81 +990,121 @@ local function FindLive(saved)
     return nil
 end
 
--- ✅ UNVIEW — PERFECT, GUARANTEED RETURN
+-- 💀 STOP VIEWING
 local function StopViewing()
-    IsViewing = false
-    if ViewConnection then
-        ViewConnection:Disconnect()
-        ViewConnection = nil
-    end
+    getgenv().BlueMode_Active_View_Session = THIS_SESSION + 1000
     ViewTarget = nil
-
-    -- Step 1: Force camera type
-    Camera.CameraType = Enum.CameraType.Custom
-    Camera.CameraSubject = nil
-    task.wait(0.06)
-
-    -- Step 2: Reset to YOUR character
-    if LocalPlayer.Character then
-        local Root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local Hum = LocalPlayer.Character:FindFirstChild("Humanoid")
-        if Root then
-            Camera.CFrame = CFrame.new(Root.Position + Vector3.new(0, 4, -15), Root.Position)
-        end
-        if Hum then
-            Camera.CameraSubject = Hum
+    if ViewConnection then ViewConnection:Disconnect(); ViewConnection = nil end
+    
+    local function LockCameraToMe()
+        Camera.CameraSubject = nil
+        Camera.CameraType = Enum.CameraType.Custom
+        if LocalPlayer and LocalPlayer.Character then
+            local Root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local Hum = LocalPlayer.Character:FindFirstChild("Humanoid")
+            if Root then Camera.CFrame = CFrame.new(Root.Position + Vector3.new(0, 6, -22), Root.Position) end
+            if Hum then Camera.CameraSubject = Hum end
         end
     end
-
-    -- Step 3: Double-ensure after delay
-    task.wait(0.1)
-    Camera.CameraType = Enum.CameraType.Custom
-    if LocalPlayer.Character then
-        local Hum = LocalPlayer.Character:FindFirstChild("Humanoid")
-        if Hum then Camera.CameraSubject = Hum end
-    end
+    for i = 1, 10 do LockCameraToMe(); task.wait(0.03) end
 end
 
 -- ✅ START VIEWING
 local function StartViewing(p)
-    if not p then return end
-    if not p.Character or not p.Character:FindFirstChild("Humanoid") then
-        warn("Target has no character!")
-        return
-    end
+    if not p or not p.Character or not p.Character:FindFirstChild("Humanoid") then return end
     StopViewing()
     task.wait(0.08)
-    IsViewing = true
+    getgenv().BlueMode_Active_View_Session = THIS_SESSION
     ViewTarget = p
     Camera.CameraType = Enum.CameraType.Follow
     ViewConnection = RunService.RenderStepped:Connect(function()
-        if not IsViewing or not ViewTarget then
-            StopViewing()
+        if getgenv().BlueMode_Active_View_Session ~= THIS_SESSION then
+            if ViewConnection then ViewConnection:Disconnect(); ViewConnection = nil end
             return
         end
-        if not ViewTarget.Character then
-            StopViewing()
-            return
-        end
+        if not ViewTarget or not ViewTarget.Character then StopViewing(); return end
         local Hum = ViewTarget.Character:FindFirstChild("Humanoid")
         if Hum then Camera.CameraSubject = Hum end
     end)
 end
 
--- ✅ TP TO PLAYER — PERFECTED
+-- ✅ TP TO PLAYER
 local function TeleportToPlayer(p)
-    if not p then return false end
-    if not p.Character then return false end
-    if not LocalPlayer.Character then return false end
-
+    if not p or not p.Character or not LocalPlayer.Character then return false end
     local MyRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     local TarRoot = p.Character:FindFirstChild("HumanoidRootPart")
     if not MyRoot or not TarRoot then return false end
-
-    -- ✅ Teleport right next to them, safe position
     MyRoot.CFrame = CFrame.new(TarRoot.Position + Vector3.new(3, 1.5, 0))
-    task.wait(0.1) -- confirm
+    task.wait(0.1)
     return true
+end
+
+-- ===== 🗡️ KILL FUNCTIONS — TP + HIT WITH WEAPON + RETURN =====
+local function KillPlayer(p)
+    if not p or not p.Character or not LocalPlayer.Character then return end
+    local myChar = LocalPlayer.Character
+    local myHR = myChar:FindFirstChild("HumanoidRootPart")
+    local pHR = p.Character:FindFirstChild("HumanoidRootPart")
+    local pHum = p.Character:FindFirstChild("Humanoid")
+    if not myHR or not pHR or not pHum or not myChar then return end
+    
+    -- Save my position
+    local originalPos = myHR.CFrame
+    
+    -- Find weapon in Backpack or equipped
+    local weapon = myChar:FindFirstChildOfClass("Tool")
+    local weaponWasEquipped = true
+    if not weapon then
+        weaponWasEquipped = false
+        for _, tool in ipairs(LocalPlayer.Backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                weapon = tool
+                break
+            end
+        end
+    end
+    
+    -- Equip if found in backpack
+    if weapon and not weaponWasEquipped then
+        weapon.Parent = myChar
+        task.wait(0.06)
+    end
+    
+    -- Teleport behind target
+    myHR.CFrame = pHR.CFrame * CFrame.new(0, 1, -2.5)
+    task.wait(0.08)
+    
+    -- Swing/attack with weapon
+    local equipped = myChar:FindFirstChildOfClass("Tool")
+    if equipped then
+        pcall(function() equipped:Activate() end)
+        task.wait(0.1)
+        pcall(function() equipped:Deactivate() end)
+    end
+    
+    -- Damage to ensure kill
+    pHum:TakeDamage(100)
+    
+    task.wait(0.08)
+    
+    -- Teleport back to original position
+    myHR.CFrame = originalPos
+    
+    -- Put weapon back to backpack if it wasn't equipped before
+    if weapon and not weaponWasEquipped then
+        weapon.Parent = LocalPlayer.Backpack
+    end
+end
+
+local function KillAllPlayers(sparePlayer)
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p ~= sparePlayer and p.Character then
+            task.spawn(function()
+                KillPlayer(p)
+                task.wait(0.15) -- slight delay so it doesn't lag
+            end)
+        end
+    end
 end
 
 -- ===== UPDATE COUNTS =====
@@ -1007,195 +1119,61 @@ local function UpdateCounts()
     if FriendCountLabel then FriendCountLabel.Text = "🤝 Friends: "..friends end
 end
 
--- ===== BUILD INTERFACE =====
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Name = "PlayerMenu_Toggle"
-ToggleBtn.Size = UDim2.new(0, 130, 0, 36)
-ToggleBtn.Position = UDim2.new(0, 10, 0, 10)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 120, 200)
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.Text = "👥 PLAYER LIST"
-ToggleBtn.TextColor3 = Color3.new(1,1,1)
-ToggleBtn.Parent = ParentFrame
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 10)
-
--- Player Count Box
-local PlayerCountBox = Instance.new("Frame")
-PlayerCountBox.Name = "PlayerMenu_PlayerCount"
-PlayerCountBox.Size = UDim2.new(0.48, -8, 0, 32)
-PlayerCountBox.Position = UDim2.new(0, 12, 0, 55)
-PlayerCountBox.BackgroundColor3 = Color3.fromRGB(240,240,240)
-PlayerCountBox.Visible = false
-PlayerCountBox.Parent = ParentFrame
-Instance.new("UICorner", PlayerCountBox).CornerRadius = UDim.new(0, 8)
-
-PlayerCountLabel = Instance.new("TextLabel")
-PlayerCountLabel.Size = UDim2.new(1, -16, 1, 0)
-PlayerCountLabel.Position = UDim2.new(0, 8, 0, 0)
-PlayerCountLabel.BackgroundTransparency = 1
-PlayerCountLabel.Font = Enum.Font.GothamBold
-PlayerCountLabel.Text = "👥 Players: 0"
-PlayerCountLabel.TextColor3 = Color3.fromRGB(30,30,60)
-PlayerCountLabel.TextXAlignment = Enum.TextXAlignment.Left
-PlayerCountLabel.Parent = PlayerCountBox
-
--- Friend Count Box
-local FriendCountBox = Instance.new("Frame")
-FriendCountBox.Name = "PlayerMenu_FriendCount"
-FriendCountBox.Size = UDim2.new(0.48, -8, 0, 32)
-FriendCountBox.Position = UDim2.new(0.52, -4, 0, 55)
-FriendCountBox.BackgroundColor3 = Color3.fromRGB(240,240,240)
-FriendCountBox.Visible = false
-FriendCountBox.Parent = ParentFrame
-Instance.new("UICorner", FriendCountBox).CornerRadius = UDim.new(0, 8)
-
-FriendCountLabel = Instance.new("TextLabel")
-FriendCountLabel.Size = UDim2.new(1, -16, 1, 0)
-FriendCountLabel.Position = UDim2.new(0, 8, 0, 0)
-FriendCountLabel.BackgroundTransparency = 1
-FriendCountLabel.Font = Enum.Font.GothamBold
-FriendCountLabel.Text = "🤝 Friends: 0"
-FriendCountLabel.TextColor3 = Color3.fromRGB(30,30,60)
-FriendCountLabel.TextXAlignment = Enum.TextXAlignment.Left
-FriendCountLabel.Parent = FriendCountBox
-
--- 🟩 Server List
-local GreenBox = Instance.new("Frame")
-GreenBox.Name = "PlayerMenu_ServerList"
-GreenBox.Size = UDim2.new(0.48, -8, 0, 160)
-GreenBox.Position = UDim2.new(0, 12, 0, 95)
-GreenBox.BackgroundColor3 = Color3.fromRGB(60,160,80)
-GreenBox.Visible = false
-GreenBox.Parent = ParentFrame
-Instance.new("UICorner", GreenBox).CornerRadius = UDim.new(0, 10)
-
-local GreenTitle = Instance.new("TextLabel")
-GreenTitle.Size = UDim2.new(1, -16, 0, 24)
-GreenTitle.Position = UDim2.new(0, 8, 0, 4)
-GreenTitle.BackgroundTransparency = 1
-GreenTitle.Font = Enum.Font.GothamBold
-GreenTitle.Text = "👥 SERVER PLAYERS"
-GreenTitle.TextColor3 = Color3.new(1,1,1)
-GreenTitle.TextSize = 13
-GreenTitle.Parent = GreenBox
-
-local PlayerListScroller = Instance.new("ScrollingFrame")
-PlayerListScroller.Name = "Scroller"
-PlayerListScroller.Size = UDim2.new(1, -12, 1, -34)
-PlayerListScroller.Position = UDim2.new(0, 6, 0, 30)
-PlayerListScroller.BackgroundTransparency = 1
-PlayerListScroller.CanvasSize = UDim2.new(0,0,0,0)
-PlayerListScroller.AutomaticCanvasSize = Enum.AutomaticSize.Y
-PlayerListScroller.ScrollBarThickness = 4
-PlayerListScroller.Parent = GreenBox
-
--- 🟦 Recent Players
-local BlueBox = Instance.new("Frame")
-BlueBox.Name = "PlayerMenu_RecentList"
-BlueBox.Size = UDim2.new(0.48, -8, 0, 160)
-BlueBox.Position = UDim2.new(0.52, -4, 0, 95)
-BlueBox.BackgroundColor3 = Color3.fromRGB(40,110,200)
-BlueBox.Visible = false
-BlueBox.Parent = ParentFrame
-Instance.new("UICorner", BlueBox).CornerRadius = UDim.new(0, 10)
-
-local BlueTitle = Instance.new("TextLabel")
-BlueTitle.Size = UDim2.new(1, -16, 0, 24)
-BlueTitle.Position = UDim2.new(0, 8, 0, 4)
-BlueTitle.BackgroundTransparency = 1
-BlueTitle.Font = Enum.Font.GothamBold
-BlueTitle.Text = "🕐 RECENTLY SELECTED"
-BlueTitle.TextColor3 = Color3.new(1,1,1)
-BlueTitle.TextSize = 13
-BlueTitle.Parent = BlueBox
-
-local RecentScroller = Instance.new("ScrollingFrame")
-RecentScroller.Name = "Scroller"
-RecentScroller.Size = UDim2.new(1, -12, 1, -34)
-RecentScroller.Position = UDim2.new(0, 6, 0, 30)
-RecentScroller.BackgroundTransparency = 1
-RecentScroller.CanvasSize = UDim2.new(0,0,0,0)
-RecentScroller.AutomaticCanvasSize = Enum.AutomaticSize.Y
-RecentScroller.ScrollBarThickness = 4
-RecentScroller.Parent = BlueBox
-
--- 🟪 Player Info
-local PurpleBox = Instance.new("Frame")
-PurpleBox.Name = "PlayerMenu_Info"
-PurpleBox.Size = UDim2.new(1, -24, 0, 130)
-PurpleBox.Position = UDim2.new(0, 12, 0, 265)
-PurpleBox.BackgroundColor3 = Color3.fromRGB(120,70,180)
-PurpleBox.Visible = false
-PurpleBox.Parent = ParentFrame
-Instance.new("UICorner", PurpleBox).CornerRadius = UDim.new(0, 12)
-
-local InfoLabels = {}
-local InfoNames = {"👤 Username:", "✨ Display:", "📡 User ID:", "🎮 Account Age:", "🔗 Profile Link:"}
-for i, text in ipairs(InfoNames) do
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, -20, 0, 22)
-    lbl.Position = UDim2.new(0, 10, 0, 8 + (i-1)*24)
-    lbl.BackgroundTransparency = 1
-    lbl.Font = Enum.Font.Gotham
-    lbl.Text = text.." —"
-    lbl.TextColor3 = Color3.new(1,1,1)
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.TextSize = 11
-    lbl.Parent = PurpleBox
-    InfoLabels[i] = lbl
+-- ===== SEARCH MATCH =====
+local function MatchesSearch(p)
+    if SearchText == "" then return true end
+    local s = string.lower(SearchText)
+    if SearchMode == "USERNAME" then
+        return string.find(string.lower(p.Name), s, 1, true)
+    else
+        return string.find(string.lower(p.DisplayName), s, 1, true)
+    end
 end
 
--- 🟡 Buttons
-local YellowBox = Instance.new("Frame")
-YellowBox.Name = "PlayerMenu_Buttons"
-YellowBox.Size = UDim2.new(1, -24, 0, 50)
-YellowBox.Position = UDim2.new(0, 12, 0, 400)
-YellowBox.BackgroundColor3 = Color3.fromRGB(230,200,40)
-YellowBox.Visible = false
-YellowBox.Parent = ParentFrame
-Instance.new("UICorner", YellowBox).CornerRadius = UDim.new(0, 10)
-
-local function MakeButton(name, x, color)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.23, -6, 0, 36)
-    btn.Position = UDim2.new(x, 4, 0, 7)
-    btn.BackgroundColor3 = color
-    btn.Text = name
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 11
-    btn.Parent = YellowBox
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-    return btn
-end
-
-local ViewBtn = MakeButton("👁 VIEW", 0.00, Color3.fromRGB(80,140,220))
-local UnviewBtn = MakeButton("🙈 UNVIEW", 0.25, Color3.fromRGB(200,70,90))
-local TPBtn = MakeButton("📍 TP TO", 0.50, Color3.fromRGB(40,160,90))
-local ProfileBtn = MakeButton("👤 PROFILE", 0.75, Color3.fromRGB(160,90,210))
+-- ===== UI REFERENCES =====
+local SearchBox, SearchModeBtn, PlayerCountBox, FriendCountBox, GreenBox, BlueBox, PurpleBox, YellowBox, InfoLabels, PlayerListScroller, RecentScroller, ToggleBtn
+local KillBtn, KillAllBtn, SurviveKillBtn
 
 -- ===== TOGGLE MENU =====
 local function SetMenuVisible(vis)
     MenuVisible = vis
-    PlayerCountBox.Visible = vis
-    FriendCountBox.Visible = vis
-    GreenBox.Visible = vis
-    BlueBox.Visible = vis
-    PurpleBox.Visible = vis
-    YellowBox.Visible = vis
-    ToggleBtn.Text = vis and "✕ CLOSE" or "👥 PLAYER LIST"
-    if not vis then StopViewing() end
+    if SearchBox then SearchBox.Visible = vis end
+    if SearchModeBtn then SearchModeBtn.Visible = vis end
+    if PlayerCountBox then PlayerCountBox.Visible = vis end
+    if FriendCountBox then FriendCountBox.Visible = vis end
+    if GreenBox then GreenBox.Visible = vis end
+    if BlueBox then BlueBox.Visible = vis end
+    if PurpleBox then PurpleBox.Visible = vis end
+    if YellowBox then YellowBox.Visible = vis end
+    if ToggleBtn then ToggleBtn.Text = vis and "✕ CLOSE" or "👥 PLAYER LIST" end
+    
+    if not vis then
+        SaveSettings()
+    else
+        if SearchBox then SearchBox.Text = SearchText end
+        UpdateSearchModeBtn()
+        RefreshServerList()
+        RefreshRecentList()
+    end
 end
 
-ToggleBtn.MouseButton1Click:Connect(function()
-    SetMenuVisible(not MenuVisible)
-end)
+-- ===== UPDATE SEARCH MODE BUTTON =====
+function UpdateSearchModeBtn()
+    if not SearchModeBtn then return end
+    if SearchMode == "USERNAME" then
+        SearchModeBtn.Text = "🔤 Username"
+        SearchModeBtn.BackgroundColor3 = Color3.fromRGB(50, 130, 220)
+    else
+        SearchModeBtn.Text = "✨ Display"
+        SearchModeBtn.BackgroundColor3 = Color3.fromRGB(180, 80, 210)
+    end
+end
 
 -- ===== SHOW PLAYER INFO =====
 local function ShowPlayerInfo(p)
     if not p then
         for _, lbl in ipairs(InfoLabels) do
-            local base = lbl.Text:split(":")[1]
+            local base = string.split(lbl.Text, ":")[1]
             lbl.Text = base..": —"
         end
         LastProfileLink = ""
@@ -1205,22 +1183,30 @@ local function ShowPlayerInfo(p)
     SelectedPlayer = p
     AddToRecent(p)
     LastProfileLink = "https://www.roblox.com/users/" .. p.UserId .. "/profile"
-    local d = p.AccountAge
-    local y, m = math.floor(d/365), math.floor((d%365)/30)
+    
     InfoLabels[1].Text = "👤 Username: " .. p.Name
     InfoLabels[2].Text = "✨ Display: " .. p.DisplayName
     InfoLabels[3].Text = "📡 User ID: " .. p.UserId
-    InfoLabels[4].Text = "🎮 Account Age: " .. y .. "y " .. m .. "m"
+    InfoLabels[4].Text = "📅 Created: Loading..."
     InfoLabels[5].Text = "🔗 Profile: roblox.com/users/" .. p.UserId .. "/profile"
+    
+    task.spawn(function()
+        local createdDate = GetAccountCreationDate(p.UserId)
+        if InfoLabels[4] then
+            InfoLabels[4].Text = "📅 Created: " .. (createdDate and FormatAccountDate(createdDate) or "Unknown")
+        end
+    end)
 end
 
 -- ===== REFRESH LISTS =====
 local function RefreshServerList()
+    if not PlayerListScroller then return end
     for _, c in ipairs(PlayerListScroller:GetChildren()) do if c:IsA("TextButton") then c:Destroy() end end
     local list = Players:GetPlayers()
-    table.sort(list, function(a,b) return (a.DisplayName..a.Name):lower() < (b.DisplayName..b.Name):lower() end)
+    table.sort(list, function(a,b) return string.lower(a.DisplayName..a.Name) < string.lower(b.DisplayName..b.Name) end)
     local y = 0
     for _, p in ipairs(list) do
+        if not MatchesSearch(p) then continue end
         local isFriend = p ~= LocalPlayer and LocalPlayer:IsFriendsWith(p.UserId)
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, -8, 0, 28)
@@ -1241,6 +1227,7 @@ local function RefreshServerList()
 end
 
 local function RefreshRecentList()
+    if not RecentScroller then return end
     for _, c in ipairs(RecentScroller:GetChildren()) do if c:IsA("TextButton") then c:Destroy() end end
     local y = 0
     for _, saved in ipairs(RecentPlayers) do
@@ -1265,7 +1252,7 @@ local function RefreshRecentList()
                 InfoLabels[1].Text = "👤 Username: " .. saved.name
                 InfoLabels[2].Text = "✨ Display: " .. saved.displayName
                 InfoLabels[3].Text = "📡 User ID: " .. saved.userId
-                InfoLabels[4].Text = "🎮 Account Age: —"
+                InfoLabels[4].Text = "📅 Created: —"
                 InfoLabels[5].Text = "🔗 Profile: roblox.com/users/" .. saved.userId .. "/profile"
             end
         end)
@@ -1274,10 +1261,243 @@ local function RefreshRecentList()
     RecentScroller.CanvasSize = UDim2.new(0,0,0,y)
 end
 
--- ===== BUTTON ACTIONS =====
+-- ===== BUILD INTERFACE =====
+
+-- 👥 TOGGLE BUTTON
+ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "PlayerMenu_Toggle"
+ToggleBtn.Size = UDim2.new(0, 130, 0, 36)
+ToggleBtn.Position = UDim2.new(0, 10, 0, 10)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 120, 200)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.Text = "👥 PLAYER LIST"
+ToggleBtn.TextColor3 = Color3.new(1,1,1)
+ToggleBtn.Parent = ParentFrame
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 10)
+
+-- 🔍 SEARCH BAR
+SearchBox = Instance.new("TextBox")
+SearchBox.Name = "PlayerMenu_Search"
+SearchBox.Size = UDim2.new(1, -270, 0, 36)
+SearchBox.Position = UDim2.new(0, 145, 0, 10)
+SearchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
+SearchBox.PlaceholderText = "🔍 Search..."
+SearchBox.Text = SearchText
+SearchBox.TextColor3 = Color3.new(1,1,1)
+SearchBox.Font = Enum.Font.Gotham
+SearchBox.TextSize = 12
+SearchBox.ClearTextOnFocus = false
+SearchBox.Visible = false
+SearchBox.Parent = ParentFrame
+Instance.new("UICorner", SearchBox).CornerRadius = UDim.new(0, 8)
+
+-- 🔤✨ SEARCH MODE BUTTON
+SearchModeBtn = Instance.new("TextButton")
+SearchModeBtn.Name = "SearchModeBtn"
+SearchModeBtn.Size = UDim2.new(0, 115, 0, 36)
+SearchModeBtn.Position = UDim2.new(1, -125, 0, 10)
+SearchModeBtn.BackgroundColor3 = Color3.fromRGB(50, 130, 220)
+SearchModeBtn.Font = Enum.Font.GothamBold
+SearchModeBtn.Text = "🔤 Username"
+SearchModeBtn.TextColor3 = Color3.new(1,1,1)
+SearchModeBtn.TextSize = 11
+SearchModeBtn.Visible = false
+SearchModeBtn.Parent = ParentFrame
+Instance.new("UICorner", SearchModeBtn).CornerRadius = UDim.new(0, 8)
+
+-- 🖤 PLAYER COUNT
+PlayerCountBox = Instance.new("Frame")
+PlayerCountBox.Name = "PlayerMenu_PlayerCount"
+PlayerCountBox.Size = UDim2.new(0.48, -8, 0, 32)
+PlayerCountBox.Position = UDim2.new(0, 12, 0, 55)
+PlayerCountBox.BackgroundColor3 = Color3.fromRGB(240,240,240)
+PlayerCountBox.Visible = false
+PlayerCountBox.Parent = ParentFrame
+Instance.new("UICorner", PlayerCountBox).CornerRadius = UDim.new(0, 8)
+
+PlayerCountLabel = Instance.new("TextLabel")
+PlayerCountLabel.Size = UDim2.new(1, -16, 1, 0)
+PlayerCountLabel.Position = UDim2.new(0, 8, 0, 0)
+PlayerCountLabel.BackgroundTransparency = 1
+PlayerCountLabel.Font = Enum.Font.GothamBold
+PlayerCountLabel.Text = "👥 Players: 0"
+PlayerCountLabel.TextColor3 = Color3.fromRGB(30,30,60)
+PlayerCountLabel.TextXAlignment = Enum.TextXAlignment.Left
+PlayerCountLabel.Parent = PlayerCountBox
+
+-- 🖤 FRIEND COUNT
+FriendCountBox = Instance.new("Frame")
+FriendCountBox.Name = "PlayerMenu_FriendCount"
+FriendCountBox.Size = UDim2.new(0.48, -8, 0, 32)
+FriendCountBox.Position = UDim2.new(0.52, -4, 0, 55)
+FriendCountBox.BackgroundColor3 = Color3.fromRGB(240,240,240)
+FriendCountBox.Visible = false
+FriendCountBox.Parent = ParentFrame
+Instance.new("UICorner", FriendCountBox).CornerRadius = UDim.new(0, 8)
+
+FriendCountLabel = Instance.new("TextLabel")
+FriendCountLabel.Size = UDim2.new(1, -16, 1, 0)
+FriendCountLabel.Position = UDim2.new(0, 8, 0, 0)
+FriendCountLabel.BackgroundTransparency = 1
+FriendCountLabel.Font = Enum.Font.GothamBold
+FriendCountLabel.Text = "🤝 Friends: 0"
+FriendCountLabel.TextColor3 = Color3.fromRGB(30,30,60)
+FriendCountLabel.TextXAlignment = Enum.TextXAlignment.Left
+FriendCountLabel.Parent = FriendCountBox
+
+-- 🟩 SERVER LIST
+GreenBox = Instance.new("Frame")
+GreenBox.Name = "PlayerMenu_ServerList"
+GreenBox.Size = UDim2.new(0.48, -8, 0, 160)
+GreenBox.Position = UDim2.new(0, 12, 0, 95)
+GreenBox.BackgroundColor3 = Color3.fromRGB(60,160,80)
+GreenBox.Visible = false
+GreenBox.Parent = ParentFrame
+Instance.new("UICorner", GreenBox).CornerRadius = UDim.new(0, 10)
+
+local GreenTitle = Instance.new("TextLabel")
+GreenTitle.Size = UDim2.new(1, -16, 0, 24)
+GreenTitle.Position = UDim2.new(0, 8, 0, 4)
+GreenTitle.BackgroundTransparency = 1
+GreenTitle.Font = Enum.Font.GothamBold
+GreenTitle.Text = "👥 SERVER PLAYERS"
+GreenTitle.TextColor3 = Color3.new(1,1,1)
+GreenTitle.TextSize = 13
+GreenTitle.Parent = GreenBox
+
+PlayerListScroller = Instance.new("ScrollingFrame")
+PlayerListScroller.Name = "Scroller"
+PlayerListScroller.Size = UDim2.new(1, -12, 1, -34)
+PlayerListScroller.Position = UDim2.new(0, 6, 0, 30)
+PlayerListScroller.BackgroundTransparency = 1
+PlayerListScroller.CanvasSize = UDim2.new(0,0,0,0)
+PlayerListScroller.AutomaticCanvasSize = Enum.AutomaticSize.Y
+PlayerListScroller.ScrollBarThickness = 4
+PlayerListScroller.Parent = GreenBox
+
+-- 🟦 RECENT PLAYERS
+BlueBox = Instance.new("Frame")
+BlueBox.Name = "PlayerMenu_RecentList"
+BlueBox.Size = UDim2.new(0.48, -8, 0, 160)
+BlueBox.Position = UDim2.new(0.52, -4, 0, 95)
+BlueBox.BackgroundColor3 = Color3.fromRGB(40,110,200)
+BlueBox.Visible = false
+BlueBox.Parent = ParentFrame
+Instance.new("UICorner", BlueBox).CornerRadius = UDim.new(0, 10)
+
+local BlueTitle = Instance.new("TextLabel")
+BlueTitle.Size = UDim2.new(1, -16, 0, 24)
+BlueTitle.Position = UDim2.new(0, 8, 0, 4)
+BlueTitle.BackgroundTransparency = 1
+BlueTitle.Font = Enum.Font.GothamBold
+BlueTitle.Text = "🕐 RECENTLY SELECTED"
+BlueTitle.TextColor3 = Color3.new(1,1,1)
+BlueTitle.TextSize = 13
+BlueTitle.Parent = BlueBox
+
+RecentScroller = Instance.new("ScrollingFrame")
+RecentScroller.Name = "Scroller"
+RecentScroller.Size = UDim2.new(1, -12, 1, -34)
+RecentScroller.Position = UDim2.new(0, 6, 0, 30)
+RecentScroller.BackgroundTransparency = 1
+RecentScroller.CanvasSize = UDim2.new(0,0,0,0)
+RecentScroller.AutomaticCanvasSize = Enum.AutomaticSize.Y
+RecentScroller.ScrollBarThickness = 4
+RecentScroller.Parent = BlueBox
+
+-- 🟪 PLAYER INFO
+PurpleBox = Instance.new("Frame")
+PurpleBox.Name = "PlayerMenu_Info"
+PurpleBox.Size = UDim2.new(1, -24, 0, 150)
+PurpleBox.Position = UDim2.new(0, 12, 0, 265)
+PurpleBox.BackgroundColor3 = Color3.fromRGB(120,70,180)
+PurpleBox.Visible = false
+PurpleBox.Parent = ParentFrame
+Instance.new("UICorner", PurpleBox).CornerRadius = UDim.new(0, 12)
+
+InfoLabels = {}
+local InfoNames = {"👤 Username:", "✨ Display:", "📡 User ID:", "📅 Account Created:", "🔗 Profile Link:"}
+for i, text in ipairs(InfoNames) do
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, -20, 0, 22)
+    lbl.Position = UDim2.new(0, 10, 0, 8 + (i-1)*26)
+    lbl.BackgroundTransparency = 1
+    lbl.Font = Enum.Font.Gotham
+    lbl.Text = text.." —"
+    lbl.TextColor3 = Color3.new(1,1,1)
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.TextSize = 11
+    lbl.Parent = PurpleBox
+    InfoLabels[i] = lbl
+end
+
+-- 🟡 BUTTONS
+YellowBox = Instance.new("Frame")
+YellowBox.Name = "PlayerMenu_Buttons"
+YellowBox.Size = UDim2.new(1, -24, 0, 50)
+YellowBox.Position = UDim2.new(0, 12, 0, 430)
+YellowBox.BackgroundColor3 = Color3.fromRGB(230,200,40)
+YellowBox.Visible = false
+YellowBox.Parent = ParentFrame
+Instance.new("UICorner", YellowBox).CornerRadius = UDim.new(0, 10)
+
+local function MakeButton(name, x, color)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.14, -6, 0, 36)
+    btn.Position = UDim2.new(x, 3, 0, 7)
+    btn.BackgroundColor3 = color
+    btn.Text = name
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 10
+    btn.Parent = YellowBox
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    return btn
+end
+
+local ViewBtn = MakeButton("👁 VIEW", 0.00, Color3.fromRGB(80,140,220))
+local UnviewBtn = MakeButton("🙈 UNVIEW", 0.14, Color3.fromRGB(200,70,90))
+local TPBtn = MakeButton("📍 TP TO", 0.28, Color3.fromRGB(40,160,90))
+KillBtn = MakeButton("💀 KILL", 0.42, Color3.fromRGB(220,40,40))
+KillAllBtn = MakeButton("☠️ ALL", 0.56, Color3.fromRGB(0,0,0))
+SurviveKillBtn = MakeButton("🛡️ SPARE", 0.70, Color3.fromRGB(30,140,60))
+local ProfileBtn = MakeButton("👤 PROFILE", 0.84, Color3.fromRGB(160,90,210))
+
+-- ===== BUTTON CONNECTIONS =====
+
+-- Toggle Menu
+ToggleBtn.MouseButton1Click:Connect(function()
+    if not MenuVisible then
+        SetMenuVisible(true)
+    else
+        SaveSettings()
+        SetMenuVisible(false)
+    end
+end)
+
+-- SEARCH MODE BUTTON
+SearchModeBtn.MouseButton1Click:Connect(function()
+    if SearchMode == "USERNAME" then
+        SearchMode = "DISPLAY"
+    else
+        SearchMode = "USERNAME"
+    end
+    UpdateSearchModeBtn()
+    RefreshServerList()
+    SaveSettings()
+end)
+
+-- Search Bar typing
+SearchBox.FocusLost:Connect(function(enterPressed)
+    SearchText = SearchBox.Text
+    SaveSettings()
+    RefreshServerList()
+end)
+
+-- View
 ViewBtn.MouseButton1Click:Connect(function()
     if not SelectedPlayer then
-        ViewBtn.Text = "⚠️ SELECT FIRST"
+        ViewBtn.Text = "⚠️ SELECT"
         task.wait(1.2)
         ViewBtn.Text = "👁 VIEW"
         return
@@ -1285,41 +1505,75 @@ ViewBtn.MouseButton1Click:Connect(function()
     StartViewing(SelectedPlayer)
 end)
 
+-- Unview
 UnviewBtn.MouseButton1Click:Connect(function()
     StopViewing()
-    UnviewBtn.Text = "✅ UNVIEWED"
+    UnviewBtn.Text = "✅ DONE"
     task.wait(1)
     UnviewBtn.Text = "🙈 UNVIEW"
 end)
 
--- ✅ TP TO — FULLY FIXED
+-- TP
 TPBtn.MouseButton1Click:Connect(function()
     if not SelectedPlayer then
-        TPBtn.Text = "⚠️ SELECT FIRST"
+        TPBtn.Text = "⚠️ SELECT"
         task.wait(1.2)
         TPBtn.Text = "📍 TP TO"
         return
     end
-
     local ok = TeleportToPlayer(SelectedPlayer)
-
     if ok then
-        TPBtn.Text = "✅ TP'D!"
+        TPBtn.Text = "✅ DONE"
         TPBtn.BackgroundColor3 = Color3.fromRGB(30, 180, 80)
     else
-        TPBtn.Text = "❌ FAILED"
+        TPBtn.Text = "❌ FAIL"
         TPBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
     end
-
     task.wait(1.5)
     TPBtn.Text = "📍 TP TO"
     TPBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
 end)
 
--- ✅ PROFILE — COPY LINK
+-- 💀 KILL
+KillBtn.MouseButton1Click:Connect(function()
+    if not SelectedPlayer then
+        KillBtn.Text = "⚠️ SELECT"
+        task.wait(1.2)
+        KillBtn.Text = "💀 KILL"
+        return
+    end
+    KillPlayer(SelectedPlayer)
+    KillBtn.Text = "✅ KILLED"
+    task.wait(1)
+    KillBtn.Text = "💀 KILL"
+end)
+
+-- ☠️ KILL ALL
+KillAllBtn.MouseButton1Click:Connect(function()
+    KillAllPlayers(nil)
+    KillAllBtn.Text = "✅ DONE"
+    task.wait(1.5)
+    KillAllBtn.Text = "☠️ ALL"
+end)
+
+-- 🛡️ SPARE / SURVIVE KILL
+SurviveKillBtn.MouseButton1Click:Connect(function()
+    if not SelectedPlayer then
+        SurviveKillBtn.Text = "⚠️ SELECT"
+        task.wait(1.2)
+        SurviveKillBtn.Text = "🛡️ SPARE"
+        return
+    end
+    KillAllPlayers(SelectedPlayer)
+    SurviveKillBtn.Text = "✅ SPARED"
+    task.wait(1.5)
+    SurviveKillBtn.Text = "🛡️ SPARE"
+end)
+
+-- Profile
 ProfileBtn.MouseButton1Click:Connect(function()
     if not LastProfileLink or LastProfileLink == "" then
-        ProfileBtn.Text = "⚠️ SELECT FIRST"
+        ProfileBtn.Text = "⚠️ SELECT"
         task.wait(1.2)
         ProfileBtn.Text = "👤 PROFILE"
         return
@@ -1330,10 +1584,10 @@ ProfileBtn.MouseButton1Click:Connect(function()
         copied = true
     end)
     if copied then
-        ProfileBtn.Text = "✅ COPIED!"
+        ProfileBtn.Text = "✅ COPIED"
         ProfileBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
     else
-        ProfileBtn.Text = "📋 SEE CONSOLE"
+        ProfileBtn.Text = "📋 SEE LOG"
         print("PROFILE LINK: " .. LastProfileLink)
     end
     task.wait(1.5)
@@ -1342,9 +1596,16 @@ ProfileBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ===== INIT =====
+LoadSettings()
 LoadRecent()
+UpdateSearchModeBtn()
 RefreshServerList()
 RefreshRecentList()
+
+if SavedMenuVisible then
+    task.wait(0.1)
+    SetMenuVisible(true)
+end
 
 Players.PlayerAdded:Connect(function() task.wait(0.2); RefreshServerList() end)
 Players.PlayerRemoving:Connect(function(p)
@@ -1352,6 +1613,12 @@ Players.PlayerRemoving:Connect(function(p)
     RefreshServerList()
     RefreshRecentList()
 end)
+
+
+
+
+
+
 
 
   
