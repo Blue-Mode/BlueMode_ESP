@@ -551,129 +551,480 @@ function LoadMainHub()
         StopBtn.MouseButton1Click:Connect(StopSound)
     end
 
-    local function ToggleConsole()
-        if ConsoleUI_Open then
-            if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
-            ConsoleUI_Open = false
-            CurrentConsoleUI = nil
-            GuiFocused = false
-            return
-        end
 
-        GuiFocused = true
-        local ConsoleUI = Instance.new("ScreenGui")
-        ConsoleUI.Name = "BLUE_MODE_HUB_CONSOLE"
-        ConsoleUI.ResetOnSpawn = false
-        ConsoleUI.DisplayOrder = PRIORITY.CONSOLE
-        ConsoleUI.Parent = GuiContainer
-        CurrentConsoleUI = ConsoleUI
-        ConsoleUI_Open = true
+------CONSOL-------
 
-        local Frame = Instance.new("Frame")
-        Frame.Size = UDim2.new(0,450,0,320)
-        Frame.Position = UDim2.new(0.5,-225,0.5,-160)
-        Frame.BackgroundColor3 = Color3.fromRGB(22,22,22)
-        Frame.Active = true
-        Frame.Parent = ConsoleUI
-        Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
-        local ConsoleGuiBg = Instance.new("ImageLabel")
-        ConsoleGuiBg.Size = UDim2.new(1,0,1,0)
-        ConsoleGuiBg.BackgroundTransparency = 1
-        ConsoleGuiBg.Image = CUSTOM_GUI_BG
-        ConsoleGuiBg.Parent = Frame
-        AddRainbowGlow(Frame,5)
 
-        local CloseTop = Instance.new("TextButton")
-        CloseTop.Size = UDim2.new(0,32,0,32)
-        CloseTop.Position = UDim2.new(1,-37,0,6)
-        CloseTop.BackgroundColor3 = Color3.fromRGB(170,30,30)
-        CloseTop.Text = "✕"
-        CloseTop.TextColor3 = Color3.new(1,1,1)
-        CloseTop.Parent = Frame
-        Instance.new("UICorner", CloseTop).CornerRadius = UDim.new(0,8)
-        AddRainbowGlow(CloseTop,3)
-        CloseTop.MouseButton1Click:Connect(ToggleConsole)
+local function ToggleConsole()
+    if ConsoleUI_Open then
+        if CurrentConsoleUI then CurrentConsoleUI:Destroy() end
+        ConsoleUI_Open = false
+        CurrentConsoleUI = nil
+        GuiFocused = false
+        return
+    end
 
-        local Title = Instance.new("TextLabel")
-        Title.Size = UDim2.new(1,-50,0,35)
-        Title.Position = UDim2.new(0,15,0,6)
-        Title.BackgroundTransparency = 1
-        Title.Text = "💻 SCRIPT CONSOLE"
-        Title.TextColor3 = Color3.new(1,1,1)
-        Title.Parent = Frame
+    GuiFocused = true
+    local ConsoleUI = Instance.new("ScreenGui")
+    ConsoleUI.Name = "BLUE_MODE_HUB_CONSOLE"
+    ConsoleUI.ResetOnSpawn = false
+    ConsoleUI.DisplayOrder = PRIORITY.CONSOLE
+    ConsoleUI.Parent = GuiContainer
+    CurrentConsoleUI = ConsoleUI
+    ConsoleUI_Open = true
 
-        local Output = Instance.new("TextLabel")
-        Output.Size = UDim2.new(1,-30,0,40)
-        Output.Position = UDim2.new(0,15,0,45)
-        Output.BackgroundTransparency = 1
-        Output.Text = "Paste script code below..."
-        Output.TextColor3 = Color3.fromRGB(0,255,120)
-        Output.Parent = Frame
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0,450,0,410)
+    Frame.Position = UDim2.new(0.5,-225,0.5,-205)
+    Frame.BackgroundColor3 = Color3.fromRGB(22,22,22)
+    Frame.Active = true
+    Frame.Parent = ConsoleUI
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,12)
+    local ConsoleGuiBg = Instance.new("ImageLabel")
+    ConsoleGuiBg.Size = UDim2.new(1,0,1,0)
+    ConsoleGuiBg.BackgroundTransparency = 1
+    ConsoleGuiBg.Image = CUSTOM_GUI_BG
+    ConsoleGuiBg.Parent = Frame
+    AddRainbowGlow(Frame,5)
 
-        local Input = Instance.new("TextBox")
-        Input.Size = UDim2.new(1,-30,0,130)
-        Input.Position = UDim2.new(0,15,0,95)
-        Input.BackgroundColor3 = Color3.fromRGB(45,45,45)
-        Input.PlaceholderText = "Paste your Lua script here..."
-        Input.TextColor3 = Color3.new(1,1,1)
-        Input.MultiLine = true
-        Input.Parent = Frame
-        Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
-        AddRainbowGlow(Input,3)
+    local CloseTop = Instance.new("TextButton")
+    CloseTop.Size = UDim2.new(0,32,0,32)
+    CloseTop.Position = UDim2.new(1,-37,0,6)
+    CloseTop.BackgroundColor3 = Color3.fromRGB(170,30,30)
+    CloseTop.Text = "✕"
+    CloseTop.TextColor3 = Color3.new(1,1,1)
+    CloseTop.Parent = Frame
+    Instance.new("UICorner", CloseTop).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(CloseTop,3)
+    CloseTop.MouseButton1Click:Connect(ToggleConsole)
 
-        local ExecBtn = Instance.new("TextButton")
-        ExecBtn.Size = UDim2.new(0,120,0,40)
-        ExecBtn.Position = UDim2.new(0,15,0,240)
-        ExecBtn.BackgroundColor3 = Color3.fromRGB(20,150,70)
-        ExecBtn.Text = "▶ EXECUTE"
-        ExecBtn.TextColor3 = Color3.new(1,1,1)
-        ExecBtn.Parent = Frame
-        Instance.new("UICorner", ExecBtn).CornerRadius = UDim.new(0,8)
-        AddRainbowGlow(ExecBtn,3)
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1,-50,0,35)
+    Title.Position = UDim2.new(0,15,0,6)
+    Title.BackgroundTransparency = 1
+    Title.Text = "💻 SCRIPT CONSOLE"
+    Title.TextColor3 = Color3.new(1,1,1)
+    Title.Parent = Frame
 
-        local ClearBtn = Instance.new("TextButton")
-        ClearBtn.Size = UDim2.new(0,120,0,40)
-        ClearBtn.Position = UDim2.new(0,150,0,240)
-        ClearBtn.BackgroundColor3 = Color3.fromRGB(180,120,20)
-        ClearBtn.Text = "🗑️ CLEAR"
-        ClearBtn.TextColor3 = Color3.new(1,1,1)
-        ClearBtn.Parent = Frame
-        Instance.new("UICorner", ClearBtn).CornerRadius = UDim.new(0,8)
-        AddRainbowGlow(ClearBtn,3)
+    local Output = Instance.new("TextLabel")
+    Output.Size = UDim2.new(1,-30,0,40)
+    Output.Position = UDim2.new(0,15,0,45)
+    Output.BackgroundTransparency = 1
+    Output.Text = "Paste script code below..."
+    Output.TextColor3 = Color3.fromRGB(0,255,120)
+    Output.Parent = Frame
 
-        ExecBtn.MouseButton1Click:Connect(function()
-            local ScriptCode = Input.Text
-            if ScriptCode == "" then
-                Output.Text = "⚠️ Nothing to run!"
-                return
-            end
+    local Input = Instance.new("TextBox")
+    Input.Size = UDim2.new(1,-30,0,130)
+    Input.Position = UDim2.new(0,15,0,95)
+    Input.BackgroundColor3 = Color3.fromRGB(45,45,45)
+    Input.PlaceholderText = "Paste your Lua script here..."
+    Input.TextColor3 = Color3.new(1,1,1)
+    Input.MultiLine = true
+    Input.Parent = Frame
+    Instance.new("UICorner", Input).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(Input,3)
 
-            local Compile = loadstring or load
-            if not Compile then
-                Output.Text = "⚠️ Executor does not support compiling!"
-                return
-            end
+    -- ===== SCRIPT NAME INPUT =====
+    local NameInput = Instance.new("TextBox")
+    NameInput.Size = UDim2.new(1,-30,0,35)
+    NameInput.Position = UDim2.new(0,15,0,235)
+    NameInput.BackgroundColor3 = Color3.fromRGB(40,40,60)
+    NameInput.PlaceholderText = "Script name when saving..."
+    NameInput.TextColor3 = Color3.new(1,1,1)
+    NameInput.Parent = Frame
+    Instance.new("UICorner", NameInput).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(NameInput,2)
 
-            local Func, Err = Compile(ScriptCode)
-            if not Func then
-                Output.Text = "❌ Syntax Error:\n" .. tostring(Err)
-                return
-            end
+    -- ===== BUTTONS =====
+    local ExecBtn = Instance.new("TextButton")
+    ExecBtn.Size = UDim2.new(0,95,0,40)
+    ExecBtn.Position = UDim2.new(0,15,0,285)
+    ExecBtn.BackgroundColor3 = Color3.fromRGB(20,150,70)
+    ExecBtn.Text = "▶ EXECUTE"
+    ExecBtn.TextColor3 = Color3.new(1,1,1)
+    ExecBtn.Parent = Frame
+    Instance.new("UICorner", ExecBtn).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(ExecBtn,3)
 
-            local Ok, RunErr = pcall(Func)
-            if not Ok then
-                Output.Text = "❌ Runtime Error:\n" .. tostring(RunErr)
-                return
-            end
+    local ClearBtn = Instance.new("TextButton")
+    ClearBtn.Size = UDim2.new(0,95,0,40)
+    ClearBtn.Position = UDim2.new(0,120,0,285)
+    ClearBtn.BackgroundColor3 = Color3.fromRGB(180,120,20)
+    ClearBtn.Text = "🗑️ CLEAR"
+    ClearBtn.TextColor3 = Color3.new(1,1,1)
+    ClearBtn.Parent = Frame
+    Instance.new("UICorner", ClearBtn).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(ClearBtn,3)
 
-            Output.Text = "✅ Script ran successfully!"
+    local SaveBtn = Instance.new("TextButton")
+    SaveBtn.Size = UDim2.new(0,95,0,40)
+    SaveBtn.Position = UDim2.new(0,225,0,285)
+    SaveBtn.BackgroundColor3 = Color3.fromRGB(25,100,180)
+    SaveBtn.Text = "💾 SAVE"
+    SaveBtn.TextColor3 = Color3.new(1,1,1)
+    SaveBtn.Parent = Frame
+    Instance.new("UICorner", SaveBtn).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(SaveBtn,3)
+
+    local SlotBtn = Instance.new("TextButton")
+    SlotBtn.Size = UDim2.new(0,95,0,40)
+    SlotBtn.Position = UDim2.new(0,330,0,285)
+    SlotBtn.BackgroundColor3 = Color3.fromRGB(110,40,180)
+    SlotBtn.Text = "📁 SLOTS"
+    SlotBtn.TextColor3 = Color3.new(1,1,1)
+    SlotBtn.Parent = Frame
+    Instance.new("UICorner", SlotBtn).CornerRadius = UDim.new(0,8)
+    AddRainbowGlow(SlotBtn,3)
+
+    -- ===== SCRIPTS DATA =====
+    local SavedScripts = {}
+    local SlotUI, SlotList, SearchInput, ConfirmUI
+    local SAVE_FOLDER = "BlueModeScripts/"
+
+    -- ✅ CONFIRM DELETE POPUP
+    local function ShowConfirmDelete(scriptName, onConfirm)
+        if ConfirmUI then ConfirmUI:Destroy() end
+        
+        ConfirmUI = Instance.new("ScreenGui")
+        ConfirmUI.Name = "BLUE_MODE_CONFIRM_DELETE"
+        ConfirmUI.ResetOnSpawn = false
+        ConfirmUI.DisplayOrder = PRIORITY.CONSOLE + 2
+        ConfirmUI.Parent = GuiContainer
+
+        local Overlay = Instance.new("Frame")
+        Overlay.Size = UDim2.new(1,0,1,0)
+        Overlay.BackgroundColor3 = Color3.new(0,0,0)
+        Overlay.BackgroundTransparency = 0.5
+        Overlay.Parent = ConfirmUI
+
+        local Box = Instance.new("Frame")
+        Box.Size = UDim2.new(0,280,0,130)
+        Box.Position = UDim2.new(0.5,-140,0.5,-65)
+        Box.BackgroundColor3 = Color3.fromRGB(30,30,30)
+        Box.Parent = ConfirmUI
+        Instance.new("UICorner", Box).CornerRadius = UDim.new(0,12)
+        AddRainbowGlow(Box,4)
+
+        local Msg = Instance.new("TextLabel")
+        Msg.Size = UDim2.new(1,-20,0,40)
+        Msg.Position = UDim2.new(0,10,0,12)
+        Msg.BackgroundTransparency = 1
+        Msg.Text = "Are you sure you want to delete\n\""..scriptName.."\"?"
+        Msg.TextColor3 = Color3.new(1,1,1)
+        Msg.Font = Enum.Font.GothamBold
+        Msg.TextSize = 14
+        Msg.TextWrapped = true
+        Msg.Parent = Box
+
+        local YesBtn = Instance.new("TextButton")
+        YesBtn.Size = UDim2.new(0,115,0,35)
+        YesBtn.Position = UDim2.new(0,12,0,80)
+        YesBtn.BackgroundColor3 = Color3.fromRGB(170,30,30)
+        YesBtn.Text = "✅ DELETE"
+        YesBtn.TextColor3 = Color3.new(1,1,1)
+        YesBtn.Font = Enum.Font.GothamBold
+        YesBtn.TextSize = 12
+        YesBtn.Parent = Box
+        Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0,8)
+
+        local NoBtn = Instance.new("TextButton")
+        NoBtn.Size = UDim2.new(0,115,0,35)
+        NoBtn.Position = UDim2.new(0,153,0,80)
+        NoBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+        NoBtn.Text = "❌ CANCEL"
+        NoBtn.TextColor3 = Color3.new(1,1,1)
+        NoBtn.Font = Enum.Font.GothamBold
+        NoBtn.TextSize = 12
+        NoBtn.Parent = Box
+        Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0,8)
+
+        YesBtn.MouseButton1Click:Connect(function()
+            ConfirmUI:Destroy()
+            ConfirmUI = nil
+            onConfirm(true)
         end)
 
-        ClearBtn.MouseButton1Click:Connect(function()
-            Input.Text = ""
-            Output.Text = "✅ Cleared!"
+        NoBtn.MouseButton1Click:Connect(function()
+            ConfirmUI:Destroy()
+            ConfirmUI = nil
+            onConfirm(false)
         end)
     end
+
+    -- ===== ENSURE FOLDER EXISTS =====
+    local function EnsureFolder()
+        pcall(function()
+            if not isfolder(SAVE_FOLDER) then
+                makefolder(SAVE_FOLDER)
+            end
+        end)
+    end
+
+    -- ===== LOAD SAVED FILES =====
+    local function LoadSavedScripts()
+        SavedScripts = {}
+        EnsureFolder()
+        pcall(function()
+            if listfiles then
+                local files = listfiles(SAVE_FOLDER)
+                for _, f in ipairs(files) do
+                    if f:sub(-4) == ".txt" then
+                        local name = f:match("[^/\\]+$")
+                        if name then
+                            name = name:sub(1, -5)
+                            local content = readfile(f)
+                            table.insert(SavedScripts, {name=name, content=content, path=f})
+                        end
+                    end
+                end
+                table.sort(SavedScripts, function(a,b) return a.name < b.name end)
+            end
+        end)
+    end
+
+    -- ===== REFRESH SLOT LIST WITH SEARCH =====
+    local function RefreshSlotList(searchQuery)
+        if not SlotList then return end
+        for _, c in ipairs(SlotList:GetChildren()) do
+            if c:IsA("Frame") then c:Destroy() end
+        end
+        local query = searchQuery or ""
+        local y = 5
+        for i, data in ipairs(SavedScripts) do
+            if query == "" or data.name:lower():find(query:lower(), 1, true) then
+                local Item = Instance.new("Frame")
+                Item.Size = UDim2.new(1,-10,0,95)
+                Item.Position = UDim2.new(0,5,0,y)
+                Item.BackgroundColor3 = Color3.fromRGB(35,35,55)
+                Item.Parent = SlotList
+                Instance.new("UICorner", Item).CornerRadius = UDim.new(0,8)
+
+                local NameLbl = Instance.new("TextLabel")
+                NameLbl.Size = UDim2.new(1,-10,0,25)
+                NameLbl.Position = UDim2.new(0,5,0,5)
+                NameLbl.BackgroundTransparency = 1
+                NameLbl.Font = Enum.Font.GothamBold
+                NameLbl.Text = "📄 "..data.name
+                NameLbl.TextColor3 = Color3.new(1,1,1)
+                NameLbl.TextXAlignment = Enum.TextXAlignment.Left
+                NameLbl.Parent = Item
+
+                local LoadBtn = Instance.new("TextButton")
+                LoadBtn.Size = UDim2.new(0.23,-4,0,35)
+                LoadBtn.Position = UDim2.new(0,0,0,35)
+                LoadBtn.BackgroundColor3 = Color3.fromRGB(25,120,60)
+                LoadBtn.Text = "⬇ LOAD"
+                LoadBtn.TextColor3 = Color3.new(1,1,1)
+                LoadBtn.Font = Enum.Font.Gotham
+                LoadBtn.TextSize = 10
+                LoadBtn.Parent = Item
+                Instance.new("UICorner", LoadBtn).CornerRadius = UDim.new(0,6)
+                LoadBtn.MouseButton1Click:Connect(function()
+                    Input.Text = data.content
+                    Output.Text = "✅ LOADED: "..data.name
+                    SlotUI:Destroy()
+                end)
+
+                local ExecItemBtn = Instance.new("TextButton")
+                ExecItemBtn.Size = UDim2.new(0.23,-4,0,35)
+                ExecItemBtn.Position = UDim2.new(0.25,0,0,35)
+                ExecItemBtn.BackgroundColor3 = Color3.fromRGB(25,100,180)
+                ExecItemBtn.Text = "▶ EXEC"
+                ExecItemBtn.TextColor3 = Color3.new(1,1,1)
+                ExecItemBtn.Font = Enum.Font.Gotham
+                ExecItemBtn.TextSize = 10
+                ExecItemBtn.Parent = Item
+                Instance.new("UICorner", ExecItemBtn).CornerRadius = UDim.new(0,6)
+                ExecItemBtn.MouseButton1Click:Connect(function()
+                    SlotUI:Destroy()
+                    local Compile = loadstring or load
+                    local Func, Err = Compile(data.content)
+                    if not Func then
+                        Output.Text = "❌ Syntax Error: "..tostring(Err)
+                        return
+                    end
+                    local Ok, RunErr = pcall(Func)
+                    if not Ok then
+                        Output.Text = "❌ Runtime Error: "..tostring(RunErr)
+                    else
+                        Output.Text = "✅ EXECUTED: "..data.name
+                    end
+                end)
+
+                local CopyBtn = Instance.new("TextButton")
+                CopyBtn.Size = UDim2.new(0.23,-4,0,35)
+                CopyBtn.Position = UDim2.new(0.50,0,0,35)
+                CopyBtn.BackgroundColor3 = Color3.fromRGB(160,90,20)
+                CopyBtn.Text = "📋 COPY"
+                CopyBtn.TextColor3 = Color3.new(1,1,1)
+                CopyBtn.Font = Enum.Font.Gotham
+                CopyBtn.TextSize = 10
+                CopyBtn.Parent = Item
+                Instance.new("UICorner", CopyBtn).CornerRadius = UDim.new(0,6)
+                CopyBtn.MouseButton1Click:Connect(function()
+                    pcall(function() setclipboard(data.content) end)
+                    Output.Text = "✅ COPIED: "..data.name
+                end)
+
+                local DelBtn = Instance.new("TextButton")
+                DelBtn.Size = UDim2.new(0.23,-4,0,35)
+                DelBtn.Position = UDim2.new(0.75,0,0,35)
+                DelBtn.BackgroundColor3 = Color3.fromRGB(160,30,30)
+                DelBtn.Text = "🗑️ DELETE"
+                DelBtn.TextColor3 = Color3.new(1,1,1)
+                DelBtn.Font = Enum.Font.Gotham
+                DelBtn.TextSize = 10
+                DelBtn.Parent = Item
+                Instance.new("UICorner", DelBtn).CornerRadius = UDim.new(0,6)
+                DelBtn.MouseButton1Click:Connect(function()
+                    ShowConfirmDelete(data.name, function(confirmed)
+                        if confirmed then
+                            pcall(function() delfile(data.path) end)
+                            for idx, s in ipairs(SavedScripts) do
+                                if s.path == data.path then
+                                    table.remove(SavedScripts, idx)
+                                    break
+                                end
+                            end
+                            RefreshSlotList(SearchInput and SearchInput.Text or "")
+                            Output.Text = "🗑️ DELETED: "..data.name
+                        end
+                    end)
+                end)
+
+                y += 100
+            end
+        end
+        SlotList.CanvasSize = UDim2.new(0,0,0,y + 5)
+    end
+
+    -- ===== OPEN SLOT MANAGER POPUP =====
+    local function OpenSlots()
+        if SlotUI then SlotUI:Destroy() end
+        LoadSavedScripts()
+
+        SlotUI = Instance.new("ScreenGui")
+        SlotUI.Name = "BLUE_MODE_SLOTS"
+        SlotUI.ResetOnSpawn = false
+        SlotUI.DisplayOrder = PRIORITY.CONSOLE + 1
+        SlotUI.Parent = GuiContainer
+
+        local SFrame = Instance.new("Frame")
+        SFrame.Size = UDim2.new(0,400,0,420)
+        SFrame.Position = UDim2.new(0.5,-200,0.5,-210)
+        SFrame.BackgroundColor3 = Color3.fromRGB(22,22,22)
+        SFrame.Active = true
+        SFrame.Parent = SlotUI
+        Instance.new("UICorner", SFrame).CornerRadius = UDim.new(0,12)
+        local Sbg = Instance.new("ImageLabel")
+        Sbg.Size = UDim2.new(1,0,1,0)
+        Sbg.BackgroundTransparency = 1
+        Sbg.Image = CUSTOM_GUI_BG
+        Sbg.Parent = SFrame
+        AddRainbowGlow(SFrame,5)
+
+        local STitle = Instance.new("TextLabel")
+        STitle.Size = UDim2.new(1,-50,0,35)
+        STitle.Position = UDim2.new(0,15,0,6)
+        STitle.BackgroundTransparency = 1
+        STitle.Text = "📁 SCRIPT SLOT MANAGER"
+        STitle.TextColor3 = Color3.new(1,1,1)
+        STitle.Parent = SFrame
+
+        local SClose = Instance.new("TextButton")
+        SClose.Size = UDim2.new(0,32,0,32)
+        SClose.Position = UDim2.new(1,-37,0,6)
+        SClose.BackgroundColor3 = Color3.fromRGB(170,30,30)
+        SClose.Text = "✕"
+        SClose.TextColor3 = Color3.new(1,1,1)
+        SClose.Parent = SFrame
+        Instance.new("UICorner", SClose).CornerRadius = UDim.new(0,8)
+        AddRainbowGlow(SClose,3)
+        SClose.MouseButton1Click:Connect(function() SlotUI:Destroy() end)
+
+        -- ===== 🔍 SEARCH BAR =====
+        SearchInput = Instance.new("TextBox")
+        SearchInput.Size = UDim2.new(1,-30,0,35)
+        SearchInput.Position = UDim2.new(0,15,0,50)
+        SearchInput.BackgroundColor3 = Color3.fromRGB(45,45,45)
+        SearchInput.PlaceholderText = "🔍 Search scripts by name..."
+        SearchInput.TextColor3 = Color3.new(1,1,1)
+        SearchInput.Text = ""
+        SearchInput.Parent = SFrame
+        Instance.new("UICorner", SearchInput).CornerRadius = UDim.new(0,8)
+        AddRainbowGlow(SearchInput,2)
+        SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
+            RefreshSlotList(SearchInput.Text)
+        end)
+
+        -- ===== 📜 SCROLLABLE LIST =====
+        SlotList = Instance.new("ScrollingFrame")
+        SlotList.Size = UDim2.new(1,-24,1,-105)
+        SlotList.Position = UDim2.new(0,12,0,100)
+        SlotList.BackgroundTransparency = 1
+        SlotList.CanvasSize = UDim2.new(0,0,0,0)
+        SlotList.ScrollBarThickness = 4
+        SlotList.Parent = SFrame
+
+        RefreshSlotList("")
+    end
+
+    -- ===== BUTTON ACTIONS =====
+    ExecBtn.MouseButton1Click:Connect(function()
+        local ScriptCode = Input.Text
+        if ScriptCode == "" then
+            Output.Text = "⚠️ Nothing to run!"
+            return
+        end
+        local Compile = loadstring or load
+        if not Compile then
+            Output.Text = "⚠️ Executor does not support compiling!"
+            return
+        end
+        local Func, Err = Compile(ScriptCode)
+        if not Func then
+            Output.Text = "❌ Syntax Error:\n" .. tostring(Err)
+            return
+        end
+        local Ok, RunErr = pcall(Func)
+        if not Ok then
+            Output.Text = "❌ Runtime Error:\n" .. tostring(RunErr)
+            return
+        end
+        Output.Text = "✅ Script ran successfully!"
+    end)
+
+    ClearBtn.MouseButton1Click:Connect(function()
+        Input.Text = ""
+        Output.Text = "✅ Cleared!"
+    end)
+
+    SaveBtn.MouseButton1Click:Connect(function()
+        local ScriptCode = Input.Text
+        local Name = NameInput.Text ~= "" and NameInput.Text or "Untitled_"..os.time()
+        if ScriptCode == "" then
+            Output.Text = "⚠️ Nothing to save!"
+            return
+        end
+        EnsureFolder()
+        local filePath = SAVE_FOLDER..Name..".txt"
+        pcall(function()
+            writefile(filePath, ScriptCode)
+        end)
+        Output.Text = "✅ SAVED: "..Name
+        NameInput.Text = ""
+    end)
+
+    SlotBtn.MouseButton1Click:Connect(OpenSlots)
+end
+
+
+
+------END OF CONSOL-------
+
+
+
 
     local function ToggleMovementMenu()
         if CurrentMovementUI then
@@ -1905,7 +2256,9 @@ end)
     MoveBtn.MouseButton1Click:Connect(ToggleMovementMenu)
     MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)
     ConsoleBtn.MouseButton1Click:Connect(ToggleConsole)
-
+    
+    
+    
     ExitBtn.MouseButton1Click:Connect(function()
         ShowExitConfirm(function()
             ESP_Enabled = false
