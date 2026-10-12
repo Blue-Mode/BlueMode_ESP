@@ -40,17 +40,14 @@ if getgenv().BlueMode_Loaded then return end getgenv().BlueMode_Loaded=true loca
     if obj:IsA("GuiObject") and obj~=TitleObject and obj~=LockButton and obj~=MinButton and obj~=CloseButton and obj.Visible then hiddenByMinimize[obj]=true obj.Visible=false end
    end
    savedTitleText=TitleObject.Text savedTitleSize=TitleObject.Size savedTitlePosition=TitleObject.Position
-    -- Keep the real window name visible in a compact title bar.
-    TitleObject.Text=savedTitleText
-    TitleObject.Position=UDim2.new(0,7,0,4)
-    TitleObject.Size=UDim2.new(0,78,0,32)
-    TitleObject.TextScaled=true
-    TitleObject.TextTruncate=Enum.TextTruncate.AtEnd
-    WindowFrame.Size=UDim2.new(0,190,0,42)
-    LockButton.Position=UDim2.new(1,-110,0,5)
-    MinButton.Position=UDim2.new(1,-74,0,5)
-    MinButton.Text="+"
-    if CloseButton then CloseButton.Position=UDim2.new(1,-38,0,5) CloseButton.Size=UDim2.new(0,30,0,28) CloseButton.Visible=true end
+   TitleObject.Text=(CubeLabel and tostring(CubeLabel)~="" and tostring(CubeLabel) or "Window")
+   TitleObject.Position=UDim2.new(0,8,0,4)
+   TitleObject.Size=UDim2.new(1,-112,0,32)
+   WindowFrame.Size=UDim2.new(0,220,0,42)
+   LockButton.Position=UDim2.new(1,-110,0,5)
+   MinButton.Position=UDim2.new(1,-74,0,5)
+   MinButton.Text="+"
+   if CloseButton then CloseButton.Position=UDim2.new(1,-38,0,5) CloseButton.Size=UDim2.new(0,30,0,28) CloseButton.Visible=true end
   else
    WindowFrame.Size=savedSize
    TitleObject.Text=savedTitleText TitleObject.Size=savedTitleSize TitleObject.Position=savedTitlePosition
@@ -203,11 +200,15 @@ Instance.new("UICorner",HeaderLanguageInput).CornerRadius=UDim.new(0,6)
 local function ApplyTypedLanguage()
  local wanted=(HeaderLanguageInput.Text or ""):match("^%s*(.-)%s*$")
  if wanted=="" then return false end
+ -- Accept both "Error" and "Error Language" as the local Error Language mode.
+ local normalized=wanted:lower():gsub("[%s_%-]","")
+ if normalized=="errorlanguage" then normalized="error" end
  for i,language in ipairs(Languages) do
-  if language:lower()==wanted:lower() then
+  if language:lower()==normalized then
    SelectedLanguageIndex=i
-   LanguageButton.Text="To: "..language
-   HeaderLanguageInput.Text=language
+   LanguageButton.Text="To: "..(language=="Error" and "Error Language" or language)
+   HeaderLanguageInput.Text=(language=="Error" and "Error Language" or language)
+   HeaderLanguageInput.PlaceholderText="Type language..."
    return true
   end
  end
@@ -217,8 +218,9 @@ local function ApplyTypedLanguage()
  end
  if #partial==1 then
   SelectedLanguageIndex=partial[1].i
-  LanguageButton.Text="To: "..partial[1].name
-  HeaderLanguageInput.Text=partial[1].name
+  LanguageButton.Text="To: "..(partial[1].name=="Error" and "Error Language" or partial[1].name)
+  HeaderLanguageInput.Text=(partial[1].name=="Error" and "Error Language" or partial[1].name)
+  HeaderLanguageInput.PlaceholderText="Type language..."
   return true
  end
  HeaderLanguageInput.PlaceholderText="Unknown language"
@@ -227,8 +229,8 @@ end
 HeaderLanguageInput.FocusLost:Connect(function() ApplyTypedLanguage() end)
 LanguageButton.MouseButton1Click:Connect(function()
  SelectedLanguageIndex=SelectedLanguageIndex%#Languages+1
- LanguageButton.Text="To: "..Languages[SelectedLanguageIndex]
- HeaderLanguageInput.Text=Languages[SelectedLanguageIndex]
+ LanguageButton.Text="To: "..(Languages[SelectedLanguageIndex]=="Error" and "Error Language" or Languages[SelectedLanguageIndex])
+ HeaderLanguageInput.Text=(Languages[SelectedLanguageIndex]=="Error" and "Error Language" or Languages[SelectedLanguageIndex])
 end)
 local SendButton=Instance.new("TextButton")
 SendButton.Name="SendButton"
@@ -372,7 +374,7 @@ end
 local AddChatEntry
 local function EncodeErrorLanguage(text)
  -- Error is a local letter-substitution style, not a machine-translation language.
- local replacements={a="4",i="1",e="3",t="†",s="5",x="×",g="@",o="0",l="|",["?"]="¿"}
+ local replacements={a="4",i="1",e="3",t="†",s="$",n="Ñ",x="×",g="@",o="0",l="|",["?"]="¿"}
  return (tostring(text):gsub("[%a?]",function(char)
   return replacements[char:lower()] or char
  end))
@@ -454,11 +456,11 @@ local function SendChatMessage()
 end
 SendButton.MouseButton1Click:Connect(SendChatMessage)
 ChatInput.FocusLost:Connect(function(enterPressed) if enterPressed then SendChatMessage() end end)
-local function CopyText(value,button)local copyFn=setclipboard or toclipboard if type(copyFn)=="function"then local ok=pcall(copyFn,tostring(value or""))if ok then local oldText=button.Text button.Text="COPIED!"task.delay(1.2,function()if button and button.Parent then button.Text=oldText end end)return end end button.Text="CLIPBOARD UNAVAILABLE"task.delay(1.5,function()if button and button.Parent then button.Text="COPY FAILED"end end)end local function OpenChatMessageInfo(info)local InfoFrame=Instance.new("Frame")InfoFrame.Name="ChatMessageInfo"InfoFrame.Size=UDim2.new(0,310,0,300)InfoFrame.Position=UDim2.new(0.5,-155,0.5,-130)InfoFrame.BackgroundColor3=Color3.fromRGB(15,22,38)InfoFrame.Active=true InfoFrame.ZIndex=20 InfoFrame.Parent=ChatUI Instance.new("UICorner",InfoFrame).CornerRadius=UDim.new(0,12)AddRainbowGlow(InfoFrame,3)local InfoTitle=Instance.new("TextLabel")InfoTitle.Size=UDim2.new(1,-50,0,35)InfoTitle.Position=UDim2.new(0,12,0,4)InfoTitle.BackgroundTransparency=1 InfoTitle.Font=Enum.Font.GothamBold InfoTitle.Text="MESSAGE DETAILS"InfoTitle.TextColor3=Color3.new(1,1,1)InfoTitle.TextXAlignment=Enum.TextXAlignment.Left InfoTitle.ZIndex=21 InfoTitle.Parent=InfoFrame local CloseInfo=Instance.new("TextButton")CloseInfo.Size=UDim2.new(0,30,0,30)CloseInfo.Position=UDim2.new(1,-36,0,5)CloseInfo.BackgroundColor3=Color3.fromRGB(170,35,35)CloseInfo.Text="✕"CloseInfo.TextColor3=Color3.new(1,1,1)CloseInfo.Font=Enum.Font.GothamBold CloseInfo.ZIndex=21 CloseInfo.Parent=InfoFrame Instance.new("UICorner",CloseInfo).CornerRadius=UDim.new(0,7)CloseInfo.MouseButton1Click:Connect(function()InfoFrame:Destroy()end)local Preview=Instance.new("TextLabel")Preview.Size=UDim2.new(1,-24,0,52)Preview.Position=UDim2.new(0,12,0,42)Preview.BackgroundColor3=Color3.fromRGB(28,38,58)Preview.Font=Enum.Font.Gotham Preview.TextSize=13 Preview.TextWrapped=true Preview.Text="@"..tostring(info.username).."  •  "..tostring(info.time).."\n"..tostring(info.message)Preview.TextColor3=Color3.fromRGB(235,240,255)Preview.ZIndex=21 Preview.Parent=InfoFrame Instance.new("UICorner",Preview).CornerRadius=UDim.new(0,7)local function MakeCopyButton(text,y,value)local button=Instance.new("TextButton")button.Size=UDim2.new(1,-24,0,38)button.Position=UDim2.new(0,12,0,y)button.BackgroundColor3=Color3.fromRGB(20,95,170)button.Font=Enum.Font.GothamBold button.TextSize=13 button.Text=text button.TextColor3=Color3.new(1,1,1)button.ZIndex=21 button.Parent=InfoFrame Instance.new("UICorner",button).CornerRadius=UDim.new(0,7)button.MouseButton1Click:Connect(function()CopyText(value,button)end)return button end MakeCopyButton("📋 COPY USERNAME",102,info.username)MakeCopyButton("📋 COPY DISPLAY NAME",147,info.displayName)MakeCopyButton("📋 COPY MESSAGE",192,info.message)local UseLanguage=Instance.new("TextButton")UseLanguage.Size=UDim2.new(1,-24,0,38)UseLanguage.Position=UDim2.new(0,12,0,237)UseLanguage.BackgroundColor3=Color3.fromRGB(20,125,90)UseLanguage.Font=Enum.Font.GothamBold UseLanguage.TextSize=12 UseLanguage.TextColor3=Color3.new(1,1,1)UseLanguage.ZIndex=21 UseLanguage.Parent=InfoFrame Instance.new("UICorner",UseLanguage).CornerRadius=UDim.new(0,7)local detected=info.sourceLanguage or ""UseLanguage.Text=detected~="" and ("🌐 USE LANGUAGE: "..detected) or "🌐 LANGUAGE UNKNOWN"UseLanguage.MouseButton1Click:Connect(function()if detected=="" then UseLanguage.Text="LANGUAGE NOT DETECTED"return end for i,language in ipairs(Languages) do if language:lower()==detected:lower() then SelectedLanguageIndex=i LanguageButton.Text="To: "..language HeaderLanguageInput.Text=language UseLanguage.Text="✓ TARGET: "..language return end end UseLanguage.Text="LANGUAGE NOT IN LIST"end)end AddChatEntry=function(username,displayName,message,userId,sentTime,sourceLanguage)if not ChatLogBox.Parent or not message or tostring(message)==""then return end username=tostring(username or"Unknown")displayName=tostring(displayName or username)message=tostring(message)local timeText=sentTime or os.date("%H:%M:%S")local dedupeKey=tostring(userId or username).."|"..message.."|"..timeText if SeenChatKeys[dedupeKey]then return end SeenChatKeys[dedupeKey]=true if not IsRestoringChatHistory then table.insert(SharedChatHistory,{username=username,displayName=displayName,message=message,userId=userId,sentTime=timeText,sourceLanguage=sourceLanguage}) while #SharedChatHistory>100 do table.remove(SharedChatHistory,1) end end local Entry=Instance.new("TextButton")Entry.Name="ChatEntry"Entry.Size=UDim2.new(1,-4,0,48)Entry.BackgroundColor3=Color3.fromRGB(25,34,52)Entry.BorderSizePixel=0 Entry.AutoButtonColor=true Entry.Text=""Entry.LayoutOrder=#ChatLogBox:GetChildren()Entry.Parent=ChatLogBox Instance.new("UICorner",Entry).CornerRadius=UDim.new(0,6)local Line=Instance.new("TextLabel")Line.Size=UDim2.new(1,-12,0,18)Line.Position=UDim2.new(0,6,0,3)Line.BackgroundTransparency=1 Line.Font=Enum.Font.GothamBold Line.TextSize=12 Line.TextXAlignment=Enum.TextXAlignment.Left Line.TextTruncate=Enum.TextTruncate.AtEnd Line.Text="["..timeText.."] "..displayName.." ("..username..")"Line.TextColor3=Color3.fromRGB(100,190,255)Line.Parent=Entry local MessageLine=Instance.new("TextLabel")MessageLine.Size=UDim2.new(1,-12,0,22)MessageLine.Position=UDim2.new(0,6,0,22)MessageLine.BackgroundTransparency=1 MessageLine.Font=Enum.Font.Gotham MessageLine.TextSize=13 MessageLine.TextXAlignment=Enum.TextXAlignment.Left MessageLine.TextTruncate=Enum.TextTruncate.AtEnd MessageLine.Text=message MessageLine.TextColor3=Color3.fromRGB(240,240,245)MessageLine.Parent=Entry Entry.MouseButton1Click:Connect(function()OpenChatMessageInfo({username=username,displayName=displayName,message=message,userId=userId,time=timeText,sourceLanguage=sourceLanguage})end)local entries={}for _,child in ipairs(ChatLogBox:GetChildren())do if child.Name=="ChatEntry"then table.insert(entries,child)end end if#entries>100 then entries[1]:Destroy()end task.defer(function()if ChatLogBox.Parent then ChatLogBox.CanvasPosition=Vector2.new(0,math.max(0,ChatLogBox.AbsoluteCanvasSize.Y))end end)end
+local function CopyText(value,button)local copyFn=setclipboard or toclipboard if type(copyFn)=="function"then local ok=pcall(copyFn,tostring(value or""))if ok then local oldText=button.Text button.Text="COPIED!"task.delay(1.2,function()if button and button.Parent then button.Text=oldText end end)return end end button.Text="CLIPBOARD UNAVAILABLE"task.delay(1.5,function()if button and button.Parent then button.Text="COPY FAILED"end end)end local function OpenChatMessageInfo(info)local InfoFrame=Instance.new("Frame")InfoFrame.Name="ChatMessageInfo"InfoFrame.Size=UDim2.new(0,310,0,300)InfoFrame.Position=UDim2.new(0.5,-155,0.5,-130)InfoFrame.BackgroundColor3=Color3.fromRGB(15,22,38)InfoFrame.Active=true InfoFrame.ZIndex=20 InfoFrame.Parent=ChatUI Instance.new("UICorner",InfoFrame).CornerRadius=UDim.new(0,12)AddRainbowGlow(InfoFrame,3)local InfoTitle=Instance.new("TextLabel")InfoTitle.Size=UDim2.new(1,-50,0,35)InfoTitle.Position=UDim2.new(0,12,0,4)InfoTitle.BackgroundTransparency=1 InfoTitle.Font=Enum.Font.GothamBold InfoTitle.Text="MESSAGE DETAILS"InfoTitle.TextColor3=Color3.new(1,1,1)InfoTitle.TextXAlignment=Enum.TextXAlignment.Left InfoTitle.ZIndex=21 InfoTitle.Parent=InfoFrame local CloseInfo=Instance.new("TextButton")CloseInfo.Size=UDim2.new(0,30,0,30)CloseInfo.Position=UDim2.new(1,-36,0,5)CloseInfo.BackgroundColor3=Color3.fromRGB(170,35,35)CloseInfo.Text="✕"CloseInfo.TextColor3=Color3.new(1,1,1)CloseInfo.Font=Enum.Font.GothamBold CloseInfo.ZIndex=21 CloseInfo.Parent=InfoFrame Instance.new("UICorner",CloseInfo).CornerRadius=UDim.new(0,7)CloseInfo.MouseButton1Click:Connect(function()InfoFrame:Destroy()end)local Preview=Instance.new("TextLabel")Preview.Size=UDim2.new(1,-24,0,52)Preview.Position=UDim2.new(0,12,0,42)Preview.BackgroundColor3=Color3.fromRGB(28,38,58)Preview.Font=Enum.Font.Gotham Preview.TextSize=13 Preview.TextWrapped=true Preview.Text="@"..tostring(info.username).."  •  "..tostring(info.time).."\n"..tostring(info.message)Preview.TextColor3=Color3.fromRGB(235,240,255)Preview.ZIndex=21 Preview.Parent=InfoFrame Instance.new("UICorner",Preview).CornerRadius=UDim.new(0,7)local function MakeCopyButton(text,y,value)local button=Instance.new("TextButton")button.Size=UDim2.new(1,-24,0,38)button.Position=UDim2.new(0,12,0,y)button.BackgroundColor3=Color3.fromRGB(20,95,170)button.Font=Enum.Font.GothamBold button.TextSize=13 button.Text=text button.TextColor3=Color3.new(1,1,1)button.ZIndex=21 button.Parent=InfoFrame Instance.new("UICorner",button).CornerRadius=UDim.new(0,7)button.MouseButton1Click:Connect(function()CopyText(value,button)end)return button end MakeCopyButton("📋 COPY USERNAME",102,info.username)MakeCopyButton("📋 COPY DISPLAY NAME",147,info.displayName)MakeCopyButton("📋 COPY MESSAGE",192,info.message)local UseLanguage=Instance.new("TextButton")UseLanguage.Size=UDim2.new(1,-24,0,38)UseLanguage.Position=UDim2.new(0,12,0,237)UseLanguage.BackgroundColor3=Color3.fromRGB(20,125,90)UseLanguage.Font=Enum.Font.GothamBold UseLanguage.TextSize=12 UseLanguage.TextColor3=Color3.new(1,1,1)UseLanguage.ZIndex=21 UseLanguage.Parent=InfoFrame Instance.new("UICorner",UseLanguage).CornerRadius=UDim.new(0,7)local detected=info.sourceLanguage or ""UseLanguage.Text=detected~="" and ("🌐 USE LANGUAGE: "..detected) or "🌐 LANGUAGE UNKNOWN"UseLanguage.MouseButton1Click:Connect(function()if detected=="" then UseLanguage.Text="LANGUAGE NOT DETECTED"return end for i,language in ipairs(Languages) do if language:lower()==detected:lower() then SelectedLanguageIndex=i LanguageButton.Text="To: "..language HeaderLanguageInput.Text=language UseLanguage.Text="✓ TARGET: "..language return end end UseLanguage.Text="LANGUAGE NOT IN LIST"end)end AddChatEntry=function(username,displayName,message,userId,sentTime,sourceLanguage,originalMessage)if not ChatLogBox.Parent or not message or tostring(message)==""then return end username=tostring(username or"Unknown")displayName=tostring(displayName or username)message=tostring(message)local timeText=sentTime or os.date("%H:%M:%S")local dedupeKey=tostring(userId or username).."|"..message.."|"..timeText if SeenChatKeys[dedupeKey]then return end SeenChatKeys[dedupeKey]=true if not IsRestoringChatHistory then table.insert(SharedChatHistory,{username=username,displayName=displayName,message=message,userId=userId,sentTime=timeText,sourceLanguage=sourceLanguage,originalMessage=originalMessage}) while #SharedChatHistory>100 do table.remove(SharedChatHistory,1) end end local Entry=Instance.new("TextButton")Entry.Name="ChatEntry"Entry.Size=UDim2.new(1,-4,0,66)Entry.BackgroundColor3=Color3.fromRGB(25,34,52)Entry.BorderSizePixel=0 Entry.AutoButtonColor=true Entry.Text=""Entry.LayoutOrder=#ChatLogBox:GetChildren()Entry.Parent=ChatLogBox Instance.new("UICorner",Entry).CornerRadius=UDim.new(0,6)local Line=Instance.new("TextLabel")Line.Size=UDim2.new(1,-12,0,18)Line.Position=UDim2.new(0,6,0,3)Line.BackgroundTransparency=1 Line.Font=Enum.Font.GothamBold Line.TextSize=12 Line.TextXAlignment=Enum.TextXAlignment.Left Line.TextTruncate=Enum.TextTruncate.AtEnd Line.Text="["..timeText.."] "..displayName.." ("..username..")"Line.TextColor3=Color3.fromRGB(100,190,255)Line.Parent=Entry local MessageLine=Instance.new("TextLabel")MessageLine.Size=UDim2.new(1,-12,0,20)MessageLine.Position=UDim2.new(0,6,0,22)MessageLine.BackgroundTransparency=1 MessageLine.Font=Enum.Font.Gotham MessageLine.TextSize=12 MessageLine.TextXAlignment=Enum.TextXAlignment.Left MessageLine.TextTruncate=Enum.TextTruncate.AtEnd MessageLine.Text="Translated: "..message MessageLine.TextColor3=Color3.fromRGB(240,240,245)MessageLine.Parent=Entry local OriginalLine=Instance.new("TextLabel")OriginalLine.Size=UDim2.new(1,-12,0,20)OriginalLine.Position=UDim2.new(0,6,0,43)OriginalLine.BackgroundTransparency=1 OriginalLine.Font=Enum.Font.Gotham OriginalLine.TextSize=12 OriginalLine.TextXAlignment=Enum.TextXAlignment.Left OriginalLine.TextTruncate=Enum.TextTruncate.AtEnd OriginalLine.Text="Original: "..tostring(originalMessage or message)OriginalLine.TextColor3=Color3.fromRGB(180,190,205)OriginalLine.Parent=Entry Entry.MouseButton1Click:Connect(function()OpenChatMessageInfo({username=username,displayName=displayName,message=message,originalMessage=originalMessage or message,userId=userId,time=timeText,sourceLanguage=sourceLanguage})end)local entries={}for _,child in ipairs(ChatLogBox:GetChildren())do if child.Name=="ChatEntry"then table.insert(entries,child)end end if#entries>100 then entries[1]:Destroy()end task.defer(function()if ChatLogBox.Parent then ChatLogBox.CanvasPosition=Vector2.new(0,math.max(0,ChatLogBox.AbsoluteCanvasSize.Y))end end)end
 -- Restore messages after the Chat Log UI is rebuilt.
 IsRestoringChatHistory=true
 for _,saved in ipairs(SharedChatHistory) do
- AddChatEntry(saved.username,saved.displayName,saved.message,saved.userId,saved.sentTime,saved.sourceLanguage)
+ AddChatEntry(saved.username,saved.displayName,saved.message,saved.userId,saved.sentTime,saved.sourceLanguage,saved.originalMessage)
 end
 IsRestoringChatHistory=false
 local function HandleIncomingChat(username,displayName,message,userId)
@@ -472,10 +474,10 @@ local function HandleIncomingChat(username,displayName,message,userId)
    detectedLanguage=codeNames[detectedCode] or codeNames[string.lower(detectedCode)]
   end
   if translated and translated~="" then
-   AddChatEntry(username,displayName,translated,userId,nil,detectedLanguage)
+   AddChatEntry(username,displayName,translated,userId,nil,detectedLanguage,original)
   else
    -- Keep the original visible if the translation service is unavailable; do not pretend it was translated.
-   AddChatEntry(username,displayName,"[English translation unavailable] "..original,userId)
+   AddChatEntry(username,displayName,"[English translation unavailable]",userId,nil,nil,original)
    warn("[BLUE MODE CHAT] Incoming translation failed: "..tostring(err))
   end
  end)
