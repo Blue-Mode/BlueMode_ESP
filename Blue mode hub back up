@@ -243,100 +243,20 @@ SendButton.Font=Enum.Font.GothamBold
 SendButton.TextSize=13
 SendButton.Parent=ChatFrame
 Instance.new("UICorner",SendButton).CornerRadius=UDim.new(0,7)
--- Translation API endpoint controls. The endpoint is used only for translation POST requests;
--- it is never compiled or executed as Lua. Endpoint text is masked after entry.
-local SavedServiceEndpoint = TRANSLATION_ENDPOINT
-local PendingServiceEndpoint = ""
-local EndpointBox = Instance.new("TextBox")
-EndpointBox.Name = "BlueModeServiceEndpoint"
-EndpointBox.Size = UDim2.new(1,-220,0,32)
-EndpointBox.Position = UDim2.new(0,12,1,-52)
-EndpointBox.BackgroundColor3 = Color3.fromRGB(28,35,52)
-EndpointBox.TextColor3 = Color3.fromRGB(230,240,255)
-EndpointBox.PlaceholderText = "HTTPS translation API endpoint"
-EndpointBox.Text = ""
-EndpointBox.ClearTextOnFocus = true
-EndpointBox.Font = Enum.Font.Gotham
-EndpointBox.TextSize = 11
-EndpointBox.TextXAlignment = Enum.TextXAlignment.Left
-EndpointBox.Parent = ChatFrame
-Instance.new("UICorner",EndpointBox).CornerRadius = UDim.new(0,6)
-AddRainbowGlow(EndpointBox,2)
-local SubmitServiceBtn = Instance.new("TextButton")
-SubmitServiceBtn.Name = "SubmitTranslationService"
-SubmitServiceBtn.Size = UDim2.new(0,78,0,32)
-SubmitServiceBtn.Position = UDim2.new(1,-208,1,-52)
-SubmitServiceBtn.BackgroundColor3 = Color3.fromRGB(20,125,220)
-SubmitServiceBtn.Text = "SUBMIT"
-SubmitServiceBtn.TextColor3 = Color3.new(1,1,1)
-SubmitServiceBtn.Font = Enum.Font.GothamBold
-SubmitServiceBtn.TextSize = 11
-SubmitServiceBtn.Parent = ChatFrame
-Instance.new("UICorner",SubmitServiceBtn).CornerRadius = UDim.new(0,6)
-local BlueModeServiceBtn = Instance.new("TextButton")
-BlueModeServiceBtn.Name = "BlueModeService"
-BlueModeServiceBtn.Size = UDim2.new(0,118,0,32)
-BlueModeServiceBtn.Position = UDim2.new(1,-124,1,-52)
-BlueModeServiceBtn.BackgroundColor3 = Color3.fromRGB(25,105,180)
-BlueModeServiceBtn.Text = "BlueModeService"
-BlueModeServiceBtn.TextColor3 = Color3.new(1,1,1)
-BlueModeServiceBtn.Font = Enum.Font.GothamBold
-BlueModeServiceBtn.TextSize = 10
-BlueModeServiceBtn.Parent = ChatFrame
-Instance.new("UICorner",BlueModeServiceBtn).CornerRadius = UDim.new(0,6)
-local function MaskEndpoint(value)
- return string.rep("*", math.clamp(#tostring(value or ""), 4, 24))
-end
-local function ShowMaskedEndpoint(value)
- EndpointBox.Text = value and value ~= "" and MaskEndpoint(value) or ""
- EndpointBox.PlaceholderText = (value and value ~= "") and "API endpoint saved (masked)" or "HTTPS translation API endpoint"
-end
-EndpointBox.Focused:Connect(function()
- EndpointBox.Text = ""
- EndpointBox.PlaceholderText = "Paste HTTPS endpoint, then Submit"
-end)
-EndpointBox.FocusLost:Connect(function()
- local typed = (EndpointBox.Text or ""):match("^%s*(.-)%s*$")
- if typed ~= "" and not typed:find("^%*+$") then
-  PendingServiceEndpoint = typed
- end
- ShowMaskedEndpoint(PendingServiceEndpoint ~= "" and PendingServiceEndpoint or SavedServiceEndpoint)
-end)
-SubmitServiceBtn.MouseButton1Click:Connect(function()
- local endpoint = (PendingServiceEndpoint or ""):match("^%s*(.-)%s*$")
- if endpoint == "" then endpoint = SavedServiceEndpoint end
- if endpoint == "" then
-  SubmitServiceBtn.Text = "ADD URL"
-  task.delay(1.4,function() if SubmitServiceBtn and SubmitServiceBtn.Parent then SubmitServiceBtn.Text = "SUBMIT" end end)
-  return
- end
- if not endpoint:match("^https://") or endpoint:find("%s") then
-  SubmitServiceBtn.Text = "HTTPS ONLY"
-  task.delay(1.4,function() if SubmitServiceBtn and SubmitServiceBtn.Parent then SubmitServiceBtn.Text = "SUBMIT" end end)
-  return
- end
- TRANSLATION_ENDPOINT = endpoint
- SavedServiceEndpoint = endpoint
- PendingServiceEndpoint = endpoint
- getgenv().BlueMode_TranslationEndpoint = endpoint
- ShowMaskedEndpoint(endpoint)
- SubmitServiceBtn.Text = "SAVED!"
- task.delay(1.4,function() if SubmitServiceBtn and SubmitServiceBtn.Parent then SubmitServiceBtn.Text = "SUBMIT" end end)
-end)
-BlueModeServiceBtn.MouseButton1Click:Connect(function()
- local endpoint = SavedServiceEndpoint
- if endpoint == "" then endpoint = (type(getgenv().BlueMode_TranslationEndpoint)=="string" and getgenv().BlueMode_TranslationEndpoint) or "" end
- if endpoint == "" then
-  BlueModeServiceBtn.Text = "NO SAVED API"
-  task.delay(1.4,function() if BlueModeServiceBtn and BlueModeServiceBtn.Parent then BlueModeServiceBtn.Text = "BlueModeService" end end)
-  return
- end
- PendingServiceEndpoint = endpoint
- ShowMaskedEndpoint(endpoint)
- BlueModeServiceBtn.Text = "API RESTORED"
- task.delay(1.4,function() if BlueModeServiceBtn and BlueModeServiceBtn.Parent then BlueModeServiceBtn.Text = "BlueModeService" end end)
-end)
-ShowMaskedEndpoint(SavedServiceEndpoint)
+-- Chat archive controls replace the old HTTP API textbox and service buttons.
+-- The translation endpoint remains configured internally and the chat-slot manager
+-- provides Save, Load, and Delete for named chat archives.
+local ChatArchiveButton=Instance.new("TextButton")
+ChatArchiveButton.Name="ChatArchiveSlotsButton"
+ChatArchiveButton.Size=UDim2.new(0,150,0,32)
+ChatArchiveButton.Position=UDim2.new(0,12,1,-52)
+ChatArchiveButton.BackgroundColor3=Color3.fromRGB(25,95,155)
+ChatArchiveButton.Text="💾 CHAT SLOTS"
+ChatArchiveButton.TextColor3=Color3.new(1,1,1)
+ChatArchiveButton.Font=Enum.Font.GothamBold
+ChatArchiveButton.TextSize=12
+ChatArchiveButton.Parent=ChatFrame
+Instance.new("UICorner",ChatArchiveButton).CornerRadius=UDim.new(0,7)
 local function TranslateText(text,targetLanguage)
  local req=request or http_request or (syn and syn.request)
  if type(req)~="function" then return nil,"Executor HTTP request is unavailable" end
@@ -457,6 +377,96 @@ end
 SendButton.MouseButton1Click:Connect(SendChatMessage)
 ChatInput.FocusLost:Connect(function(enterPressed) if enterPressed then SendChatMessage() end end)
 local function CopyText(value,button)local copyFn=setclipboard or toclipboard if type(copyFn)=="function"then local ok=pcall(copyFn,tostring(value or""))if ok then local oldText=button.Text button.Text="COPIED!"task.delay(1.2,function()if button and button.Parent then button.Text=oldText end end)return end end button.Text="CLIPBOARD UNAVAILABLE"task.delay(1.5,function()if button and button.Parent then button.Text="COPY FAILED"end end)end local function OpenChatMessageInfo(info)local InfoFrame=Instance.new("Frame")InfoFrame.Name="ChatMessageInfo"InfoFrame.Size=UDim2.new(0,310,0,300)InfoFrame.Position=UDim2.new(0.5,-155,0.5,-130)InfoFrame.BackgroundColor3=Color3.fromRGB(15,22,38)InfoFrame.Active=true InfoFrame.ZIndex=20 InfoFrame.Parent=ChatUI Instance.new("UICorner",InfoFrame).CornerRadius=UDim.new(0,12)AddRainbowGlow(InfoFrame,3)local InfoTitle=Instance.new("TextLabel")InfoTitle.Size=UDim2.new(1,-50,0,35)InfoTitle.Position=UDim2.new(0,12,0,4)InfoTitle.BackgroundTransparency=1 InfoTitle.Font=Enum.Font.GothamBold InfoTitle.Text="MESSAGE DETAILS"InfoTitle.TextColor3=Color3.new(1,1,1)InfoTitle.TextXAlignment=Enum.TextXAlignment.Left InfoTitle.ZIndex=21 InfoTitle.Parent=InfoFrame local CloseInfo=Instance.new("TextButton")CloseInfo.Size=UDim2.new(0,30,0,30)CloseInfo.Position=UDim2.new(1,-36,0,5)CloseInfo.BackgroundColor3=Color3.fromRGB(170,35,35)CloseInfo.Text="✕"CloseInfo.TextColor3=Color3.new(1,1,1)CloseInfo.Font=Enum.Font.GothamBold CloseInfo.ZIndex=21 CloseInfo.Parent=InfoFrame Instance.new("UICorner",CloseInfo).CornerRadius=UDim.new(0,7)CloseInfo.MouseButton1Click:Connect(function()InfoFrame:Destroy()end)local Preview=Instance.new("TextLabel")Preview.Size=UDim2.new(1,-24,0,52)Preview.Position=UDim2.new(0,12,0,42)Preview.BackgroundColor3=Color3.fromRGB(28,38,58)Preview.Font=Enum.Font.Gotham Preview.TextSize=13 Preview.TextWrapped=true Preview.Text="@"..tostring(info.username).."  •  "..tostring(info.time).."\n"..tostring(info.message)Preview.TextColor3=Color3.fromRGB(235,240,255)Preview.ZIndex=21 Preview.Parent=InfoFrame Instance.new("UICorner",Preview).CornerRadius=UDim.new(0,7)local function MakeCopyButton(text,y,value)local button=Instance.new("TextButton")button.Size=UDim2.new(1,-24,0,38)button.Position=UDim2.new(0,12,0,y)button.BackgroundColor3=Color3.fromRGB(20,95,170)button.Font=Enum.Font.GothamBold button.TextSize=13 button.Text=text button.TextColor3=Color3.new(1,1,1)button.ZIndex=21 button.Parent=InfoFrame Instance.new("UICorner",button).CornerRadius=UDim.new(0,7)button.MouseButton1Click:Connect(function()CopyText(value,button)end)return button end MakeCopyButton("📋 COPY USERNAME",102,info.username)MakeCopyButton("📋 COPY DISPLAY NAME",147,info.displayName)MakeCopyButton("📋 COPY MESSAGE",192,info.message)local UseLanguage=Instance.new("TextButton")UseLanguage.Size=UDim2.new(1,-24,0,38)UseLanguage.Position=UDim2.new(0,12,0,237)UseLanguage.BackgroundColor3=Color3.fromRGB(20,125,90)UseLanguage.Font=Enum.Font.GothamBold UseLanguage.TextSize=12 UseLanguage.TextColor3=Color3.new(1,1,1)UseLanguage.ZIndex=21 UseLanguage.Parent=InfoFrame Instance.new("UICorner",UseLanguage).CornerRadius=UDim.new(0,7)local detected=info.sourceLanguage or ""UseLanguage.Text=detected~="" and ("🌐 USE LANGUAGE: "..detected) or "🌐 LANGUAGE UNKNOWN"UseLanguage.MouseButton1Click:Connect(function()if detected=="" then UseLanguage.Text="LANGUAGE NOT DETECTED"return end for i,language in ipairs(Languages) do if language:lower()==detected:lower() then SelectedLanguageIndex=i LanguageButton.Text="To: "..language HeaderLanguageInput.Text=language UseLanguage.Text="✓ TARGET: "..language return end end UseLanguage.Text="LANGUAGE NOT IN LIST"end)end AddChatEntry=function(username,displayName,message,userId,sentTime,sourceLanguage,originalMessage)if not ChatLogBox.Parent or not message or tostring(message)==""then return end username=tostring(username or"Unknown")displayName=tostring(displayName or username)message=tostring(message)local timeText=sentTime or os.date("%H:%M:%S")local dedupeKey=tostring(userId or username).."|"..message.."|"..timeText if SeenChatKeys[dedupeKey]then return end SeenChatKeys[dedupeKey]=true if not IsRestoringChatHistory then table.insert(SharedChatHistory,{username=username,displayName=displayName,message=message,userId=userId,sentTime=timeText,sourceLanguage=sourceLanguage,originalMessage=originalMessage}) while #SharedChatHistory>100 do table.remove(SharedChatHistory,1) end end local Entry=Instance.new("TextButton")Entry.Name="ChatEntry"Entry.Size=UDim2.new(1,-4,0,66)Entry.BackgroundColor3=Color3.fromRGB(25,34,52)Entry.BorderSizePixel=0 Entry.AutoButtonColor=true Entry.Text=""Entry.LayoutOrder=#ChatLogBox:GetChildren()Entry.Parent=ChatLogBox Instance.new("UICorner",Entry).CornerRadius=UDim.new(0,6)local Line=Instance.new("TextLabel")Line.Size=UDim2.new(1,-12,0,18)Line.Position=UDim2.new(0,6,0,3)Line.BackgroundTransparency=1 Line.Font=Enum.Font.GothamBold Line.TextSize=12 Line.TextXAlignment=Enum.TextXAlignment.Left Line.TextTruncate=Enum.TextTruncate.AtEnd Line.Text="["..timeText.."] "..displayName.." ("..username..")"Line.TextColor3=Color3.fromRGB(100,190,255)Line.Parent=Entry local MessageLine=Instance.new("TextLabel")MessageLine.Size=UDim2.new(1,-12,0,20)MessageLine.Position=UDim2.new(0,6,0,22)MessageLine.BackgroundTransparency=1 MessageLine.Font=Enum.Font.Gotham MessageLine.TextSize=12 MessageLine.TextXAlignment=Enum.TextXAlignment.Left MessageLine.TextTruncate=Enum.TextTruncate.AtEnd MessageLine.Text="Translated: "..message MessageLine.TextColor3=Color3.fromRGB(240,240,245)MessageLine.Parent=Entry local OriginalLine=Instance.new("TextLabel")OriginalLine.Size=UDim2.new(1,-12,0,20)OriginalLine.Position=UDim2.new(0,6,0,43)OriginalLine.BackgroundTransparency=1 OriginalLine.Font=Enum.Font.Gotham OriginalLine.TextSize=12 OriginalLine.TextXAlignment=Enum.TextXAlignment.Left OriginalLine.TextTruncate=Enum.TextTruncate.AtEnd OriginalLine.Text="Original: "..tostring(originalMessage or message)OriginalLine.TextColor3=Color3.fromRGB(180,190,205)OriginalLine.Parent=Entry Entry.MouseButton1Click:Connect(function()OpenChatMessageInfo({username=username,displayName=displayName,message=message,originalMessage=originalMessage or message,userId=userId,time=timeText,sourceLanguage=sourceLanguage})end)local entries={}for _,child in ipairs(ChatLogBox:GetChildren())do if child.Name=="ChatEntry"then table.insert(entries,child)end end if#entries>100 then entries[1]:Destroy()end task.defer(function()if ChatLogBox.Parent then ChatLogBox.CanvasPosition=Vector2.new(0,math.max(0,ChatLogBox.AbsoluteCanvasSize.Y))end end)end
+-- ChatLog archive slots: named snapshots with a separate read-only viewer.
+local CHAT_ARCHIVE_FOLDER="BlueModeChatArchive/"
+local ChatArchiveManager, ChatArchiveViewer
+local function EnsureChatArchiveFolder()
+ pcall(function() if type(isfolder)=="function" and type(makefolder)=="function" and not isfolder(CHAT_ARCHIVE_FOLDER) then makefolder(CHAT_ARCHIVE_FOLDER) end end)
+end
+local function SafeArchiveName(name)
+ name=tostring(name or ""):gsub("[^%w%-%_ ]", ""):gsub("^%s+", ""):gsub("%s+$", "")
+ if #name>40 then name=name:sub(1,40) end
+ return name
+end
+local function ReadChatArchives()
+ local out={}
+ EnsureChatArchiveFolder()
+ pcall(function()
+  if type(listfiles)=="function" and type(readfile)=="function" then
+   for _,path in ipairs(listfiles(CHAT_ARCHIVE_FOLDER)) do
+    if path:sub(-5)==".json" then
+     local ok,raw=pcall(readfile,path)
+     if ok and raw then
+      local decodedOk,data=pcall(function() return HttpService:JSONDecode(raw) end)
+      if decodedOk and type(data)=="table" and type(data.messages)=="table" then
+       data.name=tostring(data.name or path:match("([^/\\]+)%.json$") or "Saved Chat")
+       data.path=path; table.insert(out,data)
+      end
+     end
+    end
+   end
+  end
+ end)
+ table.sort(out,function(a,b) return a.name:lower()<b.name:lower() end)
+ return out
+end
+local function OpenChatArchiveViewer(archive)
+ if ChatArchiveViewer then pcall(function() ChatArchiveViewer:Destroy() end) end
+ local sg=Instance.new("ScreenGui"); sg.Name="BLUE_MODE_CHAT_ARCHIVE_VIEWER"; sg.ResetOnSpawn=false; sg.DisplayOrder=PRIORITY.CONSOLE+20; sg.Parent=GuiContainer; ChatArchiveViewer=sg
+ local f=Instance.new("Frame"); f.Size=UDim2.new(0,400,0,460); f.Position=UDim2.new(.5,-200,.5,-230); f.BackgroundColor3=Color3.fromRGB(15,22,38); f.Active=true; f.Parent=sg; Instance.new("UICorner",f).CornerRadius=UDim.new(0,12); AddRainbowGlow(f,3)
+ local title=Instance.new("TextLabel"); title.Size=UDim2.new(1,-150,0,34); title.Position=UDim2.new(0,10,0,4); title.BackgroundTransparency=1; title.Font=Enum.Font.GothamBold; title.TextSize=13; title.TextXAlignment=Enum.TextXAlignment.Left; title.TextColor3=Color3.new(1,1,1); title.Text="📖 "..tostring(archive.name).." (READ ONLY)"; title.Parent=f
+ local close=Instance.new("TextButton"); close.Size=UDim2.new(0,28,0,28); close.Position=UDim2.new(1,-34,0,5); close.Text="✕"; close.BackgroundColor3=Color3.fromRGB(170,35,35); close.TextColor3=Color3.new(1,1,1); close.Parent=f; close.MouseButton1Click:Connect(function() sg:Destroy(); ChatArchiveViewer=nil end)
+ local min=Instance.new("TextButton"); min.Size=UDim2.new(0,28,0,28); min.Position=UDim2.new(1,-66,0,5); min.Text="-"; min.BackgroundColor3=Color3.fromRGB(50,70,100); min.TextColor3=Color3.new(1,1,1); min.Parent=f
+ local lock=Instance.new("TextButton"); lock.Size=UDim2.new(0,28,0,28); lock.Position=UDim2.new(1,-98,0,5); lock.Text="🔓"; lock.BackgroundColor3=Color3.fromRGB(50,70,100); lock.TextColor3=Color3.new(1,1,1); lock.Parent=f
+ local minimized=false; min.MouseButton1Click:Connect(function() minimized=not minimized; for _,obj in ipairs(f:GetChildren()) do if obj~=title and obj~=close and obj~=min and obj~=lock then obj.Visible=not minimized end end; f.Size=minimized and UDim2.new(0,400,0,38) or UDim2.new(0,400,0,460); min.Text=minimized and "+" or "-" end)
+ local locked=false; local dragStart,frameStart
+ lock.MouseButton1Click:Connect(function() locked=not locked; lock.Text=locked and "🔒" or "🔓" end)
+ title.InputBegan:Connect(function(input) if locked then return end; if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then dragStart=input.Position; frameStart=f.Position; input.Changed:Connect(function() if input.UserInputState==Enum.UserInputState.End then dragStart=nil end end) end end)
+ title.InputChanged:Connect(function(input) if dragStart and not locked and (input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch) then local d=input.Position-dragStart; f.Position=UDim2.new(frameStart.X.Scale,frameStart.X.Offset+d.X,frameStart.Y.Scale,frameStart.Y.Offset+d.Y) end end)
+ local list=Instance.new("ScrollingFrame"); list.Position=UDim2.new(0,10,0,42); list.Size=UDim2.new(1,-20,1,-52); list.BackgroundColor3=Color3.fromRGB(10,16,28); list.BorderSizePixel=0; list.ScrollBarThickness=5; list.AutomaticCanvasSize=Enum.AutomaticSize.Y; list.CanvasSize=UDim2.new(); list.Parent=f; Instance.new("UICorner",list).CornerRadius=UDim.new(0,8)
+ local layout=Instance.new("UIListLayout"); layout.Padding=UDim.new(0,5); layout.SortOrder=Enum.SortOrder.LayoutOrder; layout.Parent=list
+ local pad=Instance.new("UIPadding"); pad.PaddingTop=UDim.new(0,6); pad.PaddingLeft=UDim.new(0,6); pad.PaddingRight=UDim.new(0,6); pad.Parent=list
+ for i,msg in ipairs(archive.messages) do
+  local row=Instance.new("TextLabel"); row.Size=UDim2.new(1,-8,0,62); row.BackgroundColor3=Color3.fromRGB(25,34,52); row.TextColor3=Color3.fromRGB(235,240,250); row.Font=Enum.Font.Gotham; row.TextSize=12; row.TextWrapped=true; row.TextXAlignment=Enum.TextXAlignment.Left; row.TextYAlignment=Enum.TextYAlignment.Center; row.LayoutOrder=i
+  row.Text="["..tostring(msg.sentTime or "").."] "..tostring(msg.displayName or msg.username or "Unknown").."\nTranslated: "..tostring(msg.message or "").."\nOriginal: "..tostring(msg.originalMessage or msg.message or ""); row.Parent=list; Instance.new("UICorner",row).CornerRadius=UDim.new(0,6)
+ end
+end
+local function OpenChatArchiveManager()
+ if ChatArchiveManager then pcall(function() ChatArchiveManager:Destroy() end) end
+ local archives=ReadChatArchives(); local sg=Instance.new("ScreenGui"); sg.Name="BLUE_MODE_CHAT_ARCHIVE_MANAGER"; sg.ResetOnSpawn=false; sg.DisplayOrder=PRIORITY.CONSOLE+19; sg.Parent=GuiContainer; ChatArchiveManager=sg
+ local f=Instance.new("Frame"); f.Size=UDim2.new(0,360,0,420); f.Position=UDim2.new(.5,-180,.5,-210); f.BackgroundColor3=Color3.fromRGB(15,22,38); f.Active=true; f.Parent=sg; Instance.new("UICorner",f).CornerRadius=UDim.new(0,12); AddRainbowGlow(f,3)
+ local title=Instance.new("TextLabel"); title.Size=UDim2.new(1,-50,0,32); title.Position=UDim2.new(0,10,0,5); title.BackgroundTransparency=1; title.Text="💾 CHATLOG SLOT MANAGER"; title.TextColor3=Color3.new(1,1,1); title.Font=Enum.Font.GothamBold; title.TextSize=14; title.Parent=f
+ local close=Instance.new("TextButton"); close.Size=UDim2.new(0,28,0,28); close.Position=UDim2.new(1,-34,0,5); close.Text="✕"; close.BackgroundColor3=Color3.fromRGB(170,35,35); close.TextColor3=Color3.new(1,1,1); close.Parent=f; close.MouseButton1Click:Connect(function() sg:Destroy(); ChatArchiveManager=nil end)
+ local name=Instance.new("TextBox"); name.Size=UDim2.new(1,-100,0,32); name.Position=UDim2.new(0,10,0,42); name.PlaceholderText="Name this saved chat..."; name.Text=""; name.ClearTextOnFocus=false; name.TextColor3=Color3.new(1,1,1); name.BackgroundColor3=Color3.fromRGB(40,45,62); name.Parent=f; Instance.new("UICorner",name).CornerRadius=UDim.new(0,7)
+ local save=Instance.new("TextButton"); save.Size=UDim2.new(0,72,0,32); save.Position=UDim2.new(1,-82,0,42); save.Text="SAVE"; save.TextColor3=Color3.new(1,1,1); save.BackgroundColor3=Color3.fromRGB(20,120,70); save.Parent=f; Instance.new("UICorner",save).CornerRadius=UDim.new(0,7)
+ local status=Instance.new("TextLabel"); status.Size=UDim2.new(1,-20,0,22); status.Position=UDim2.new(0,10,0,78); status.BackgroundTransparency=1; status.Text="Saved conversations"; status.TextColor3=Color3.fromRGB(190,205,225); status.TextSize=11; status.Parent=f
+ local list=Instance.new("ScrollingFrame"); list.Position=UDim2.new(0,10,0,102); list.Size=UDim2.new(1,-20,1,-112); list.BackgroundTransparency=1; list.BorderSizePixel=0; list.ScrollBarThickness=4; list.AutomaticCanvasSize=Enum.AutomaticSize.Y; list.CanvasSize=UDim2.new(); list.Parent=f
+ local layout=Instance.new("UIListLayout"); layout.Padding=UDim.new(0,6); layout.Parent=list
+ local function refresh()
+  for _,c in ipairs(list:GetChildren()) do if c:IsA("Frame") then c:Destroy() end end
+  archives=ReadChatArchives()
+  for i,a in ipairs(archives) do
+   local row=Instance.new("Frame"); row.Size=UDim2.new(1,-5,0,64); row.BackgroundColor3=Color3.fromRGB(30,38,57); row.LayoutOrder=i; row.Parent=list; Instance.new("UICorner",row).CornerRadius=UDim.new(0,7)
+   local label=Instance.new("TextLabel"); label.Size=UDim2.new(1,-12,0,22); label.Position=UDim2.new(0,6,0,2); label.BackgroundTransparency=1; label.Text=a.name.."  •  "..#a.messages.." messages"; label.TextColor3=Color3.new(1,1,1); label.TextXAlignment=Enum.TextXAlignment.Left; label.TextTruncate=Enum.TextTruncate.AtEnd; label.Parent=row
+   local load=Instance.new("TextButton"); load.Size=UDim2.new(.48,-5,0,28); load.Position=UDim2.new(0,5,0,31); load.Text="LOAD"; load.TextColor3=Color3.new(1,1,1); load.BackgroundColor3=Color3.fromRGB(20,120,65); load.Parent=row; load.MouseButton1Click:Connect(function() OpenChatArchiveViewer(a) end)
+   local del=Instance.new("TextButton"); del.Size=UDim2.new(.48,-5,0,28); del.Position=UDim2.new(.52,0,0,31); del.Text="DELETE"; del.TextColor3=Color3.new(1,1,1); del.BackgroundColor3=Color3.fromRGB(160,35,35); del.Parent=row
+   del.MouseButton1Click:Connect(function() local ok=pcall(function() if type(delfile)=="function" then delfile(a.path) else error("File deletion is unsupported by this executor") end end); status.Text=ok and ("Deleted: "..a.name) or "Delete failed: executor file API unavailable"; refresh() end)
+  end
+ end
+ save.MouseButton1Click:Connect(function()
+  local nm=SafeArchiveName(name.Text); if nm=="" then status.Text="Enter a slot name first."; return end
+  if type(writefile)~="function" then status.Text="Save unavailable: executor file API unsupported."; return end
+  local snapshot={name=nm,savedAt=os.date("%Y-%m-%d %H:%M:%S"),messages={}}
+  for _,m in ipairs(SharedChatHistory) do table.insert(snapshot.messages,{username=m.username,displayName=m.displayName,message=m.message,userId=m.userId,sentTime=m.sentTime,sourceLanguage=m.sourceLanguage,originalMessage=m.originalMessage}) end
+  if #snapshot.messages==0 then status.Text="No captured chat messages to save yet."; return end
+  EnsureChatArchiveFolder(); local path=CHAT_ARCHIVE_FOLDER..nm..".json"; local ok,err=pcall(function() writefile(path,HttpService:JSONEncode(snapshot)) end)
+  status.Text=ok and ("Saved "..#snapshot.messages.." messages to: "..nm) or ("Save failed: "..tostring(err)); if ok then refresh() end
+ end)
+ refresh()
+end
+-- Connect the replacement Chat Slots button to the named archive manager.
+ChatArchiveButton.MouseButton1Click:Connect(OpenChatArchiveManager)
+
 -- Restore messages after the Chat Log UI is rebuilt.
 IsRestoringChatHistory=true
 for _,saved in ipairs(SharedChatHistory) do
