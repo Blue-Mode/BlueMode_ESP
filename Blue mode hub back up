@@ -83,7 +83,7 @@ local AntiFlingConnection=RunService.Heartbeat:Connect(function()
  pcall(function()
   local velocity=root.AssemblyLinearVelocity
   local angular=root.AssemblyAngularVelocity
-  if velocity.Magnitude>=500 then root.AssemblyLinearVelocity=velocity.Unit*60 end
+  if velocity.Magnitude>=100 then root.AssemblyLinearVelocity=velocity.Unit*60 end
   if angular.Magnitude>80 then root.AssemblyAngularVelocity=Vector3.zero end
  end)
 end)
@@ -383,7 +383,7 @@ LanguageButton.TextSize=11
 LanguageButton.Font=Enum.Font.GothamBold
 LanguageButton.Parent=ChatFrame
 Instance.new("UICorner",LanguageButton).CornerRadius=UDim.new(0,7)
-local Languages={"English","Spanish","French","German","Japanese","Korean","Chinese","Filipino","Portuguese","Arabic","Hindi","Russian","Italian","Dutch","Indonesian","Vietnamese","Thai","Turkish","Ukrainian","Polish","Greek","Hebrew","Malay","Swahili","Bengali","Urdu","Tamil","Telugu","Marathi","Punjabi","Romanian","Czech","Hungarian","Swedish","Norwegian","Danish","Finnish","Persian","Nepali","Gujarati","Kannada","Malayalam","Serbian","Croatian","Slovak","Bulgarian","Lithuanian","Latvian","Estonian","Error"}
+local Languages={"English","Spanish","French","German","Japanese","Korean","Chinese","Filipino","Portuguese","Arabic","Hindi","Russian","Italian","Dutch","Indonesian","Vietnamese","Thai","Turkish","Ukrainian","Polish","Greek","Hebrew","Malay","Swahili","Bengali","Urdu","Tamil","Telugu","Marathi","Punjabi","Romanian","Czech","Hungarian","Swedish","Norwegian","Danish","Finnish","Persian","Nepali","Gujarati","Kannada","Malayalam","Serbian","Croatian","Slovak","Bulgarian","Lithuanian","Latvian","Estonian","Demonic","Error"}
 local SelectedLanguageIndex=1
 -- Type a country or language name in the header to select its language.
 local HeaderLanguageInput=Instance.new("TextBox")
@@ -403,9 +403,10 @@ Instance.new("UICorner",HeaderLanguageInput).CornerRadius=UDim.new(0,6)
 local function ApplyTypedLanguage()
  local wanted=(HeaderLanguageInput.Text or ""):match("^%s*(.-)%s*$")
  if wanted=="" then return false end
- -- Accept both "Error" and "Error Language" as the local Error Language mode.
+ -- Accept friendly aliases for local character-substitution languages.
  local normalized=wanted:lower():gsub("[%s_%-]","")
  if normalized=="errorlanguage" then normalized="error" end
+ if normalized=="demoniclanguage" then normalized="demonic" end
  -- Common country-to-language mappings for convenient country-name search.
  local CountryLanguages={
   philippines="Filipino",philippinesenglish="English",usa="English",unitedstates="English",america="English",unitedkingdom="English",uk="English",canada="English",australia="English",newzealand="English",
@@ -437,7 +438,7 @@ local function ApplyTypedLanguage()
   HeaderLanguageInput.PlaceholderText="Country or language..."
   return true
  end
- HeaderLanguageInput.PlaceholderText="Unknown language"
+ HeaderLanguageInput.PlaceholderText="Try Demonic or Error"
  return false
 end
 HeaderLanguageInput.FocusLost:Connect(function() ApplyTypedLanguage() end)
@@ -513,6 +514,17 @@ local function EncodeErrorLanguage(text)
   return replacements[char:lower()] or char
  end))
 end
+local function EncodeDemonicLanguage(text)
+ -- Lowercase-style fictional Demonic alphabet; this is substitution, not encryption.
+ local replacements={
+  a="ɑ",b="ь",c="ϲ",d="đ",e="ɛ",f="ғ",g="ɡ",h="ҥ",i="ɪ",j="ʝ",
+  k="ҡ",l="ł",m="м",n="и",o="ø",p="р",q="զ",r="я",s="ѕ",t="т",
+  u="υ",v="ν",w="ш",x="х",y="у",z="ᴢ"
+ }
+ return (tostring(text):gsub("%a",function(char)
+  return replacements[char:lower()] or char
+ end))
+end
 local function SendChatMessage()
  ApplyTypedLanguage()
  local raw=ChatInput.Text
@@ -523,6 +535,8 @@ local function SendChatMessage()
   local targetLanguage=Languages[SelectedLanguageIndex]
   if targetLanguage=="Error" then
    outgoing=EncodeErrorLanguage(raw)
+  elseif targetLanguage=="Demonic" then
+   outgoing=EncodeDemonicLanguage(raw)
   elseif targetLanguage~="English" then
    local translated,err=TranslateText(raw,targetLanguage)
    if translated and translated~="" then
