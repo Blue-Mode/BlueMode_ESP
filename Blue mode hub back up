@@ -74,17 +74,45 @@ end local function IsPlayerFriend(Player)if not Player or Player==LocalPlayer th
 end
 local function PlaySound(id)pcall(function()if CurrentSound then CurrentSound:Destroy()end end)CurrentSound=Instance.new("Sound")CurrentSound.SoundId=FormatSoundID(id)CurrentSound.Volume=(MusicVolume/VOLUME_MAX)*2 CurrentSound.SoundGroup=MasterSoundGroup CurrentSound.Looped=true CurrentSound.Parent=SoundService pcall(function()CurrentSound:Play()end)end local function StopSound()pcall(function()if CurrentSound then CurrentSound:Destroy()end end)CurrentSound=nil end local function ToggleBoomboxMenu()if BoomboxUI_Open then if CurrentBoomboxUI then CurrentBoomboxUI:Destroy()end BoomboxUI_Open=false CurrentBoomboxUI=nil GuiFocused=false return end GuiFocused=true local BoomUI=Instance.new("ScreenGui")BoomUI.Name="BLUE_MODE_HUB_BOOMBOX"BoomUI.ResetOnSpawn=false BoomUI.DisplayOrder=PRIORITY.BOOMBOX BoomUI.Parent=GuiContainer CurrentBoomboxUI=BoomUI BoomboxUI_Open=true local BoomFrame=Instance.new("Frame")BoomFrame.Size=UDim2.new(0,340,0,330)BoomFrame.Position=UDim2.new(0.5,-170,0.5,-165)BoomFrame.BackgroundColor3=Color3.fromRGB(22,22,22)BoomFrame.Active=true BoomFrame.Parent=BoomUI Instance.new("UICorner",BoomFrame).CornerRadius=UDim.new(0,12)local BoomGuiBg=Instance.new("ImageLabel")BoomGuiBg.Size=UDim2.new(1,0,1,0)BoomGuiBg.BackgroundTransparency=1 BoomGuiBg.Image=CUSTOM_GUI_BG BoomGuiBg.Parent=BoomFrame AddRainbowGlow(BoomFrame,4)local CloseTop=Instance.new("TextButton")CloseTop.Size=UDim2.new(0,30,0,30)CloseTop.Position=UDim2.new(1,-35,0,5)CloseTop.BackgroundColor3=Color3.fromRGB(170,30,30)CloseTop.Text="✕"CloseTop.TextColor3=Color3.new(1,1,1)CloseTop.Parent=BoomFrame Instance.new("UICorner",CloseTop).CornerRadius=UDim.new(0,8)AddRainbowGlow(CloseTop,3)CloseTop.MouseButton1Click:Connect(ToggleBoomboxMenu)local Title=Instance.new("TextLabel")Title.Size=UDim2.new(1,-190,0,40)Title.Position=UDim2.new(0,12,0,8)Title.BackgroundTransparency=1 Title.Text="🎵 BOOMBOX & VOLUME"Title.TextColor3=Color3.new(1,1,1)Title.Parent=BoomFrame local Input=Instance.new("TextBox")Input.Size=UDim2.new(1,-40,0,45)Input.Position=UDim2.new(0,20,0,55)Input.BackgroundColor3=Color3.fromRGB(35,35,35)Input.PlaceholderText="Paste Sound ID here..."Input.TextColor3=Color3.new(1,1,1)Input.Parent=BoomFrame Instance.new("UICorner",Input).CornerRadius=UDim.new(0,8)AddRainbowGlow(Input,3)local VolLabel=Instance.new("TextLabel")VolLabel.Size=UDim2.new(0,150,0,30)VolLabel.Position=UDim2.new(0,20,0,110)VolLabel.BackgroundTransparency=1 VolLabel.Text="🔊 VOLUME (0–1000):"VolLabel.TextColor3=Color3.new(1,1,1)VolLabel.Parent=BoomFrame VolNumMenu=Instance.new("TextLabel")VolNumMenu.Size=UDim2.new(0,60,0,30)VolNumMenu.Position=UDim2.new(1,-80,0,110)VolNumMenu.BackgroundTransparency=1 VolNumMenu.Text=tostring(math.floor(MusicVolume+0.5))VolNumMenu.TextColor3=Color3.new(1,1,1)VolNumMenu.Parent=BoomFrame local VolBG=Instance.new("Frame")VolBG.Size=UDim2.new(1,-40,0,24)VolBG.Position=UDim2.new(0,20,0,145)VolBG.BackgroundColor3=Color3.fromRGB(50,50,50)VolBG.Active=true VolBG.Parent=BoomFrame Instance.new("UICorner",VolBG).CornerRadius=UDim.new(0,12)AddRainbowGlow(VolBG,3)VolFillMenu=Instance.new("Frame")VolFillMenu.Size=UDim2.new(MusicVolume/VOLUME_MAX,0,1,0)VolFillMenu.BackgroundColor3=Color3.fromRGB(100,100,100)VolFillMenu.Parent=VolBG Instance.new("UICorner",VolFillMenu).CornerRadius=UDim.new(0,12)local SliderActive=false VolBG.InputBegan:Connect(function(i)if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then SliderActive=true end end)UserInputService.InputEnded:Connect(function(i)if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then SliderActive=false end end)UserInputService.InputChanged:Connect(function(i)if SliderActive and(i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch)then local rel=math.clamp((i.Position.X-VolBG.AbsolutePosition.X)/VolBG.AbsoluteSize.X,0,1)UpdateVolume(math.floor(rel*VOLUME_MAX))end end)local SlotNameInput=Instance.new("TextBox")SlotNameInput.Size=UDim2.new(1,-40,0,32)SlotNameInput.Position=UDim2.new(0,20,0,188)SlotNameInput.BackgroundColor3=Color3.fromRGB(40,40,60)SlotNameInput.PlaceholderText="Slot name (e.g. My Song)..."SlotNameInput.TextColor3=Color3.new(1,1,1)SlotNameInput.ClearTextOnFocus=false SlotNameInput.Parent=BoomFrame Instance.new("UICorner",SlotNameInput).CornerRadius=UDim.new(0,8)AddRainbowGlow(SlotNameInput,2)local PlayBtn=Instance.new("TextButton")PlayBtn.Size=UDim2.new(0,145,0,36)PlayBtn.Position=UDim2.new(0,20,0,230)PlayBtn.BackgroundColor3=Color3.fromRGB(25,140,255)PlayBtn.Text="▶ PLAY SOUND"PlayBtn.TextColor3=Color3.new(1,1,1)PlayBtn.Parent=BoomFrame Instance.new("UICorner",PlayBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(PlayBtn,3)PlayBtn.MouseButton1Click:Connect(function()if Input.Text~=""then PlaySound(Input.Text)end end)local StopBtn=Instance.new("TextButton")StopBtn.Size=UDim2.new(0,145,0,36)StopBtn.Position=UDim2.new(0,175,0,230)StopBtn.BackgroundColor3=Color3.fromRGB(200,30,30)StopBtn.Text="⏹ STOP SOUND"StopBtn.TextColor3=Color3.new(1,1,1)StopBtn.Parent=BoomFrame Instance.new("UICorner",StopBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(StopBtn,3)StopBtn.MouseButton1Click:Connect(StopSound)local SaveMusicBtn=Instance.new("TextButton")SaveMusicBtn.Size=UDim2.new(0,145,0,36)SaveMusicBtn.Position=UDim2.new(0,20,0,275)SaveMusicBtn.BackgroundColor3=Color3.fromRGB(25,100,180)SaveMusicBtn.Text="💾 SAVE SLOT"SaveMusicBtn.TextColor3=Color3.new(1,1,1)SaveMusicBtn.Parent=BoomFrame Instance.new("UICorner",SaveMusicBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(SaveMusicBtn,3)local MusicSlotsBtn=Instance.new("TextButton")MusicSlotsBtn.Size=UDim2.new(0,145,0,36)MusicSlotsBtn.Position=UDim2.new(0,175,0,275)MusicSlotsBtn.BackgroundColor3=Color3.fromRGB(110,40,180)MusicSlotsBtn.Text="📁 SLOTS"MusicSlotsBtn.TextColor3=Color3.new(1,1,1)MusicSlotsBtn.Parent=BoomFrame Instance.new("UICorner",MusicSlotsBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(MusicSlotsBtn,3)local MUSIC_SAVE_FOLDER="BlueModeMusicSlots/"local MusicSlotUI local function EnsureMusicSlotFolder()pcall(function()if not isfolder(MUSIC_SAVE_FOLDER)then makefolder(MUSIC_SAVE_FOLDER)end end)end local function OpenMusicSlots()if MusicSlotUI then MusicSlotUI:Destroy()end EnsureMusicSlotFolder()local SavedMusic={}pcall(function()if listfiles then for _,f in ipairs(listfiles(MUSIC_SAVE_FOLDER))do if f:sub(-4)==".txt"then local name=f:match("[^/\\]+$")if name then name=name:sub(1,-5)local id=readfile(f)if id and id~=""then table.insert(SavedMusic,{name=name,id=id,path=f})end end end end end end)table.sort(SavedMusic,function(a,b)return a.name:lower()<b.name:lower()end)MusicSlotUI=Instance.new("ScreenGui")MusicSlotUI.Name="BLUE_MODE_MUSIC_SLOTS"MusicSlotUI.ResetOnSpawn=false MusicSlotUI.DisplayOrder=PRIORITY.BOOMBOX+1 MusicSlotUI.Parent=GuiContainer local SF=Instance.new("Frame")SF.Size=UDim2.new(0,360,0,400)SF.Position=UDim2.new(0.5,-180,0.5,-200)SF.BackgroundColor3=Color3.fromRGB(22,22,22)SF.Active=true SF.Parent=MusicSlotUI Instance.new("UICorner",SF).CornerRadius=UDim.new(0,12)AddRainbowGlow(SF,4)local ST=Instance.new("TextLabel")ST.Size=UDim2.new(1,-50,0,35)ST.Position=UDim2.new(0,12,0,6)ST.BackgroundTransparency=1 ST.Text="🎵 SAVED MUSIC SLOTS"ST.TextColor3=Color3.new(1,1,1)ST.Font=Enum.Font.GothamBold ST.TextSize=15 ST.Parent=SF local SC=Instance.new("TextButton")SC.Size=UDim2.new(0,30,0,30)SC.Position=UDim2.new(1,-35,0,5)SC.BackgroundColor3=Color3.fromRGB(170,30,30)SC.Text="✕"SC.TextColor3=Color3.new(1,1,1)SC.Parent=SF Instance.new("UICorner",SC).CornerRadius=UDim.new(0,8)SC.MouseButton1Click:Connect(function()MusicSlotUI:Destroy()MusicSlotUI=nil end)local SearchInput=Instance.new("TextBox")SearchInput.Size=UDim2.new(1,-24,0,32)SearchInput.Position=UDim2.new(0,12,0,43)SearchInput.BackgroundColor3=Color3.fromRGB(45,45,45)SearchInput.PlaceholderText="🔍 Search music slots by name or ID..."SearchInput.TextColor3=Color3.new(1,1,1)SearchInput.Text=""SearchInput.ClearTextOnFocus=false SearchInput.Font=Enum.Font.Gotham SearchInput.TextSize=12 SearchInput.Parent=SF Instance.new("UICorner",SearchInput).CornerRadius=UDim.new(0,8)AddRainbowGlow(SearchInput,2)local List=Instance.new("ScrollingFrame")List.Size=UDim2.new(1,-20,1,-90)List.Position=UDim2.new(0,10,0,82)List.BackgroundTransparency=1 List.BorderSizePixel=0 List.ScrollBarThickness=4 List.CanvasSize=UDim2.new(0,0,0,0)List.Parent=SF local function RefreshMusicSlots(query)for _,child in ipairs(List:GetChildren())do child:Destroy()end local yy=5 local shown=0 query=(query or ""):lower()for _,data in ipairs(SavedMusic)do if query=="" or data.name:lower():find(query,1,true) or data.id:lower():find(query,1,true)then shown+=1 local Item=Instance.new("Frame")Item.Size=UDim2.new(1,-10,0,78)Item.Position=UDim2.new(0,5,0,yy)Item.BackgroundColor3=Color3.fromRGB(35,35,55)Item.Parent=List Instance.new("UICorner",Item).CornerRadius=UDim.new(0,8)local NL=Instance.new("TextLabel")NL.Size=UDim2.new(1,-10,0,25)NL.Position=UDim2.new(0,5,0,2)NL.BackgroundTransparency=1 NL.Text="🎵 "..data.name.."  |  ID: "..data.id NL.TextColor3=Color3.new(1,1,1)NL.TextXAlignment=Enum.TextXAlignment.Left NL.TextTruncate=Enum.TextTruncate.AtEnd NL.Font=Enum.Font.Gotham NL.TextSize=11 NL.Parent=Item local Load=Instance.new("TextButton")Load.Size=UDim2.new(0.48,-5,0,32)Load.Position=UDim2.new(0,5,0,35)Load.BackgroundColor3=Color3.fromRGB(25,120,60)Load.Text="⬇ LOAD ID"Load.TextColor3=Color3.new(1,1,1)Load.Parent=Item Instance.new("UICorner",Load).CornerRadius=UDim.new(0,6)Load.MouseButton1Click:Connect(function()Input.Text=data.id SlotNameInput.Text=data.name if MusicSlotUI then MusicSlotUI:Destroy()MusicSlotUI=nil end end)local Del=Instance.new("TextButton")Del.Size=UDim2.new(0.48,-5,0,32)Del.Position=UDim2.new(0.52,0,0,35)Del.BackgroundColor3=Color3.fromRGB(160,30,30)Del.Text="🗑 DELETE"Del.TextColor3=Color3.new(1,1,1)Del.Parent=Item Instance.new("UICorner",Del).CornerRadius=UDim.new(0,6)Del.MouseButton1Click:Connect(function()pcall(function()if delfile then delfile(data.path)end end)if MusicSlotUI then MusicSlotUI:Destroy()MusicSlotUI=nil end OpenMusicSlots()end)yy+=83 end end if shown==0 then local Empty=Instance.new("TextLabel")Empty.Size=UDim2.new(1,-10,0,55)Empty.Position=UDim2.new(0,5,0,5)Empty.BackgroundTransparency=1 Empty.Text=#SavedMusic==0 and "No saved music slots yet. Enter an ID and tap SAVE SLOT." or "No music slots match your search."Empty.TextColor3=Color3.new(1,1,1)Empty.TextWrapped=true Empty.Parent=List yy=65 end List.CanvasSize=UDim2.new(0,0,0,yy+5)end SearchInput:GetPropertyChangedSignal("Text"):Connect(function()RefreshMusicSlots(SearchInput.Text)end)RefreshMusicSlots("")end SaveMusicBtn.MouseButton1Click:Connect(function()local id=Input.Text:match("^%s*(.-)%s*$")local name=SlotNameInput.Text:match("^%s*(.-)%s*$")if not id or id==""then SlotNameInput.Text=""SlotNameInput.PlaceholderText="Enter a Sound ID first!"return end if not name or name==""then name="Music_"..os.time()end name=name:gsub("[^%w _%-]","_")EnsureMusicSlotFolder()local path=MUSIC_SAVE_FOLDER..name..".txt"local ok=pcall(function()writefile(path,id)end)if ok then SlotNameInput.Text=name SlotNameInput.PlaceholderText="Saved: "..name else SlotNameInput.PlaceholderText="Save failed (file API unavailable)"end end)MusicSlotsBtn.MouseButton1Click:Connect(OpenMusicSlots)AddStandardWindowControls(BoomFrame,Title,BoomUI,UDim2.new(0,340,0,330),CloseTop,nil,nil,"🎵")end local RunHubCommand
 local function ToggleConsole()if ConsoleUI_Open then if CurrentConsoleUI then CurrentConsoleUI:Destroy()end ConsoleUI_Open=false CurrentConsoleUI=nil GuiFocused=false return end GuiFocused=true local ConsoleUI=Instance.new("ScreenGui")ConsoleUI.Name="BLUE_MODE_HUB_CONSOLE"ConsoleUI.ResetOnSpawn=false ConsoleUI.DisplayOrder=PRIORITY.CONSOLE ConsoleUI.Parent=GuiContainer CurrentConsoleUI=ConsoleUI ConsoleUI_Open=true local Frame=Instance.new("Frame")Frame.Size=UDim2.new(0,450,0,410)Frame.Position=UDim2.new(0.5,-225,0.5,-205)Frame.BackgroundColor3=Color3.fromRGB(22,22,22)Frame.Active=true Frame.Parent=ConsoleUI Instance.new("UICorner",Frame).CornerRadius=UDim.new(0,12)local ConsoleGuiBg=Instance.new("ImageLabel")ConsoleGuiBg.Size=UDim2.new(1,0,1,0)ConsoleGuiBg.BackgroundTransparency=1 ConsoleGuiBg.Image=CUSTOM_GUI_BG ConsoleGuiBg.Parent=Frame AddRainbowGlow(Frame,5)local CloseTop=Instance.new("TextButton")CloseTop.Size=UDim2.new(0,32,0,32)CloseTop.Position=UDim2.new(1,-37,0,6)CloseTop.BackgroundColor3=Color3.fromRGB(170,30,30)CloseTop.Text="✕"CloseTop.TextColor3=Color3.new(1,1,1)CloseTop.Parent=Frame Instance.new("UICorner",CloseTop).CornerRadius=UDim.new(0,8)AddRainbowGlow(CloseTop,3)CloseTop.MouseButton1Click:Connect(ToggleConsole)local Title=Instance.new("TextLabel")Title.Size=UDim2.new(1,-190,0,35)Title.Position=UDim2.new(0,15,0,6)Title.BackgroundTransparency=1 Title.Text="💻 SCRIPT CONSOLE"Title.TextColor3=Color3.new(1,1,1)Title.Parent=Frame local Output=Instance.new("TextLabel")Output.Size=UDim2.new(1,-30,0,40)Output.Position=UDim2.new(0,15,0,45)Output.BackgroundTransparency=1 Output.Text="Paste script code below..."Output.TextColor3=Color3.fromRGB(0,255,120)Output.Parent=Frame local Input=Instance.new("TextBox")Input.Size=UDim2.new(1,-30,0,130)Input.Position=UDim2.new(0,15,0,95)Input.BackgroundColor3=Color3.fromRGB(45,45,45)Input.PlaceholderText="Paste your Lua script here..."Input.TextColor3=Color3.new(1,1,1)Input.MultiLine=true Input.Parent=Frame Instance.new("UICorner",Input).CornerRadius=UDim.new(0,8)AddRainbowGlow(Input,3)local NameInput=Instance.new("TextBox")NameInput.Size=UDim2.new(1,-30,0,35)NameInput.Position=UDim2.new(0,15,0,235)NameInput.BackgroundColor3=Color3.fromRGB(40,40,60)NameInput.PlaceholderText="Script name when saving..."NameInput.TextColor3=Color3.new(1,1,1)NameInput.Parent=Frame Instance.new("UICorner",NameInput).CornerRadius=UDim.new(0,8)AddRainbowGlow(NameInput,2)local ExecBtn=Instance.new("TextButton")ExecBtn.Size=UDim2.new(0,95,0,40)ExecBtn.Position=UDim2.new(0,15,0,285)ExecBtn.BackgroundColor3=Color3.fromRGB(20,150,70)ExecBtn.Text="▶ EXECUTE"ExecBtn.TextColor3=Color3.new(1,1,1)ExecBtn.Parent=Frame Instance.new("UICorner",ExecBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(ExecBtn,3)local ClearBtn=Instance.new("TextButton")ClearBtn.Size=UDim2.new(0,95,0,40)ClearBtn.Position=UDim2.new(0,120,0,285)ClearBtn.BackgroundColor3=Color3.fromRGB(180,120,20)ClearBtn.Text="🗑️ CLEAR"ClearBtn.TextColor3=Color3.new(1,1,1)ClearBtn.Parent=Frame Instance.new("UICorner",ClearBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(ClearBtn,3)local SaveBtn=Instance.new("TextButton")SaveBtn.Size=UDim2.new(0,95,0,40)SaveBtn.Position=UDim2.new(0,225,0,285)SaveBtn.BackgroundColor3=Color3.fromRGB(25,100,180)SaveBtn.Text="💾 SAVE"SaveBtn.TextColor3=Color3.new(1,1,1)SaveBtn.Parent=Frame Instance.new("UICorner",SaveBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(SaveBtn,3)local SlotBtn=Instance.new("TextButton")SlotBtn.Size=UDim2.new(0,95,0,40)SlotBtn.Position=UDim2.new(0,330,0,285)SlotBtn.BackgroundColor3=Color3.fromRGB(110,40,180)SlotBtn.Text="📁 SLOTS"SlotBtn.TextColor3=Color3.new(1,1,1)SlotBtn.Parent=Frame Instance.new("UICorner",SlotBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(SlotBtn,3)local SavedScripts={}local SlotUI,SlotList,SearchInput,ConfirmUI local SAVE_FOLDER="BlueModeScripts/"local function ShowConfirmDelete(scriptName,onConfirm)if ConfirmUI then ConfirmUI:Destroy()end ConfirmUI=Instance.new("ScreenGui")ConfirmUI.Name="BLUE_MODE_CONFIRM_DELETE"ConfirmUI.ResetOnSpawn=false ConfirmUI.DisplayOrder=PRIORITY.CONSOLE+2 ConfirmUI.Parent=GuiContainer local Overlay=Instance.new("Frame")Overlay.Size=UDim2.new(1,0,1,0)Overlay.BackgroundColor3=Color3.new(0,0,0)Overlay.BackgroundTransparency=0.5 Overlay.Parent=ConfirmUI local Box=Instance.new("Frame")Box.Size=UDim2.new(0,280,0,130)Box.Position=UDim2.new(0.5,-140,0.5,-65)Box.BackgroundColor3=Color3.fromRGB(30,30,30)Box.Parent=ConfirmUI Instance.new("UICorner",Box).CornerRadius=UDim.new(0,12)AddRainbowGlow(Box,4)local Msg=Instance.new("TextLabel")Msg.Size=UDim2.new(1,-20,0,40)Msg.Position=UDim2.new(0,10,0,12)Msg.BackgroundTransparency=1 Msg.Text="Are you sure you want to delete\n\""..scriptName.."\"?"Msg.TextColor3=Color3.new(1,1,1)Msg.Font=Enum.Font.GothamBold Msg.TextSize=14 Msg.TextWrapped=true Msg.Parent=Box local YesBtn=Instance.new("TextButton")YesBtn.Size=UDim2.new(0,115,0,35)YesBtn.Position=UDim2.new(0,12,0,80)YesBtn.BackgroundColor3=Color3.fromRGB(170,30,30)YesBtn.Text="✅ DELETE"YesBtn.TextColor3=Color3.new(1,1,1)YesBtn.Font=Enum.Font.GothamBold YesBtn.TextSize=12 YesBtn.Parent=Box Instance.new("UICorner",YesBtn).CornerRadius=UDim.new(0,8)local NoBtn=Instance.new("TextButton")NoBtn.Size=UDim2.new(0,115,0,35)NoBtn.Position=UDim2.new(0,153,0,80)NoBtn.BackgroundColor3=Color3.fromRGB(60,60,60)NoBtn.Text="❌ CANCEL"NoBtn.TextColor3=Color3.new(1,1,1)NoBtn.Font=Enum.Font.GothamBold NoBtn.TextSize=12 NoBtn.Parent=Box Instance.new("UICorner",NoBtn).CornerRadius=UDim.new(0,8)YesBtn.MouseButton1Click:Connect(function()ConfirmUI:Destroy()ConfirmUI=nil onConfirm(true)end)NoBtn.MouseButton1Click:Connect(function()ConfirmUI:Destroy()ConfirmUI=nil onConfirm(false)end)end local function EnsureFolder()pcall(function()if not isfolder(SAVE_FOLDER)then makefolder(SAVE_FOLDER)end end)end local function LoadSavedScripts()SavedScripts={}EnsureFolder()pcall(function()if listfiles then local files=listfiles(SAVE_FOLDER)for _,f in ipairs(files)do if f:sub(-4)==".txt"then local name=f:match("[^/\\]+$")if name then name=name:sub(1,-5)local content=readfile(f)table.insert(SavedScripts,{name=name,content=content,path=f})end end end table.sort(SavedScripts,function(a,b)return a.name<b.name end)end end)end local function RefreshSlotList(searchQuery)if not SlotList then return end for _,c in ipairs(SlotList:GetChildren())do if c:IsA("Frame")then c:Destroy()end end local query=searchQuery or""local y=5 for i,data in ipairs(SavedScripts)do if query==""or data.name:lower():find(query:lower(),1,true)then local Item=Instance.new("Frame")Item.Size=UDim2.new(1,-10,0,95)Item.Position=UDim2.new(0,5,0,y)Item.BackgroundColor3=Color3.fromRGB(35,35,55)Item.Parent=SlotList Instance.new("UICorner",Item).CornerRadius=UDim.new(0,8)local NameLbl=Instance.new("TextLabel")NameLbl.Size=UDim2.new(1,-10,0,25)NameLbl.Position=UDim2.new(0,5,0,5)NameLbl.BackgroundTransparency=1 NameLbl.Font=Enum.Font.GothamBold NameLbl.Text="📄 "..data.name NameLbl.TextColor3=Color3.new(1,1,1)NameLbl.TextXAlignment=Enum.TextXAlignment.Left NameLbl.Parent=Item local LoadBtn=Instance.new("TextButton")LoadBtn.Size=UDim2.new(0.23,-4,0,35)LoadBtn.Position=UDim2.new(0,0,0,35)LoadBtn.BackgroundColor3=Color3.fromRGB(25,120,60)LoadBtn.Text="⬇ LOAD"LoadBtn.TextColor3=Color3.new(1,1,1)LoadBtn.Font=Enum.Font.Gotham LoadBtn.TextSize=10 LoadBtn.Parent=Item Instance.new("UICorner",LoadBtn).CornerRadius=UDim.new(0,6)LoadBtn.MouseButton1Click:Connect(function()Input.Text=data.content Output.Text="✅ LOADED: "..data.name SlotUI:Destroy()end)local ExecItemBtn=Instance.new("TextButton")ExecItemBtn.Size=UDim2.new(0.23,-4,0,35)ExecItemBtn.Position=UDim2.new(0.25,0,0,35)ExecItemBtn.BackgroundColor3=Color3.fromRGB(25,100,180)ExecItemBtn.Text="▶ EXEC"ExecItemBtn.TextColor3=Color3.new(1,1,1)ExecItemBtn.Font=Enum.Font.Gotham ExecItemBtn.TextSize=10 ExecItemBtn.Parent=Item Instance.new("UICorner",ExecItemBtn).CornerRadius=UDim.new(0,6)ExecItemBtn.MouseButton1Click:Connect(function()SlotUI:Destroy()local Compile=loadstring or load local Func,Err=Compile(data.content)if not Func then Output.Text="❌ Syntax Error: "..tostring(Err)return end local Ok,RunErr=pcall(Func)if not Ok then Output.Text="❌ Runtime Error: "..tostring(RunErr)else Output.Text="✅ EXECUTED: "..data.name end end)local CopyBtn=Instance.new("TextButton")CopyBtn.Size=UDim2.new(0.23,-4,0,35)CopyBtn.Position=UDim2.new(0.50,0,0,35)CopyBtn.BackgroundColor3=Color3.fromRGB(160,90,20)CopyBtn.Text="📋 COPY"CopyBtn.TextColor3=Color3.new(1,1,1)CopyBtn.Font=Enum.Font.Gotham CopyBtn.TextSize=10 CopyBtn.Parent=Item Instance.new("UICorner",CopyBtn).CornerRadius=UDim.new(0,6)CopyBtn.MouseButton1Click:Connect(function()pcall(function()setclipboard(data.content)end)Output.Text="✅ COPIED: "..data.name end)local DelBtn=Instance.new("TextButton")DelBtn.Size=UDim2.new(0.23,-4,0,35)DelBtn.Position=UDim2.new(0.75,0,0,35)DelBtn.BackgroundColor3=Color3.fromRGB(160,30,30)DelBtn.Text="🗑️ DELETE"DelBtn.TextColor3=Color3.new(1,1,1)DelBtn.Font=Enum.Font.Gotham DelBtn.TextSize=10 DelBtn.Parent=Item Instance.new("UICorner",DelBtn).CornerRadius=UDim.new(0,6)DelBtn.MouseButton1Click:Connect(function()ShowConfirmDelete(data.name,function(confirmed)if confirmed then pcall(function()delfile(data.path)end)for idx,s in ipairs(SavedScripts)do if s.path==data.path then table.remove(SavedScripts,idx)break end end RefreshSlotList(SearchInput and SearchInput.Text or"")Output.Text="🗑️ DELETED: "..data.name end end)end)y+=100 end end SlotList.CanvasSize=UDim2.new(0,0,0,y+5)end local function OpenSlots()if SlotUI then SlotUI:Destroy()end LoadSavedScripts()SlotUI=Instance.new("ScreenGui")SlotUI.Name="BLUE_MODE_SLOTS"SlotUI.ResetOnSpawn=false SlotUI.DisplayOrder=PRIORITY.CONSOLE+1 SlotUI.Parent=GuiContainer local SFrame=Instance.new("Frame")SFrame.Size=UDim2.new(0,400,0,420)SFrame.Position=UDim2.new(0.5,-200,0.5,-210)SFrame.BackgroundColor3=Color3.fromRGB(22,22,22)SFrame.Active=true SFrame.Parent=SlotUI Instance.new("UICorner",SFrame).CornerRadius=UDim.new(0,12)local Sbg=Instance.new("ImageLabel")Sbg.Size=UDim2.new(1,0,1,0)Sbg.BackgroundTransparency=1 Sbg.Image=CUSTOM_GUI_BG Sbg.Parent=SFrame AddRainbowGlow(SFrame,5)local STitle=Instance.new("TextLabel")STitle.Size=UDim2.new(1,-50,0,35)STitle.Position=UDim2.new(0,15,0,6)STitle.BackgroundTransparency=1 STitle.Text="📁 SCRIPT SLOT MANAGER"STitle.TextColor3=Color3.new(1,1,1)STitle.Parent=SFrame local SClose=Instance.new("TextButton")SClose.Size=UDim2.new(0,32,0,32)SClose.Position=UDim2.new(1,-37,0,6)SClose.BackgroundColor3=Color3.fromRGB(170,30,30)SClose.Text="✕"SClose.TextColor3=Color3.new(1,1,1)SClose.Parent=SFrame Instance.new("UICorner",SClose).CornerRadius=UDim.new(0,8)AddRainbowGlow(SClose,3)SClose.MouseButton1Click:Connect(function()SlotUI:Destroy()end)SearchInput=Instance.new("TextBox")SearchInput.Size=UDim2.new(1,-30,0,35)SearchInput.Position=UDim2.new(0,15,0,50)SearchInput.BackgroundColor3=Color3.fromRGB(45,45,45)SearchInput.PlaceholderText="🔍 Search scripts by name..."SearchInput.TextColor3=Color3.new(1,1,1)SearchInput.Text=""SearchInput.Parent=SFrame Instance.new("UICorner",SearchInput).CornerRadius=UDim.new(0,8)AddRainbowGlow(SearchInput,2)SearchInput:GetPropertyChangedSignal("Text"):Connect(function()RefreshSlotList(SearchInput.Text)end)SlotList=Instance.new("ScrollingFrame")SlotList.Size=UDim2.new(1,-24,1,-105)SlotList.Position=UDim2.new(0,12,0,100)SlotList.BackgroundTransparency=1 SlotList.CanvasSize=UDim2.new(0,0,0,0)SlotList.ScrollBarThickness=4 SlotList.Parent=SFrame RefreshSlotList("")end ExecBtn.MouseButton1Click:Connect(function()local ScriptCode=Input.Text if ScriptCode==""then Output.Text="⚠️ Nothing to run!"return end if RunHubCommand and RunHubCommand(ScriptCode,Output) then return end local Compile=loadstring or load if not Compile then Output.Text="⚠️ Executor does not support compiling!"return end local Func,Err=Compile(ScriptCode)if not Func then Output.Text="❌ Syntax Error:\n"..tostring(Err)return end local Ok,RunErr=pcall(Func)if not Ok then Output.Text="❌ Runtime Error:\n"..tostring(RunErr)return end Output.Text="✅ Script ran successfully!"end)ClearBtn.MouseButton1Click:Connect(function()Input.Text=""Output.Text="✅ Cleared!"end)SaveBtn.MouseButton1Click:Connect(function()local ScriptCode=Input.Text local Name=NameInput.Text~=""and NameInput.Text or"Untitled_"..os.time()if ScriptCode==""then Output.Text="⚠️ Nothing to save!"return end EnsureFolder()local filePath=SAVE_FOLDER..Name..".txt"pcall(function()writefile(filePath,ScriptCode)end)Output.Text="✅ SAVED: "..Name NameInput.Text=""end)SlotBtn.MouseButton1Click:Connect(OpenSlots)AddStandardWindowControls(Frame,Title,ConsoleUI,UDim2.new(0,450,0,410),CloseTop,nil,nil,"💻")end local ChatUI local CurrentPlayerListUI=nil local AntiFlingEnabled=false
+local AntiFlingSafeCFrame=nil
+local AntiFlingSafeRoot=nil
 local AntiFlingConnection=RunService.Heartbeat:Connect(function()
- if not AntiFlingEnabled then return end
  local char=LocalPlayer.Character
  local root=char and (char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso"))
  local hum=char and char:FindFirstChildOfClass("Humanoid")
- if not root or not hum or hum.Health<=0 then return end
+ if not root or not hum or hum.Health<=0 then
+  AntiFlingSafeCFrame=nil
+  AntiFlingSafeRoot=nil
+  return
+ end
+ if AntiFlingSafeRoot~=root then
+  AntiFlingSafeRoot=root
+  AntiFlingSafeCFrame=root.CFrame
+ end
+ if not AntiFlingEnabled then
+  -- Keep refreshing the last safe position while Anti-Fling is off,
+  -- so enabling it does not use an old position from a previous spawn.
+  AntiFlingSafeCFrame=root.CFrame
+  return
+ end
  pcall(function()
   local velocity=root.AssemblyLinearVelocity
   local angular=root.AssemblyAngularVelocity
-  if velocity.Magnitude>=100 then root.AssemblyLinearVelocity=velocity.Unit*60 end
-  if angular.Magnitude>80 then root.AssemblyAngularVelocity=Vector3.zero end
+  local speed=velocity.Magnitude
+  if speed>=60 then
+   -- Return to the last position recorded before the fling, then reduce
+   -- linear velocity to magnitude 1. Leave angular velocity unchanged.
+   if AntiFlingSafeCFrame then
+    root.CFrame=AntiFlingSafeCFrame
+   end
+   root.AssemblyLinearVelocity=velocity.Unit
+  else
+   -- Only remember positions while the character is below the threshold.
+   AntiFlingSafeCFrame=root.CFrame
+   if angular.Magnitude>80 then
+    root.AssemblyAngularVelocity=Vector3.zero
+   end
+  end
  end)
 end)
 local function ToggleMovementMenu()if CurrentMovementUI then CurrentMovementUI:Destroy()CurrentMovementUI=nil  GuiFocused=false return end GuiFocused=true local MoveUI=Instance.new("ScreenGui")MoveUI.Name="BLUE_MODE_HUB_MOVEMENT"MoveUI.ResetOnSpawn=false MoveUI.DisplayOrder=PRIORITY.CONSOLE MoveUI.Parent=GuiContainer CurrentMovementUI=MoveUI local Frame=Instance.new("Frame")Frame.Size=UDim2.new(0,450,0,650)Frame.Position=UDim2.new(0.5,-225,0.5,-325)Frame.BackgroundColor3=Color3.fromRGB(22,22,22)Frame.Active=true Frame.Parent=MoveUI Instance.new("UICorner",Frame).CornerRadius=UDim.new(0,12)local MoveGuiBg=Instance.new("ImageLabel")MoveGuiBg.Size=UDim2.new(1,0,1,0)MoveGuiBg.BackgroundTransparency=1 MoveGuiBg.Image=CUSTOM_GUI_BG MoveGuiBg.Parent=Frame AddRainbowGlow(Frame,5)local lastClick=0 Frame.InputBegan:Connect(function(input)if input.UserInputType~=Enum.UserInputType.MouseButton1 then return end local now=tick()if now-lastClick<=0.3 then if CurrentMovementUI then CurrentMovementUI:Destroy()CurrentMovementUI=nil  GuiFocused=false end else lastClick=now end end)local Title=Instance.new("TextLabel")Title.Size=UDim2.new(1,-190,0,35)Title.Position=UDim2.new(0,15,0,6)Title.BackgroundTransparency=1 Title.Text="👾 MOVEMENT"Title.TextColor3=Color3.new(1,1,1)Title.Parent=Frame local MoveCloseBtn=Instance.new("TextButton")MoveCloseBtn.Name="MovementCloseButton"MoveCloseBtn.Size=UDim2.new(0,32,0,30)MoveCloseBtn.Position=UDim2.new(1,-38,0,5)MoveCloseBtn.BackgroundColor3=Color3.fromRGB(170,35,35)MoveCloseBtn.Text="✕"MoveCloseBtn.TextColor3=Color3.new(1,1,1)MoveCloseBtn.Font=Enum.Font.GothamBold MoveCloseBtn.TextSize=16 MoveCloseBtn.Parent=Frame Instance.new("UICorner",MoveCloseBtn).CornerRadius=UDim.new(0,7)AddRainbowGlow(MoveCloseBtn,2)MoveCloseBtn.MouseButton1Click:Connect(function()if CurrentMovementUI then CurrentMovementUI:Destroy()CurrentMovementUI=nil end  GuiFocused=false end) local SavedSpeedValue=LoadData(SAVE_KEY_SPEED,16)local SavedJumpValue=LoadData(SAVE_KEY_JUMP,50)local SavedSpeedEnabled=LoadBoolData(SAVE_KEY_SPEED_ENABLED,false)local SavedJumpEnabled=LoadBoolData(SAVE_KEY_JUMP_ENABLED,false)local function CreateMoveRow(labelText,yPos,defaultValue)local Row=Instance.new("Frame")Row.Size=UDim2.new(1,-30,0,72)Row.Position=UDim2.new(0,15,0,yPos)Row.BackgroundTransparency=1 Row.Parent=Frame local Label=Instance.new("TextLabel")Label.Size=UDim2.new(0,120,0,24)Label.Position=UDim2.new(0,0,0,0)Label.BackgroundTransparency=1 Label.Font=Enum.Font.GothamBold Label.Text=labelText Label.TextColor3=Color3.new(1,1,1)Label.Parent=Row local ToggleBtn=Instance.new("TextButton")ToggleBtn.Size=UDim2.new(0,110,0,30)ToggleBtn.Position=UDim2.new(0,0,0,28)ToggleBtn.BackgroundColor3=Color3.fromRGB(50,50,50)ToggleBtn.Text="OFF"ToggleBtn.TextColor3=Color3.new(1,1,1)ToggleBtn.Parent=Row Instance.new("UICorner",ToggleBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(ToggleBtn,3)local NumberBox=Instance.new("TextBox")NumberBox.Size=UDim2.new(0,100,0,30)NumberBox.Position=UDim2.new(0,125,0,28)NumberBox.BackgroundColor3=Color3.fromRGB(38,38,38)NumberBox.Text=tostring(defaultValue)NumberBox.PlaceholderText="value"NumberBox.TextColor3=Color3.new(1,1,1)NumberBox.Parent=Row Instance.new("UICorner",NumberBox).CornerRadius=UDim.new(0,8)AddRainbowGlow(NumberBox,3)local ResetBtn=Instance.new("TextButton")ResetBtn.Size=UDim2.new(0,85,0,30)ResetBtn.Position=UDim2.new(0,235,0,28)ResetBtn.BackgroundColor3=Color3.fromRGB(160,90,0)ResetBtn.Text="RESET"ResetBtn.TextColor3=Color3.new(1,1,1)ResetBtn.Parent=Row Instance.new("UICorner",ResetBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(ResetBtn,3)return{ToggleBtn=ToggleBtn,NumberBox=NumberBox,ResetBtn=ResetBtn,Enabled=false,DefaultValue=defaultValue}end local SpeedRow=CreateMoveRow("SPEED",55,SavedSpeedValue)local JumpRow=CreateMoveRow("JUMP",150,SavedJumpValue)SpeedRow.Enabled=SavedSpeedEnabled JumpRow.Enabled=SavedJumpEnabled SpeedRow.ToggleBtn.Text=SavedSpeedEnabled and"ON"or"OFF"JumpRow.ToggleBtn.Text=SavedJumpEnabled and"ON"or"OFF"SpeedRow.ToggleBtn.BackgroundColor3=SavedSpeedEnabled and Color3.fromRGB(25,120,25)or Color3.fromRGB(50,50,50)JumpRow.ToggleBtn.BackgroundColor3=SavedJumpEnabled and Color3.fromRGB(25,120,25)or Color3.fromRGB(50,50,50)local function ApplySpeedValue()local hum=LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")if not hum then return end if SpeedRow.Enabled then local value=tonumber(SpeedRow.NumberBox.Text)or SpeedRow.DefaultValue hum.WalkSpeed=math.max(0,value)SaveData(SAVE_KEY_SPEED,value)else hum.WalkSpeed=16 end end local function ApplyJumpValue()local hum=LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")if not hum then return end if JumpRow.Enabled then local value=tonumber(JumpRow.NumberBox.Text)or JumpRow.DefaultValue hum.JumpPower=math.max(0,value)SaveData(SAVE_KEY_JUMP,value)else hum.JumpPower=50 end end SpeedRow.ToggleBtn.MouseButton1Click:Connect(function()SpeedRow.Enabled=not SpeedRow.Enabled SpeedRow.ToggleBtn.Text=SpeedRow.Enabled and"ON"or"OFF"SpeedRow.ToggleBtn.BackgroundColor3=SpeedRow.Enabled and Color3.fromRGB(25,120,25)or Color3.fromRGB(50,50,50)SaveData(SAVE_KEY_SPEED_ENABLED,tostring(SpeedRow.Enabled))ApplySpeedValue()end)JumpRow.ToggleBtn.MouseButton1Click:Connect(function()JumpRow.Enabled=not JumpRow.Enabled JumpRow.ToggleBtn.Text=JumpRow.Enabled and"ON"or"OFF"JumpRow.ToggleBtn.BackgroundColor3=JumpRow.Enabled and Color3.fromRGB(25,120,25)or Color3.fromRGB(50,50,50)SaveData(SAVE_KEY_JUMP_ENABLED,tostring(JumpRow.Enabled))ApplyJumpValue()end)SpeedRow.ResetBtn.MouseButton1Click:Connect(function()SpeedRow.DefaultValue=16 SpeedRow.NumberBox.Text="16" SpeedRow.Enabled=false SpeedRow.ToggleBtn.Text="OFF" SpeedRow.ToggleBtn.BackgroundColor3=Color3.fromRGB(50,50,50) SaveData(SAVE_KEY_SPEED,16) SaveData(SAVE_KEY_SPEED_ENABLED,"false") ApplySpeedValue() end)JumpRow.ResetBtn.MouseButton1Click:Connect(function()JumpRow.DefaultValue=50 JumpRow.NumberBox.Text="50" JumpRow.Enabled=false JumpRow.ToggleBtn.Text="OFF" JumpRow.ToggleBtn.BackgroundColor3=Color3.fromRGB(50,50,50) SaveData(SAVE_KEY_JUMP,50) SaveData(SAVE_KEY_JUMP_ENABLED,"false") ApplyJumpValue() end)SpeedRow.NumberBox.FocusLost:Connect(function()local value=tonumber(SpeedRow.NumberBox.Text)or SpeedRow.DefaultValue SpeedRow.NumberBox.Text=tostring(math.max(0,value))if SpeedRow.Enabled then ApplySpeedValue()end end)JumpRow.NumberBox.FocusLost:Connect(function()local value=tonumber(JumpRow.NumberBox.Text)or JumpRow.DefaultValue JumpRow.NumberBox.Text=tostring(math.max(0,value))if JumpRow.Enabled then ApplyJumpValue()end end)local ChatLogOpenBtn=Instance.new("TextButton")ChatLogOpenBtn.Name="ChatLogMechanicButton"ChatLogOpenBtn.Size=UDim2.new(1,-30,0,42)ChatLogOpenBtn.Position=UDim2.new(0,15,0,245)ChatLogOpenBtn.BackgroundColor3=Color3.fromRGB(20,105,180)ChatLogOpenBtn.Text="💬 OPEN CHAT LOG"ChatLogOpenBtn.TextColor3=Color3.new(1,1,1)ChatLogOpenBtn.Font=Enum.Font.GothamBold ChatLogOpenBtn.TextSize=15 ChatLogOpenBtn.Parent=Frame Instance.new("UICorner",ChatLogOpenBtn).CornerRadius=UDim.new(0,8)AddRainbowGlow(ChatLogOpenBtn,2)ChatLogOpenBtn.MouseButton1Click:Connect(function() if ChatUI and ChatUI.Parent then ChatUI.Enabled=true end end)
@@ -268,7 +296,7 @@ local HttpService=game:GetService("HttpService")
 -- Optional trusted HTTPS endpoint: POST JSON {text="...", targetLanguage="English"}; return {translatedText="..."} or {translation="..."}.
 -- If left blank, the script tries the unofficial Google Translate endpoint; this may be blocked or rate-limited by some executors/networks.
 local HttpService = game:GetService("HttpService")
-local TRANSLATION_ENDPOINT = (type(getgenv().BlueMode_TranslationEndpoint)=="string" and getgenv().BlueMode_TranslationEndpoint) or ""
+local TRANSLATION_ENDPOINT = (type(getgenv().BlueMode_TranslationEndpoint)=="string" and getgenv().BlueMode_TranslationEndpoint ~= "" and getgenv().BlueMode_TranslationEndpoint) or "https://full-language.onrender.com/translate"
 local ChatConnections={}
 local SeenChatKeys={}
 -- Keep chat history in the executor environment so hiding/reopening or reloading the GUI can restore it during this client session.
@@ -358,7 +386,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 UserInputService.InputEnded:Connect(function(input)
  if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then ChatDragStart=nil;ChatStartPos=nil end
-end) local ChatLogBox=Instance.new("ScrollingFrame")ChatLogBox.Name="ChatLogBox"ChatLogBox.Size=UDim2.new(1,-24,0,375)ChatLogBox.Position=UDim2.new(0,12,0,42)ChatLogBox.BackgroundColor3=Color3.fromRGB(12,18,30)ChatLogBox.BorderSizePixel=0 ChatLogBox.ScrollBarThickness=5 ChatLogBox.CanvasSize=UDim2.new(0,0,0,0)ChatLogBox.AutomaticCanvasSize=Enum.AutomaticSize.Y ChatLogBox.ScrollingDirection=Enum.ScrollingDirection.Y ChatLogBox.Parent=ChatFrame Instance.new("UICorner",ChatLogBox).CornerRadius=UDim.new(0,8)AddRainbowGlow(ChatLogBox,2)local ChatListLayout=Instance.new("UIListLayout")ChatListLayout.Padding=UDim.new(0,5)ChatListLayout.SortOrder=Enum.SortOrder.LayoutOrder ChatListLayout.Parent=ChatLogBox local ChatListPadding=Instance.new("UIPadding")ChatListPadding.PaddingTop=UDim.new(0,6)ChatListPadding.PaddingBottom=UDim.new(0,6)ChatListPadding.PaddingLeft=UDim.new(0,6)ChatListPadding.PaddingRight=UDim.new(0,6)ChatListPadding.Parent=ChatLogBox
+end) local ChatLogBox=Instance.new("ScrollingFrame")ChatLogBox.Name="ChatLogBox"ChatLogBox.Size=UDim2.new(1,-24,0,330)ChatLogBox.Position=UDim2.new(0,12,0,42)ChatLogBox.BackgroundColor3=Color3.fromRGB(12,18,30)ChatLogBox.BorderSizePixel=0 ChatLogBox.ScrollBarThickness=5 ChatLogBox.CanvasSize=UDim2.new(0,0,0,0)ChatLogBox.AutomaticCanvasSize=Enum.AutomaticSize.Y ChatLogBox.ScrollingDirection=Enum.ScrollingDirection.Y ChatLogBox.Parent=ChatFrame Instance.new("UICorner",ChatLogBox).CornerRadius=UDim.new(0,8)AddRainbowGlow(ChatLogBox,2)local ChatListLayout=Instance.new("UIListLayout")ChatListLayout.Padding=UDim.new(0,5)ChatListLayout.SortOrder=Enum.SortOrder.LayoutOrder ChatListLayout.Parent=ChatLogBox local ChatListPadding=Instance.new("UIPadding")ChatListPadding.PaddingTop=UDim.new(0,6)ChatListPadding.PaddingBottom=UDim.new(0,6)ChatListPadding.PaddingLeft=UDim.new(0,6)ChatListPadding.PaddingRight=UDim.new(0,6)ChatListPadding.Parent=ChatLogBox
 local ChatInput=Instance.new("TextBox")
 ChatInput.Name="ChatInput"
 ChatInput.Size=UDim2.new(1,-112,0,38)
@@ -472,36 +500,115 @@ ChatArchiveButton.Font=Enum.Font.GothamBold
 ChatArchiveButton.TextSize=12
 ChatArchiveButton.Parent=ChatFrame
 Instance.new("UICorner",ChatArchiveButton).CornerRadius=UDim.new(0,7)
+local WakeTranslatorButton=Instance.new("TextButton")
+WakeTranslatorButton.Name="WakeTranslatorButton"
+WakeTranslatorButton.Size=UDim2.new(0,250,0,32)
+WakeTranslatorButton.Position=UDim2.new(0,170,1,-52)
+WakeTranslatorButton.BackgroundColor3=Color3.fromRGB(30,115,80)
+WakeTranslatorButton.Text="🌐 WAKE THE TRANSLATOR WITH THIS LINK"
+WakeTranslatorButton.TextColor3=Color3.new(1,1,1)
+WakeTranslatorButton.Font=Enum.Font.GothamBold
+WakeTranslatorButton.TextSize=10
+WakeTranslatorButton.TextWrapped=true
+WakeTranslatorButton.Parent=ChatFrame
+Instance.new("UICorner",WakeTranslatorButton).CornerRadius=UDim.new(0,7)
+WakeTranslatorButton.MouseButton1Click:Connect(function()
+ local translatorLink="https://full-language.onrender.com/"
+ local copied=false
+ pcall(function()
+  if type(setclipboard)=="function" then setclipboard(translatorLink) copied=true end
+ end)
+ if copied then
+  WakeTranslatorButton.Text="✓ TRANSLATOR LINK COPIED!"
+ else
+  WakeTranslatorButton.Text="COPY UNAVAILABLE — "..translatorLink
+ end
+ task.delay(2.5,function()
+  if WakeTranslatorButton and WakeTranslatorButton.Parent then
+   WakeTranslatorButton.Text="🌐 WAKE THE TRANSLATOR WITH THIS LINK"
+  end
+ end)
+end)
+-- Four API shortcut buttons in ChatLog. Each copies its endpoint for easy mobile access.
+local ApiShortcutSpecs={
+ {name="APIHealthButton",label="HEALTH",url="https://full-language.onrender.com/health",color=Color3.fromRGB(30,115,80)},
+ {name="APITranslateButton",label="TRANSLATE (POST)",url="https://full-language.onrender.com/translate",color=Color3.fromRGB(35,95,160)},
+ {name="APIDebugButton",label="DEBUG VERSION",url="https://full-language.onrender.com/debug-version",color=Color3.fromRGB(110,75,155)},
+ {name="APILanguagesButton",label="LANGUAGES",url="https://full-language.onrender.com/languages",color=Color3.fromRGB(145,90,35)}
+}
+for i,spec in ipairs(ApiShortcutSpecs) do
+ local button=Instance.new("TextButton")
+ button.Name=spec.name
+ button.Size=UDim2.new(0.25,-5,0,28)
+ button.Position=UDim2.new((i-1)*0.25,12+(i-1)*2,0,378)
+ button.BackgroundColor3=spec.color
+ button.Text=spec.label
+ button.TextColor3=Color3.new(1,1,1)
+ button.Font=Enum.Font.GothamBold
+ button.TextSize=9
+ button.TextWrapped=true
+ button.Parent=ChatFrame
+ Instance.new("UICorner",button).CornerRadius=UDim.new(0,6)
+ button.MouseButton1Click:Connect(function()
+  local copied=false
+  pcall(function()
+   local copyFn=setclipboard or toclipboard
+   if type(copyFn)=="function" then copyFn(spec.url);copied=true end
+  end)
+  local oldText=spec.label
+  button.Text=copied and "COPIED!" or "CLIPBOARD UNAVAILABLE"
+  task.delay(1.8,function()
+   if button and button.Parent then button.Text=oldText end
+  end)
+ end)
+end
 local function TranslateText(text,targetLanguage)
  local req=request or http_request or (syn and syn.request)
  if type(req)~="function" then return nil,"Executor HTTP request is unavailable" end
- local response
- if TRANSLATION_ENDPOINT~="" then
-  local ok,result=pcall(req,{Url=TRANSLATION_ENDPOINT,Method="POST",Headers={["Content-Type"]="application/json"},Body=HttpService:JSONEncode({text=text,targetLanguage=targetLanguage})})
-  if not ok or not result then return nil,"Translation request failed" end
-  response=result
-  local code=tonumber(response.StatusCode or response.Status or 0)
-  if code<200 or code>=300 then return nil,"Translation backend HTTP "..tostring(code) end
-  local decodedOk,data=pcall(function() return HttpService:JSONDecode(response.Body or "") end)
-  if not decodedOk or type(data)~="table" then return nil,"Invalid translation response" end
-  local resultText=data.translatedText or data.translation or data.text
-  if type(resultText)~="string" or resultText=="" then return nil,"No translated text returned" end
-  return resultText,nil,(data.detectedLanguage or data.sourceLanguage or data.detected_language)
+ text=tostring(text or "")
+ targetLanguage=tostring(targetLanguage or "English")
+ local backendError="Translation backend unavailable"
+ if type(TRANSLATION_ENDPOINT)=="string" and TRANSLATION_ENDPOINT~="" then
+  -- Send common field aliases so the API can accept either camelCase or snake_case.
+  local payload={text=text,targetLanguage=targetLanguage,target_language=targetLanguage,target=targetLanguage,sourceLanguage="auto",source_language="auto",source="auto"}
+  local requestOk,response=pcall(req,{Url=TRANSLATION_ENDPOINT,Method="POST",Headers={ ["Content-Type"]="application/json", ["Accept"]="application/json" },Body=HttpService:JSONEncode(payload)})
+  if requestOk and type(response)=="table" then
+   local status=tonumber(response.StatusCode or response.Status or 0)
+   if status>=200 and status<300 then
+    local decodedOk,data=pcall(function() return HttpService:JSONDecode(response.Body or "") end)
+    if decodedOk and type(data)=="table" and data.ok~=false then
+     local resultText=data.translatedText or data.translated_text or data.translation or data.translated or data.result
+     if type(resultText)=="table" then resultText=resultText.text or resultText.translation end
+     if type(resultText)=="string" and resultText~="" then
+      return resultText,nil,(data.detectedLanguage or data.sourceLanguage or data.detected_language or data.source_language)
+     end
+     backendError=tostring(data.error or "Backend response did not contain translated text")
+    elseif decodedOk and type(data)=="table" then
+     backendError=tostring(data.error or "Backend returned ok=false")
+    else
+     backendError="Invalid translation response"
+    end
+   else
+    backendError="Translation backend HTTP "..tostring(status)
+   end
+  else
+   backendError="Translation request failed"
+  end
  end
- -- Fallback translation endpoint. This public endpoint is unofficial and may be rate-limited.
+ -- Fallback to the public translate endpoint if the configured backend fails or rejects the payload.
  local codes={English="en",Spanish="es",French="fr",German="de",Japanese="ja",Korean="ko",Chinese="zh-CN",Filipino="tl",Portuguese="pt",Arabic="ar",Hindi="hi",Russian="ru",Italian="it",Dutch="nl",Indonesian="id",Vietnamese="vi",Thai="th",Turkish="tr",Ukrainian="uk",Polish="pl",Greek="el",Hebrew="iw",Malay="ms",Swahili="sw",Bengali="bn",Urdu="ur",Tamil="ta",Telugu="te",Marathi="mr",Punjabi="pa",Romanian="ro",Czech="cs",Hungarian="hu",Swedish="sv",Norwegian="no",Danish="da",Finnish="fi",Persian="fa",Nepali="ne",Gujarati="gu",Kannada="kn",Malayalam="ml",Serbian="sr",Croatian="hr",Slovak="sk",Bulgarian="bg",Lithuanian="lt",Latvian="lv",Estonian="et"}
  local code=codes[targetLanguage] or "en"
- local url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl="..code.."&dt=t&q="..HttpService:UrlEncode(tostring(text))
- local ok,result=pcall(req,{Url=url,Method="GET"})
- if not ok or not result then return nil,"Translation request failed" end
- local status=tonumber(result.StatusCode or result.Status or 0)
- if status<200 or status>=300 then return nil,"Translation service HTTP "..tostring(status) end
- local decodedOk,data=pcall(function() return HttpService:JSONDecode(result.Body or "") end)
- if not decodedOk or type(data)~="table" or type(data[1])~="table" then return nil,"Invalid translation response" end
+ local url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl="..code.."&dt=t&q="..HttpService:UrlEncode(text)
+ local fallbackOk,fallbackResponse=pcall(req,{Url=url,Method="GET",Headers={ ["Accept"]="application/json" }})
+ if not fallbackOk or type(fallbackResponse)~="table" then return nil,backendError.."; fallback request failed" end
+ local fallbackStatus=tonumber(fallbackResponse.StatusCode or fallbackResponse.Status or 0)
+ if fallbackStatus<200 or fallbackStatus>=300 then return nil,backendError.."; fallback HTTP "..tostring(fallbackStatus) end
+ local decodedOk,data=pcall(function() return HttpService:JSONDecode(fallbackResponse.Body or "") end)
+ if not decodedOk or type(data)~="table" or type(data[1])~="table" then return nil,backendError.."; fallback response invalid" end
  local parts={}
  for _,segment in ipairs(data[1]) do if type(segment)=="table" and type(segment[1])=="string" then table.insert(parts,segment[1]) end end
  local translated=table.concat(parts)
- if translated=="" then return nil,"No translated text returned" end
+ if translated=="" then return nil,backendError.."; fallback returned no text" end
  return translated,nil,data[3]
 end
 -- Forward declaration so send errors can be shown in the Chat Log even though the
@@ -622,7 +729,7 @@ local MessageLine,msgH=makeWrappedLabel("Translated: "..message,Enum.Font.Gotham
 local originalText="Original: "..tostring(originalMessage or message)
 local OriginalLine,origH=makeWrappedLabel(originalText,Enum.Font.Gotham,12,4+lineH+3+msgH+3,Color3.fromRGB(255,255,255))
 Entry.Size=UDim2.new(1,-4,0,4+lineH+3+msgH+3+origH+5)
-Entry.MouseButton1Click:Connect(function()OpenChatMessageInfo({username=username,displayName=displayName,message=message,originalMessage=originalMessage or message,userId=userId,time=timeText,sourceLanguage=sourceLanguage})end)local entries={}for _,child in ipairs(ChatLogBox:GetChildren())do if child.Name=="ChatEntry"then table.insert(entries,child)end end if#entries>100 then entries[1]:Destroy()end task.defer(function()if ChatLogBox.Parent then ChatLogBox.CanvasPosition=Vector2.new(0,math.max(0,ChatLogBox.AbsoluteCanvasSize.Y))end end)end
+Entry.MouseButton1Click:Connect(function()OpenChatMessageInfo({username=username,displayName=displayName,message=message,originalMessage=originalMessage or message,userId=userId,time=timeText,sourceLanguage=sourceLanguage})end)local entries={}for _,child in ipairs(ChatLogBox:GetChildren())do if child.Name=="ChatEntry"then table.insert(entries,child)end end if#entries>100 then entries[1]:Destroy()end task.defer(function()if ChatLogBox.Parent then ChatLogBox.CanvasPosition=Vector2.new(0,math.max(0,ChatLogBox.AbsoluteCanvasSize.Y))end end) return Entry end
 -- ChatLog archive slots: named snapshots with a separate read-only viewer.
 local CHAT_ARCHIVE_FOLDER="BlueModeChatArchive/"
 local ChatArchiveManager, ChatArchiveViewer
@@ -720,21 +827,49 @@ for _,saved in ipairs(SharedChatHistory) do
 end
 IsRestoringChatHistory=false
 local function HandleIncomingChat(username,displayName,message,userId)
- if not message or tostring(message)=="" then return end
+ if message==nil or tostring(message)=="" then return end
  local original=tostring(message)
+ -- Show the received Roblox message immediately. Translation must never block chat display.
+ local entry=AddChatEntry(username,displayName,"Translating...",userId,nil,nil,original)
+ if not entry then return end
+ local historyRecord=nil
+ for i=#SharedChatHistory,1,-1 do
+  local item=SharedChatHistory[i]
+  if item and tostring(item.userId or item.username)==tostring(userId or username)
+    and tostring(item.originalMessage or item.message)==original then
+   historyRecord=item
+   break
+  end
+ end
  task.spawn(function()
-  local translated,err,detectedCode=TranslateText(original,"English")
+  local ok,translated,err,detectedCode=pcall(function()
+   local value,why,code=TranslateText(original,"English")
+   return value,why,code
+  end)
+  if not ok then err=translated; translated=nil; detectedCode=nil end
   local detectedLanguage=nil
   if type(detectedCode)=="string" then
    local codeNames={en="English",es="Spanish",fr="French",de="German",ja="Japanese",ko="Korean",["zh-CN"]="Chinese",zh="Chinese",tl="Filipino",fil="Filipino",pt="Portuguese",ar="Arabic",hi="Hindi",ru="Russian",it="Italian",nl="Dutch",id="Indonesian",vi="Vietnamese",th="Thai",tr="Turkish",uk="Ukrainian",pl="Polish",el="Greek",iw="Hebrew",he="Hebrew",ms="Malay",sw="Swahili",bn="Bengali",ur="Urdu",ta="Tamil",te="Telugu",mr="Marathi",pa="Punjabi",ro="Romanian",cs="Czech",hu="Hungarian",sv="Swedish",no="Norwegian",da="Danish",fi="Finnish",fa="Persian",ne="Nepali",gu="Gujarati",kn="Kannada",ml="Malayalam",sr="Serbian",hr="Croatian",sk="Slovak",bg="Bulgarian",lt="Lithuanian",lv="Latvian",et="Estonian"}
    detectedLanguage=codeNames[detectedCode] or codeNames[string.lower(detectedCode)]
   end
-  if translated and translated~="" then
-   AddChatEntry(username,displayName,translated,userId,nil,detectedLanguage,original)
+  local displayText
+  if translated and tostring(translated)~="" then
+   displayText=tostring(translated)
   else
-   -- Keep the original visible if the translation service is unavailable; do not pretend it was translated.
-   AddChatEntry(username,displayName,"[English translation unavailable]",userId,nil,nil,original)
+   displayText="[English translation unavailable] "..original
    warn("[BLUE MODE CHAT] Incoming translation failed: "..tostring(err))
+  end
+  if entry and entry.Parent then
+   for _,child in ipairs(entry:GetChildren()) do
+    if child:IsA("TextLabel") and child.Text:sub(1,11)=="Translated:" then
+     child.Text="Translated: "..displayText
+    end
+   end
+  end
+  if historyRecord then
+   historyRecord.message=displayText
+   historyRecord.originalMessage=original
+   historyRecord.sourceLanguage=detectedLanguage
   end
  end)
 end
