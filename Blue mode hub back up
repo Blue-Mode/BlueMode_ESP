@@ -1,7 +1,7 @@
 --[[ BLUE MODE HUB © 2026 | Version 91.8 | Credit: Blue Mode / Dwaynekean
 Copyright © 2026 Blue Mode / Dwaynekean. All rights reserved to the applicable copyright holder.
 This notice does not override third-party licenses or establish ownership of code owned by others. ]]
-if getgenv().BlueMode_Loaded then return end getgenv().BlueMode_Loaded=true local Players=game:GetService("Players")local RunService=game:GetService("RunService")local UserInputService=game:GetService("UserInputService")local SoundService=game:GetService("SoundService")local CoreGui=game:GetService("CoreGui")local LocalPlayer=Players.LocalPlayer local TeleportService=game:GetService("TeleportService")CUSTOM_GUI_BG="rbxassetid://101782008402770"PRIORITY={STARTUP=800,MAIN=799,BOOMBOX=798,CONSOLE=797,EXIT_POPUP=9999}YOUTUBE_LINK="https://bluemodehub.carrd.co/"SAVE_KEY_VOLUME="BlueMode_Volume_v22"SAVE_KEY_SPEED="BlueMode_Speed_v1"SAVE_KEY_JUMP="BlueMode_Jump_v1"SAVE_KEY_SPEED_ENABLED="BlueMode_SpeedEnabled_v1"SAVE_KEY_JUMP_ENABLED="BlueMode_JumpEnabled_v1"VOLUME_MAX=1000 OWNER_USERID=10820455655 GuiContainer=Instance.new("Folder")GuiContainer.Name="BLUE_MODE_HUB_ROOT"GuiContainer.Parent=CoreGui BoomboxUI_Open=false ConsoleUI_Open=false CurrentBoomboxUI=nil CurrentConsoleUI=nil CurrentMovementUI=nil IsMinimized=false GuiFocused=false GuiElements={}local function SaveData(key,value)pcall(function()writefile(key..".txt",tostring(value))end)end local function LoadData(key,default)local v=nil pcall(function()v=readfile(key..".txt")end)return tonumber(v)or default end local function LoadBoolData(key,default)local v=nil pcall(function()v=readfile(key..".txt")end)if v=="true"then return true end if v=="false"then return false end return default end local function AddRainbowGlow(target,thickness)if not target then return end local Outline=Instance.new("UIStroke")Outline.Name="RainbowAura"Outline.Thickness=thickness or 3 Outline.Transparency=0 Outline.LineJoinMode=Enum.LineJoinMode.Round Outline.Parent=target table.insert(GuiElements,Outline)end local function ShowExitConfirm(OnConfirm)local PopupUI=Instance.new("ScreenGui")PopupUI.Name="BLUE_MODE_EXIT_CONFIRM"PopupUI.ResetOnSpawn=false PopupUI.DisplayOrder=PRIORITY.EXIT_POPUP PopupUI.ZIndexBehavior=Enum.ZIndexBehavior.Sibling PopupUI.Parent=GuiContainer local Popup=Instance.new("Frame")Popup.Size=UDim2.new(0,360,0,200)Popup.Position=UDim2.new(0.5,-180,0.5,-100)Popup.BackgroundColor3=Color3.fromRGB(15,15,25)Popup.Active=true Popup.Parent=PopupUI Instance.new("UICorner",Popup).CornerRadius=UDim.new(0,16)local PopupBg=Instance.new("ImageLabel")PopupBg.Size=UDim2.new(1,0,1,0)PopupBg.Position=UDim2.new(0,0,0,0)PopupBg.BackgroundTransparency=1 PopupBg.Image=CUSTOM_GUI_BG PopupBg.ScaleType=Enum.ScaleType.Stretch PopupBg.ZIndex=1 PopupBg.Parent=Popup AddRainbowGlow(Popup,4)local PopupTitle=Instance.new("TextLabel")PopupTitle.Size=UDim2.new(1,-20,0,45)PopupTitle.Position=UDim2.new(0,10,0,15)PopupTitle.BackgroundTransparency=1 PopupTitle.Font=Enum.Font.GothamBold PopupTitle.TextScaled=true PopupTitle.Text="⚠️ EXIT CONFIRM"PopupTitle.TextColor3=Color3.new(1,1,1)PopupTitle.ZIndex=2 PopupTitle.Parent=Popup local PopupText=Instance.new("TextLabel")PopupText.Size=UDim2.new(1,-30,0,40)PopupText.Position=UDim2.new(0,15,0,70)PopupText.BackgroundTransparency=1 PopupText.Font=Enum.Font.Gotham PopupText.TextScaled=true PopupText.Text="Close Blue Mode Hub?"PopupText.TextColor3=Color3.fromRGB(230,230,230)PopupText.ZIndex=2 PopupText.Parent=Popup local YesBtn=Instance.new("TextButton")YesBtn.Size=UDim2.new(0,140,0,50)YesBtn.Position=UDim2.new(0,25,0,130)YesBtn.BackgroundColor3=Color3.fromRGB(220,40,40)YesBtn.Font=Enum.Font.GothamBold YesBtn.TextScaled=true YesBtn.Text="✅ YES EXIT"YesBtn.TextColor3=Color3.new(1,1,1)YesBtn.ZIndex=2 YesBtn.Parent=Popup Instance.new("UICorner",YesBtn).CornerRadius=UDim.new(0,12)AddRainbowGlow(YesBtn,3)local NoBtn=Instance.new("TextButton")NoBtn.Size=UDim2.new(0,140,0,50)NoBtn.Position=UDim2.new(1,-165,0,130)NoBtn.BackgroundColor3=Color3.fromRGB(30,150,220)NoBtn.Font=Enum.Font.GothamBold NoBtn.TextScaled=true NoBtn.Text="❌ NO STAY"NoBtn.TextColor3=Color3.new(1,1,1)NoBtn.ZIndex=2 NoBtn.Parent=Popup Instance.new("UICorner",NoBtn).CornerRadius=UDim.new(0,12)AddRainbowGlow(NoBtn,3)YesBtn.MouseButton1Click:Connect(function()PopupUI:Destroy()OnConfirm()end)NoBtn.MouseButton1Click:Connect(function()PopupUI:Destroy()end)end local StartupUI=Instance.new("ScreenGui")StartupUI.Name="BLUE_MODE_HUB_STARTUP"StartupUI.ResetOnSpawn=false StartupUI.DisplayOrder=PRIORITY.STARTUP StartupUI.ZIndexBehavior=Enum.ZIndexBehavior.Sibling StartupUI.Parent=GuiContainer local StartupBox=Instance.new("Frame")StartupBox.Size=UDim2.new(0,420,0,420)StartupBox.Position=UDim2.new(0.5,-210,0.5,-210)StartupBox.BackgroundColor3=Color3.fromRGB(10,12,18)StartupBox.Active=true StartupBox.Parent=StartupUI Instance.new("UICorner",StartupBox).CornerRadius=UDim.new(0,18)local StartupGuiBg=Instance.new("ImageLabel")StartupGuiBg.Size=UDim2.new(1,0,1,0)StartupGuiBg.Position=UDim2.new(0,0,0,0)StartupGuiBg.BackgroundTransparency=1 StartupGuiBg.Image=CUSTOM_GUI_BG StartupGuiBg.ScaleType=Enum.ScaleType.Stretch StartupGuiBg.ZIndex=1 StartupGuiBg.Parent=StartupBox local StartupBorder=Instance.new("UIStroke")StartupBorder.Thickness=5 StartupBorder.LineJoinMode=Enum.LineJoinMode.Round StartupBorder.ZIndex=3 StartupBorder.Parent=StartupBox local StartupTitle=Instance.new("TextLabel")StartupTitle.Size=UDim2.new(1,-40,0,50)StartupTitle.Position=UDim2.new(0,20,0,15)StartupTitle.BackgroundTransparency=1 StartupTitle.Font=Enum.Font.GothamBlack StartupTitle.TextScaled=true StartupTitle.Text="🔵 BLUE MODE HUB"StartupTitle.TextColor3=Color3.fromRGB(0,190,255)StartupTitle.ZIndex=2 StartupTitle.Parent=StartupBox local UpdateHeader=Instance.new("TextLabel")UpdateHeader.Size=UDim2.new(1,-40,0,35)UpdateHeader.Position=UDim2.new(0,20,0,75)UpdateHeader.BackgroundTransparency=1 UpdateHeader.Font=Enum.Font.GothamBold UpdateHeader.TextScaled=true UpdateHeader.Text="📋 LATEST UPDATES:"UpdateHeader.TextColor3=Color3.new(1,1,1)UpdateHeader.ZIndex=2 UpdateHeader.Parent=StartupBox local UpdateList=Instance.new("TextLabel")UpdateList.Size=UDim2.new(1,-50,0,180)UpdateList.Position=UDim2.new(0,25,0,115)UpdateList.BackgroundTransparency=1 UpdateList.Font=Enum.Font.Gotham UpdateList.TextScaled=true UpdateList.TextWrapped=true UpdateList.TextXAlignment=Enum.TextXAlignment.Left UpdateList.TextYAlignment=Enum.TextYAlignment.Top UpdateList.TextColor3=Color3.fromRGB(220,220,220)UpdateList.ZIndex=2 UpdateList.Text=[[• ✅ VOLUME BYPASSES ROBLOX MASTER VOLUME
+if getgenv().BlueMode_Loaded then return end getgenv().BlueMode_Loaded=true local Players=game:GetService("Players") local StarterGui=game:GetService("StarterGui") local Workspace=game:GetService("Workspace")local RunService=game:GetService("RunService")local UserInputService=game:GetService("UserInputService")local SoundService=game:GetService("SoundService")local CoreGui=game:GetService("CoreGui")local LocalPlayer=Players.LocalPlayer local TeleportService=game:GetService("TeleportService")CUSTOM_GUI_BG="rbxassetid://101782008402770"PRIORITY={STARTUP=800,MAIN=799,BOOMBOX=798,CONSOLE=797,EXIT_POPUP=9999}YOUTUBE_LINK="https://bluemodehub.carrd.co/"SAVE_KEY_VOLUME="BlueMode_Volume_v22"SAVE_KEY_SPEED="BlueMode_Speed_v1"SAVE_KEY_JUMP="BlueMode_Jump_v1"SAVE_KEY_SPEED_ENABLED="BlueMode_SpeedEnabled_v1"SAVE_KEY_JUMP_ENABLED="BlueMode_JumpEnabled_v1"VOLUME_MAX=1000 OWNER_USERID=10820455655 GuiContainer=Instance.new("Folder")GuiContainer.Name="BLUE_MODE_HUB_ROOT"GuiContainer.Parent=CoreGui BoomboxUI_Open=false ConsoleUI_Open=false CurrentBoomboxUI=nil CurrentConsoleUI=nil CurrentMovementUI=nil IsMinimized=false GuiFocused=false GuiElements={}local function SaveData(key,value)pcall(function()writefile(key..".txt",tostring(value))end)end local function LoadData(key,default)local v=nil pcall(function()v=readfile(key..".txt")end)return tonumber(v)or default end local function LoadBoolData(key,default)local v=nil pcall(function()v=readfile(key..".txt")end)if v=="true"then return true end if v=="false"then return false end return default end local function AddRainbowGlow(target,thickness)if not target then return end local Outline=Instance.new("UIStroke")Outline.Name="RainbowAura"Outline.Thickness=thickness or 3 Outline.Transparency=0 Outline.LineJoinMode=Enum.LineJoinMode.Round Outline.Parent=target table.insert(GuiElements,Outline)end local function ShowExitConfirm(OnConfirm)local PopupUI=Instance.new("ScreenGui")PopupUI.Name="BLUE_MODE_EXIT_CONFIRM"PopupUI.ResetOnSpawn=false PopupUI.DisplayOrder=PRIORITY.EXIT_POPUP PopupUI.ZIndexBehavior=Enum.ZIndexBehavior.Sibling PopupUI.Parent=GuiContainer local Popup=Instance.new("Frame")Popup.Size=UDim2.new(0,360,0,200)Popup.Position=UDim2.new(0.5,-180,0.5,-100)Popup.BackgroundColor3=Color3.fromRGB(15,15,25)Popup.Active=true Popup.Parent=PopupUI Instance.new("UICorner",Popup).CornerRadius=UDim.new(0,16)local PopupBg=Instance.new("ImageLabel")PopupBg.Size=UDim2.new(1,0,1,0)PopupBg.Position=UDim2.new(0,0,0,0)PopupBg.BackgroundTransparency=1 PopupBg.Image=CUSTOM_GUI_BG PopupBg.ScaleType=Enum.ScaleType.Stretch PopupBg.ZIndex=1 PopupBg.Parent=Popup AddRainbowGlow(Popup,4)local PopupTitle=Instance.new("TextLabel")PopupTitle.Size=UDim2.new(1,-20,0,45)PopupTitle.Position=UDim2.new(0,10,0,15)PopupTitle.BackgroundTransparency=1 PopupTitle.Font=Enum.Font.GothamBold PopupTitle.TextScaled=true PopupTitle.Text="⚠️ EXIT CONFIRM"PopupTitle.TextColor3=Color3.new(1,1,1)PopupTitle.ZIndex=2 PopupTitle.Parent=Popup local PopupText=Instance.new("TextLabel")PopupText.Size=UDim2.new(1,-30,0,40)PopupText.Position=UDim2.new(0,15,0,70)PopupText.BackgroundTransparency=1 PopupText.Font=Enum.Font.Gotham PopupText.TextScaled=true PopupText.Text="Close Blue Mode Hub?"PopupText.TextColor3=Color3.fromRGB(230,230,230)PopupText.ZIndex=2 PopupText.Parent=Popup local YesBtn=Instance.new("TextButton")YesBtn.Size=UDim2.new(0,140,0,50)YesBtn.Position=UDim2.new(0,25,0,130)YesBtn.BackgroundColor3=Color3.fromRGB(220,40,40)YesBtn.Font=Enum.Font.GothamBold YesBtn.TextScaled=true YesBtn.Text="✅ YES EXIT"YesBtn.TextColor3=Color3.new(1,1,1)YesBtn.ZIndex=2 YesBtn.Parent=Popup Instance.new("UICorner",YesBtn).CornerRadius=UDim.new(0,12)AddRainbowGlow(YesBtn,3)local NoBtn=Instance.new("TextButton")NoBtn.Size=UDim2.new(0,140,0,50)NoBtn.Position=UDim2.new(1,-165,0,130)NoBtn.BackgroundColor3=Color3.fromRGB(30,150,220)NoBtn.Font=Enum.Font.GothamBold NoBtn.TextScaled=true NoBtn.Text="❌ NO STAY"NoBtn.TextColor3=Color3.new(1,1,1)NoBtn.ZIndex=2 NoBtn.Parent=Popup Instance.new("UICorner",NoBtn).CornerRadius=UDim.new(0,12)AddRainbowGlow(NoBtn,3)YesBtn.MouseButton1Click:Connect(function()PopupUI:Destroy()OnConfirm()end)NoBtn.MouseButton1Click:Connect(function()PopupUI:Destroy()end)end local StartupUI=Instance.new("ScreenGui")StartupUI.Name="BLUE_MODE_HUB_STARTUP"StartupUI.ResetOnSpawn=false StartupUI.DisplayOrder=PRIORITY.STARTUP StartupUI.ZIndexBehavior=Enum.ZIndexBehavior.Sibling StartupUI.Parent=GuiContainer local StartupBox=Instance.new("Frame")StartupBox.Size=UDim2.new(0,420,0,420)StartupBox.Position=UDim2.new(0.5,-210,0.5,-210)StartupBox.BackgroundColor3=Color3.fromRGB(10,12,18)StartupBox.Active=true StartupBox.Parent=StartupUI Instance.new("UICorner",StartupBox).CornerRadius=UDim.new(0,18)local StartupGuiBg=Instance.new("ImageLabel")StartupGuiBg.Size=UDim2.new(1,0,1,0)StartupGuiBg.Position=UDim2.new(0,0,0,0)StartupGuiBg.BackgroundTransparency=1 StartupGuiBg.Image=CUSTOM_GUI_BG StartupGuiBg.ScaleType=Enum.ScaleType.Stretch StartupGuiBg.ZIndex=1 StartupGuiBg.Parent=StartupBox local StartupBorder=Instance.new("UIStroke")StartupBorder.Thickness=5 StartupBorder.LineJoinMode=Enum.LineJoinMode.Round StartupBorder.ZIndex=3 StartupBorder.Parent=StartupBox local StartupTitle=Instance.new("TextLabel")StartupTitle.Size=UDim2.new(1,-40,0,50)StartupTitle.Position=UDim2.new(0,20,0,15)StartupTitle.BackgroundTransparency=1 StartupTitle.Font=Enum.Font.GothamBlack StartupTitle.TextScaled=true StartupTitle.Text="🔵 BLUE MODE HUB"StartupTitle.TextColor3=Color3.fromRGB(0,190,255)StartupTitle.ZIndex=2 StartupTitle.Parent=StartupBox local UpdateHeader=Instance.new("TextLabel")UpdateHeader.Size=UDim2.new(1,-40,0,35)UpdateHeader.Position=UDim2.new(0,20,0,75)UpdateHeader.BackgroundTransparency=1 UpdateHeader.Font=Enum.Font.GothamBold UpdateHeader.TextScaled=true UpdateHeader.Text="📋 LATEST UPDATES:"UpdateHeader.TextColor3=Color3.new(1,1,1)UpdateHeader.ZIndex=2 UpdateHeader.Parent=StartupBox local UpdateList=Instance.new("TextLabel")UpdateList.Size=UDim2.new(1,-50,0,180)UpdateList.Position=UDim2.new(0,25,0,115)UpdateList.BackgroundTransparency=1 UpdateList.Font=Enum.Font.Gotham UpdateList.TextScaled=true UpdateList.TextWrapped=true UpdateList.TextXAlignment=Enum.TextXAlignment.Left UpdateList.TextYAlignment=Enum.TextYAlignment.Top UpdateList.TextColor3=Color3.fromRGB(220,220,220)UpdateList.ZIndex=2 UpdateList.Text=[[• ✅ VOLUME BYPASSES ROBLOX MASTER VOLUME
 • ✅ FIXED: NO LAG WHEN ESP IS OFF
 • ✅ VOLUME SAVES PERMANENTLY
 • ✅ NO LONGER BLOCKS ROBLOX MENUS
@@ -99,7 +99,7 @@ local function StartAntiFling()
   pcall(function()
    local velocity=currentRoot.AssemblyLinearVelocity
    local angular=currentRoot.AssemblyAngularVelocity
-   if velocity.Magnitude>60 then
+   if velocity.Magnitude>=60 then
     if AntiFlingSafeCFrame then currentRoot.CFrame=AntiFlingSafeCFrame end
     currentRoot.AssemblyLinearVelocity=Vector3.zero
     currentRoot.AssemblyAngularVelocity=Vector3.zero
@@ -1046,7 +1046,7 @@ end
 local function LoadGhostModules()
  -- The Ghost action buttons only require the invisibility module. Keep the
  -- optional ProtectParentModule load separate so a network/load failure cannot
- -- prevent Turn Invisible or ReSync from working.
+ -- prevent Turn Invisible or Wallwalk from working.
  if not GhostInvisibilityModule then
   local ok,mod=pcall(CreateGhostInvisibilityModule)
   if ok then GhostInvisibilityModule=mod end
@@ -1070,19 +1070,22 @@ Instance.new("UICorner",GhostIcon).CornerRadius=UDim.new(0,4) AddRainbowGlow(Gho
 local GhostUI=Instance.new("ScreenGui")
 GhostUI.Name="BLUE_MODE_HUB_GHOST" GhostUI.ResetOnSpawn=false GhostUI.DisplayOrder=PRIORITY.CONSOLE+2 GhostUI.ZIndexBehavior=Enum.ZIndexBehavior.Sibling GhostUI.Parent=GuiContainer
 local GhostPanel=Instance.new("Frame")
-GhostPanel.Name="GhostControlWindow" GhostPanel.Size=UDim2.new(0,240,0,220) GhostPanel.Position=UDim2.new(0,650,0.5,-110)
+GhostPanel.Name="GhostControlWindow" GhostPanel.Size=UDim2.new(0,240,0,306) GhostPanel.Position=UDim2.new(0,650,0.5,-110)
 GhostPanel.BackgroundColor3=Color3.fromRGB(22,22,30) GhostPanel.Active=true GhostPanel.Visible=false GhostPanel.Parent=GhostUI
 Instance.new("UICorner",GhostPanel).CornerRadius=UDim.new(0,10) AddRainbowGlow(GhostPanel,3)
 local GhostTitle=Instance.new("TextButton") GhostTitle.Name="DragTitle" GhostTitle.Size=UDim2.new(1,-105,0,30) GhostTitle.Position=UDim2.new(0,8,0,5)
-GhostTitle.BackgroundTransparency=1 GhostTitle.Text="👻 GHOST + FREEZE" GhostTitle.TextColor3=Color3.new(1,1,1) GhostTitle.Font=Enum.Font.GothamBold GhostTitle.TextSize=14 GhostTitle.Parent=GhostPanel
+GhostTitle.BackgroundTransparency=1 GhostTitle.Text="👻 GHOST + ANIMATIONS" GhostTitle.TextColor3=Color3.new(1,1,1) GhostTitle.Font=Enum.Font.GothamBold GhostTitle.TextSize=14 GhostTitle.Parent=GhostPanel
 local GhostLockBtn=Instance.new("TextButton") GhostLockBtn.Size=UDim2.new(0,22,0,24) GhostLockBtn.AnchorPoint=Vector2.new(1,0) GhostLockBtn.Position=UDim2.new(1,-62,0,7) GhostLockBtn.Text="🔓" GhostLockBtn.TextSize=12 GhostLockBtn.Parent=GhostPanel
 local GhostMinBtn=Instance.new("TextButton") GhostMinBtn.Size=UDim2.new(0,22,0,24) GhostMinBtn.AnchorPoint=Vector2.new(1,0) GhostMinBtn.Position=UDim2.new(1,-34,0,7) GhostMinBtn.Text="−" GhostMinBtn.Parent=GhostPanel
 local GhostCloseBtn=Instance.new("TextButton") GhostCloseBtn.Size=UDim2.new(0,22,0,24) GhostCloseBtn.Position=UDim2.new(1,-6,0,7) GhostCloseBtn.AnchorPoint=Vector2.new(1,0) GhostCloseBtn.Text="X" GhostCloseBtn.BackgroundColor3=Color3.fromRGB(180,35,35) GhostCloseBtn.TextColor3=Color3.new(1,1,1) GhostCloseBtn.Parent=GhostPanel
 for _,b in ipairs({GhostLockBtn,GhostMinBtn,GhostCloseBtn}) do b.Font=Enum.Font.GothamBold b.TextColor3=Color3.new(1,1,1) b.BackgroundColor3=b==GhostCloseBtn and Color3.fromRGB(180,35,35) or Color3.fromRGB(55,65,80) Instance.new("UICorner",b).CornerRadius=UDim.new(0,5) end
 local GhostToggle=Instance.new("TextButton") GhostToggle.Name="Toggle" GhostToggle.Size=UDim2.new(0,100,0,48) GhostToggle.Position=UDim2.new(0,12,0,48) GhostToggle.BackgroundColor3=Color3.fromRGB(213,23,30) GhostToggle.Text="Turn Invisible" GhostToggle.TextColor3=Color3.new(1,1,1) GhostToggle.TextScaled=true GhostToggle.TextWrapped=true GhostToggle.Font=Enum.Font.GothamBold GhostToggle.Parent=GhostPanel Instance.new("UICorner",GhostToggle).CornerRadius=UDim.new(0,7)
-local GhostReSync=Instance.new("TextButton") GhostReSync.Name="ReSync" GhostReSync.Size=UDim2.new(0,100,0,48) GhostReSync.Position=UDim2.new(1,-12,0,48) GhostReSync.AnchorPoint=Vector2.new(1,0) GhostReSync.BackgroundColor3=Color3.fromRGB(213,23,30) GhostReSync.Text="ReSync" GhostReSync.TextColor3=Color3.new(1,1,1) GhostReSync.TextScaled=true GhostReSync.Font=Enum.Font.GothamBold GhostReSync.Parent=GhostPanel Instance.new("UICorner",GhostReSync).CornerRadius=UDim.new(0,7)
+local GhostWallwalk=Instance.new("TextButton") GhostWallwalk.Name="AnimationGuiButton" GhostWallwalk.Size=UDim2.new(0,100,0,48) GhostWallwalk.Position=UDim2.new(1,-12,0,48) GhostWallwalk.AnchorPoint=Vector2.new(1,0) GhostWallwalk.BackgroundColor3=Color3.fromRGB(75,95,190) GhostWallwalk.Text="ANIMATIONS" GhostWallwalk.TextColor3=Color3.new(1,1,1) GhostWallwalk.TextScaled=true GhostWallwalk.TextWrapped=true GhostWallwalk.Font=Enum.Font.GothamBold GhostWallwalk.Parent=GhostPanel Instance.new("UICorner",GhostWallwalk).CornerRadius=UDim.new(0,7)
+local GhostTelekinesisGui=Instance.new("TextButton") GhostTelekinesisGui.Name="OpenTelekinesisGUI" GhostTelekinesisGui.Size=UDim2.new(1,-24,0,36) GhostTelekinesisGui.Position=UDim2.new(0,12,0,158) GhostTelekinesisGui.BackgroundColor3=Color3.fromRGB(115,70,190) GhostTelekinesisGui.Text="TELEKINESIS GUI" GhostTelekinesisGui.TextColor3=Color3.new(1,1,1) GhostTelekinesisGui.TextScaled=true GhostTelekinesisGui.Font=Enum.Font.GothamBold GhostTelekinesisGui.Parent=GhostPanel Instance.new("UICorner",GhostTelekinesisGui).CornerRadius=UDim.new(0,7)
 local GhostFreeze=Instance.new("TextButton") GhostFreeze.Name="FreezeToggle" GhostFreeze.Size=UDim2.new(1,-24,0,38) GhostFreeze.Position=UDim2.new(0,12,0,112) GhostFreeze.BackgroundColor3=Color3.fromRGB(35,105,175) GhostFreeze.Text="FREEZE: OFF" GhostFreeze.TextColor3=Color3.new(1,1,1) GhostFreeze.TextScaled=true GhostFreeze.Font=Enum.Font.GothamBold GhostFreeze.Parent=GhostPanel Instance.new("UICorner",GhostFreeze).CornerRadius=UDim.new(0,7)
-local function SetGhostActionButtonsVisible(v) GhostToggle.Visible=v GhostReSync.Visible=v GhostFreeze.Visible=v end
+local GhostGiveShooter=Instance.new("TextButton") GhostGiveShooter.Name="GiveShooterItem" GhostGiveShooter.Size=UDim2.new(1,-24,0,36) GhostGiveShooter.Position=UDim2.new(0,12,0,202) GhostGiveShooter.BackgroundColor3=Color3.fromRGB(190,65,45) GhostGiveShooter.Text="GIVE SHOOTER ITEM" GhostGiveShooter.TextColor3=Color3.new(1,1,1) GhostGiveShooter.TextScaled=true GhostGiveShooter.Font=Enum.Font.GothamBold GhostGiveShooter.Parent=GhostPanel Instance.new("UICorner",GhostGiveShooter).CornerRadius=UDim.new(0,7)
+local GhostGiveShotBlock=Instance.new("TextButton") GhostGiveShotBlock.Name="GiveShotBlock" GhostGiveShotBlock.Size=UDim2.new(1,-24,0,34) GhostGiveShotBlock.Position=UDim2.new(0,12,0,242) GhostGiveShotBlock.BackgroundColor3=Color3.fromRGB(135,55,45) GhostGiveShotBlock.Text="GIVE SHOTBLOCK" GhostGiveShotBlock.TextColor3=Color3.new(1,1,1) GhostGiveShotBlock.TextScaled=true GhostGiveShotBlock.Font=Enum.Font.GothamBold GhostGiveShotBlock.Parent=GhostPanel Instance.new("UICorner",GhostGiveShotBlock).CornerRadius=UDim.new(0,7)
+local function SetGhostActionButtonsVisible(v) GhostToggle.Visible=v GhostWallwalk.Visible=v GhostFreeze.Visible=v GhostTelekinesisGui.Visible=v GhostGiveShooter.Visible=v GhostGiveShotBlock.Visible=v end
 local function GhostTurnVisible()
  if GhostInvisibilityModule then pcall(function() GhostInvisibilityModule.TurnVisible() end) end
  GhostIsInvisible=false GhostToggle.Text="Turn Invisible" GhostToggle.BackgroundColor3=Color3.fromRGB(213,23,30)
@@ -1155,48 +1158,1899 @@ GhostToggle.MouseButton1Click:Connect(function()
   end
  end
 end)
-GhostReSync.MouseButton1Click:Connect(function()
- if not LoadGhostModules() then return end
- local character=LocalPlayer.Character
- local root=character and character:FindFirstChild("HumanoidRootPart")
- if not character or not root then return end
+-- Telekinesis tool replaces the old animation button.
+-- Equip the tool, click a part to select it, then use PICK UP, arrows, and UNPICK UP.
+local TelekinesisToolName = "BLUE MODE TELEKINESIS"
+local TelekinesisTool = nil
+local TelekinesisTarget = nil
+local TelekinesisMover = nil
+local TelekinesisRenderConnection = nil
+local TelekinesisMouse = nil
+local TelekinesisDistance = 18
+local TelekinesisStep = 2
+local TelekinesisTargetPosition = nil
+local TelekinesisFollowOffset = Vector3.new(0, 0, 0)
+local TelekinesisControls = nil
+local TelekinesisPanel = nil
+local TelekinesisCollapseButton = nil
+local TelekinesisRestoreButton = nil
+local TelekinesisControlsCollapsed = false
+local TelekinesisPickButton = nil
+local TelekinesisUnpickButton = nil
+local TelekinesisThrowButton = nil
+local TelekinesisThrowMagnetButton = nil
+local TelekinesisThrowAllMagnetButton = nil
+local TelekinesisThrowSphereButton = nil
+local TelekinesisThrowSphereAllButton = nil
+local TelekinesisDirectionButtons = {}
+local TelekinesisForwardButton = nil
+local TelekinesisBackButton = nil
+local TelekinesisMagnetButton = nil
+local TelekinesisUnmagnetButton = nil
+local TelekinesisRainBlocksButton = nil
+local TelekinesisMagnetConnection = nil
+local TelekinesisMagnetAddedConnection = nil
+local TelekinesisMagnetParts = {}
+local TelekinesisMagnetIgnoreUntil = setmetatable({}, {__mode="k"}) -- temporary throw cooldown; does not affect THROW ALL
+local TelekinesisMagnetActive = false
+local TelekinesisEquipped = false
+local TelekinesisGuiMode = false -- lets the GUI work even when the game has no usable inventory/tool bar
+local TelekinesisGuiCloseButton = nil
+-- Glass pickup-zone controller: moving the glass sphere captures loose blocks inside it.
+local TelekinesisGlassSphere = nil
+local TelekinesisGlassMarkers = {}
+local TelekinesisGlassActive = false
+local TelekinesisGlassOffset = Vector3.new(0, 0, 0)
+local TelekinesisGlassBaseOffset = Vector3.new(0, 2, -8) -- fixed world-axis offset; camera is used only when the sphere starts
+local TelekinesisGlassCaptured = {}
+local TelekinesisGlassConnection = nil
+local TelekinesisGlassScanElapsed = 0
+local TelekinesisGlassFallbackScanElapsed = 0
+local TelekinesisGlassRadius = 3
+-- Independent overhead pickup zone.
+local HeadPickupActive=false
+local HeadPickupSphere=nil
+local HeadPickupConnection=nil
+local HeadPickupCaptured={}
+local HeadPickupButton=nil
+local HeadThrowButton=nil
+local HeadThrowAllButton=nil
+local HeadCancelButton=nil
+local TelekinesisRideBlock = nil
+local TelekinesisRideMover = nil
+local TelekinesisRideConnection = nil
+local TelekinesisRideButton = nil
+local TelekinesisCrosshairEnabled = false
+local TelekinesisCrosshair = nil
+local TelekinesisCrosshairButton = nil
+local BlockShooterTool = nil
+local BlockShooterGui = nil
+local BlockShooterShootButton = nil
+local BlockShooterShootAllButton = nil
+local BlockShooterShootAllToggleButton = nil
+local BlockShooterShootAllEnabled = true
+local BlockShooterEquipped = false
+local BlockShooterVisibilityConnection = nil
+local TelekinesisGiveShooterButton = nil
+local ReleaseTelekinesis -- forward declaration used by the world-tap selection handler
 
- -- Resynchronize first. Do not move the whole character into the kill boundary.
- local wasInvisible=GhostIsInvisible
- local ok=pcall(function()
-  return GhostInvisibilityModule.Resynchronize()
- end)
- if not ok then return end
+GhostWallwalk.Text = "GIVE TELEKINESIS"
+GhostWallwalk.BackgroundColor3 = Color3.fromRGB(110, 80, 190)
+GhostTitle.Text = "👻 GHOST + TELEKINESIS"
 
- -- If Ghost mode was active, reapply it at the character's current position.
- -- ReSync must not teleport the character above or below the playable map.
- if wasInvisible then
-  local currentCharacter=LocalPlayer.Character
-  if not currentCharacter then return end
-  local target=currentCharacter:GetPivot()
-  local invisibleOK,result=pcall(function()
-   return GhostInvisibilityModule.TurnInvisible(target)
-  end)
-  if invisibleOK and result==true then
-   GhostIsInvisible=true
-   GhostToggle.Text="Turn Visible"
-   GhostToggle.BackgroundColor3=Color3.fromRGB(35,170,65)
-   -- Stop residual downward motion so the avatar can remain suspended.
-   local currentRoot=currentCharacter:FindFirstChild("HumanoidRootPart")
-   if currentRoot then
-    currentRoot.AssemblyLinearVelocity=Vector3.zero
-    currentRoot.AssemblyAngularVelocity=Vector3.zero
-   end
-  else
-   GhostIsInvisible=false
-   GhostToggle.Text="Turn Invisible"
-   GhostToggle.BackgroundColor3=Color3.fromRGB(213,23,30)
+local function TelekinesisNotice(message)
+ pcall(function() StarterGui:SetCore("SendNotification",{Title="Telekinesis",Text=message,Duration=2}) end)
+end
+
+-- Roblox assemblies cannot have literal zero mass. While a loose block is held,
+-- give every part in its assembly minimum supported density and remember the
+-- original custom physical properties so they can be restored when released.
+local HeldPhysicalPropertyStates=setmetatable({}, {__mode="k"})
+local function MakeAssemblyLight(assembly)
+ if not assembly or not assembly.Parent then return nil end
+ local states={}
+ local parts={assembly}
+ pcall(function() for _,p in ipairs(assembly:GetConnectedParts(true)) do table.insert(parts,p) end end)
+ for _,part in ipairs(parts) do
+  if part and part:IsA("BasePart") and states[part]==nil then
+   states[part]=part.CustomPhysicalProperties
+   local current=part.CurrentPhysicalProperties
+   pcall(function() part.CustomPhysicalProperties=PhysicalProperties.new(0.0001,current.Friction,current.Elasticity,current.FrictionWeight,current.ElasticityWeight) end)
   end
- else
-  GhostToggle.Text="Turn Invisible"
-  GhostToggle.BackgroundColor3=Color3.fromRGB(213,23,30)
+ end
+ HeldPhysicalPropertyStates[assembly]=states
+ return states
+end
+local function RestoreAssemblyMass(assembly, states)
+ states=states or (assembly and HeldPhysicalPropertyStates[assembly])
+ if states then
+  for part,original in pairs(states) do
+   if part and part.Parent then pcall(function() part.CustomPhysicalProperties=original end) end
+  end
+ end
+ if assembly then HeldPhysicalPropertyStates[assembly]=nil end
+end
+
+local function TelekinesisCanControl()
+ return TelekinesisEquipped or TelekinesisGuiMode
+end
+
+-- Aim through the exact crosshair center. If an origin is supplied, aim from
+-- the thrown block toward the point under the reticle to compensate for the
+-- block starting off to the side of the camera.
+local function GetTelekinesisAimDirection(originPosition)
+ local camera = Workspace.CurrentCamera
+ if camera then
+  local tappedRay=_G.__BLUE_MODE_SHOTBLOCK_TAP_RAY
+  if tappedRay and tappedRay.Direction.Magnitude>0 then
+   -- Aim at a point far along the exact tap ray, not just the ray direction;
+   -- this compensates for the block launching from beside/below the camera.
+   local aimPoint=tappedRay.Origin+tappedRay.Direction.Unit*1000
+   if originPosition then
+    local toward=aimPoint-originPosition
+    if toward.Magnitude>0.01 then return toward.Unit end
+   else return tappedRay.Direction.Unit end
+  end
+  local ok, ray = pcall(function()
+   local aimX,aimY
+   if TelekinesisCrosshair and TelekinesisCrosshair.Parent and TelekinesisCrosshair.Visible then
+    local center=TelekinesisCrosshair.AbsolutePosition+TelekinesisCrosshair.AbsoluteSize*0.5
+    aimX,aimY=center.X,center.Y
+   else
+    local viewport=camera.ViewportSize
+    aimX,aimY=viewport.X*0.5,viewport.Y*0.5
+   end
+   return camera:ViewportPointToRay(aimX,aimY)
+  end)
+  if ok and ray and ray.Direction.Magnitude > 0 then
+   if originPosition then
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = {LocalPlayer.Character, TelekinesisTool, TelekinesisControls}
+    params.IgnoreWater = true
+    local hit = Workspace:Raycast(ray.Origin, ray.Direction * 1000, params)
+    if hit and hit.Position then
+     local towardPoint = hit.Position - originPosition
+     if towardPoint.Magnitude > 0.01 then return towardPoint.Unit end
+    end
+   end
+   return ray.Direction.Unit
+  end
+  return camera.CFrame.LookVector.Unit
+ end
+ local character = LocalPlayer.Character
+ local root = character and character:FindFirstChild("HumanoidRootPart")
+ local fallback = root and root.CFrame.LookVector or Vector3.new(0, 0, -1)
+ if originPosition and root then
+  local toward = root.Position + fallback * 100 - originPosition
+  if toward.Magnitude > 0.01 then return toward.Unit end
+ end
+ return fallback.Unit
+end
+
+-- Keep the latest world-pointer position so taps on mobile select the part actually tapped.
+local TelekinesisLastPointerPosition = nil
+UserInputService.InputBegan:Connect(function(input, processed)
+ if input.UserInputType == Enum.UserInputType.Touch then
+  TelekinesisLastPointerPosition = input.Position
+ elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+  TelekinesisLastPointerPosition = UserInputService:GetMouseLocation()
  end
 end)
+
+local function GetTelekinesisTargetUnderPointer()
+ local camera = Workspace.CurrentCamera
+ if not camera then return nil end
+ local mouse = TelekinesisMouse
+ if mouse then
+  local ok, target = pcall(function() return mouse.Target end)
+  if ok and target and target:IsA("BasePart") then return target end
+ end
+ local point = TelekinesisLastPointerPosition or UserInputService:GetMouseLocation()
+ local ray
+ local ok = pcall(function()
+  -- ScreenPointToRay matches GetMouseLocation/Touch screen coordinates, including GUI inset.
+  ray = camera:ScreenPointToRay(point.X, point.Y)
+ end)
+ if not ok or not ray then
+  ray = camera:ViewportPointToRay(point.X, point.Y)
+ end
+ local params = RaycastParams.new()
+ params.FilterType = Enum.RaycastFilterType.Exclude
+ params.FilterDescendantsInstances = {LocalPlayer.Character, TelekinesisTool, TelekinesisControls}
+ params.IgnoreWater = true
+ local result = Workspace:Raycast(ray.Origin, ray.Direction * 1000, params)
+ if result and result.Instance and result.Instance:IsA("BasePart") then
+  return result.Instance
+ end
+ -- Fallback to the center of the camera if the pointer position is unavailable.
+ local centerRay = camera:ViewportPointToRay(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+ local centerResult = Workspace:Raycast(centerRay.Origin, centerRay.Direction * 1000, params)
+ return centerResult and centerResult.Instance or nil
+end
+
+local function IsHumanoidCharacterPart(part)
+ if not part then return false end
+ local ancestor=part.Parent
+ while ancestor and ancestor~=Workspace do
+  if ancestor:IsA("Model") and ancestor:FindFirstChildOfClass("Humanoid") then
+   return true
+  end
+  ancestor=ancestor.Parent
+ end
+ return false
+end
+
+local function SelectTelekinesisTarget()
+ if not TelekinesisCanControl() then return end
+ local target=GetTelekinesisTargetUnderPointer()
+ if not target or not target:IsA("BasePart") then
+  TelekinesisNotice("No block selected. Tap/click directly on an unanchored block in the world.")
+  return
+ end
+ if IsHumanoidCharacterPart(target) then
+  TelekinesisNotice("NPCs and characters are excluded. Select an unanchored block instead.")
+  return
+ end
+ local character=LocalPlayer.Character
+ if character and target:IsDescendantOf(character) then return end
+ if TelekinesisMover then ReleaseTelekinesis() end
+ local clickedPart=target
+ local assemblyRoot=clickedPart.AssemblyRootPart or clickedPart
+ if clickedPart.Anchored or assemblyRoot.Anchored then
+  TelekinesisTarget=clickedPart
+  TelekinesisTargetPosition=clickedPart.Position
+  if TelekinesisPickButton then TelekinesisPickButton.Text="PICK UP: "..clickedPart.Name end
+  TelekinesisNotice("Selected '"..clickedPart.Name.."', but it is anchored. Choose a movable unanchored assembly.")
+ else
+  TelekinesisTarget=assemblyRoot
+  TelekinesisTargetPosition=assemblyRoot.Position
+  if TelekinesisPickButton then TelekinesisPickButton.Text="PICK UP: "..assemblyRoot.Name end
+  TelekinesisNotice("Selected '"..assemblyRoot.Name.."'. Tap PICK UP SELECTED BLOCK.")
+ end
+end
+
+-- When opened from Ghost + Telekinesis, tapping the 3D world selects a block directly;
+-- this path does not require an inventory or an equipped Tool.
+UserInputService.InputBegan:Connect(function(input, processed)
+ if not TelekinesisGuiMode or processed then return end
+ if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+ task.defer(function()
+  if TelekinesisGuiMode then SelectTelekinesisTarget() end
+ end)
+end)
+
+local function SetTelekinesisControlsVisible(visible)
+ if TelekinesisControls then TelekinesisControls.Enabled = visible end
+ if TelekinesisPanel then TelekinesisPanel.Visible = visible and not TelekinesisControlsCollapsed end
+ if TelekinesisRestoreButton then TelekinesisRestoreButton.Visible = visible and TelekinesisControlsCollapsed end
+end
+
+local function StopTelekinesisMagnet()
+ TelekinesisMagnetActive = false
+ if TelekinesisMagnetConnection then TelekinesisMagnetConnection:Disconnect(); TelekinesisMagnetConnection=nil end
+ if TelekinesisMagnetAddedConnection then TelekinesisMagnetAddedConnection:Disconnect(); TelekinesisMagnetAddedConnection=nil end
+ for part, movers in pairs(TelekinesisMagnetParts) do
+  if movers then
+   for _, mover in ipairs(movers) do
+    if typeof(mover) == "Instance" then pcall(function() mover:Destroy() end) end
+   end
+   -- Restore every part's original collision setting when magnet is stopped.
+   local collisionStates = movers.CollisionStates
+   if collisionStates then
+    for bodyPart, wasCollidable in pairs(collisionStates) do
+     if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide = wasCollidable end) end
+    end
+   end
+   RestoreAssemblyMass(part, movers.PhysicalStates)
+  end
+ end
+ table.clear(TelekinesisMagnetParts)
+ if TelekinesisMagnetButton then TelekinesisMagnetButton.Text = "MAGNET: OFF" end
+end
+
+ReleaseTelekinesis = function()
+ if TelekinesisGlassConnection then TelekinesisGlassConnection:Disconnect(); TelekinesisGlassConnection=nil end
+ TelekinesisGlassActive = false
+ for part, data in pairs(TelekinesisGlassCaptured) do
+  if data and data.mover then pcall(function() data.mover:Destroy() end) end
+  if data and data.collisionStates then
+   for bodyPart, wasCollidable in pairs(data.collisionStates) do
+    if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end
+   end
+  end
+  RestoreAssemblyMass(part, data and data.physicalStates)
+ end
+ table.clear(TelekinesisGlassCaptured)
+ if TelekinesisGlassMarkers then for _,marker in ipairs(TelekinesisGlassMarkers) do if marker and marker.Parent then pcall(function() marker:Destroy() end) end end; table.clear(TelekinesisGlassMarkers) end
+ if TelekinesisGlassSphere then pcall(function() TelekinesisGlassSphere:Destroy() end); TelekinesisGlassSphere=nil end
+ TelekinesisGlassOffset = Vector3.new(0,0,0)
+ if TelekinesisRenderConnection then TelekinesisRenderConnection:Disconnect(); TelekinesisRenderConnection=nil end
+ if TelekinesisMover then pcall(function() TelekinesisMover:Destroy() end); TelekinesisMover=nil end
+ if TelekinesisTarget then
+  pcall(function()
+   local old=TelekinesisTarget:FindFirstChild("BlueModeTelekinesisPosition")
+   if old then old:Destroy() end
+  end)
+ end
+ RestoreAssemblyMass(TelekinesisTarget)
+ TelekinesisTarget=nil
+ TelekinesisTargetPosition=nil
+ TelekinesisFollowOffset=Vector3.new(0,0,0)
+ if TelekinesisPickButton then TelekinesisPickButton.Text="START GLASS PICKUP ZONE" end
+end
+local function MakeTelekinesisButton(parent,name,text,size,pos,color)
+ local b=Instance.new("TextButton")
+ b.Name=name; b.Size=size; b.Position=pos; b.BackgroundColor3=color
+ b.Text=text; b.TextColor3=Color3.new(1,1,1); b.TextScaled=true; b.TextWrapped=true
+ b.Font=Enum.Font.GothamBold; b.AutoButtonColor=true; b.Parent=parent
+ Instance.new("UICorner",b).CornerRadius=UDim.new(0,7)
+ return b
+end
+
+local ShotBlockShootAllEnabled=true
+local ShotBlockShootAllToggleButton=nil
+local function UpdateShotBlockShootAllToggle()
+ if ShotBlockShootAllToggleButton and ShotBlockShootAllToggleButton.Parent then
+  ShotBlockShootAllToggleButton.Text=ShotBlockShootAllEnabled and "SHOT ALL: ON" or "SHOT ALL: OFF"
+  ShotBlockShootAllToggleButton.BackgroundColor3=ShotBlockShootAllEnabled and Color3.fromRGB(35,145,70) or Color3.fromRGB(145,45,45)
+ end
+end
+
+local function CreateTelekinesisControls()
+ if TelekinesisControls and TelekinesisControls.Parent then return end
+ local gui=Instance.new("ScreenGui")
+ gui.Name="BLUE_MODE_TELEKINESIS_CONTROLS"; gui.ResetOnSpawn=false; gui.IgnoreGuiInset=true
+ gui.DisplayOrder=PRIORITY.CONSOLE+100; gui.ZIndexBehavior=Enum.ZIndexBehavior.Global
+ gui.Enabled=false; gui.Parent=GuiContainer
+ TelekinesisControls=gui
+ local panel=Instance.new("ScrollingFrame")
+ panel.Name="TelekinesisPanel"; panel.Size=UDim2.new(0,240,0.68,0)
+ panel.Position=UDim2.new(1,-252,0.16,0); panel.BackgroundColor3=Color3.fromRGB(24,27,38)
+ panel.BackgroundTransparency=0.08; panel.Active=true; panel.Parent=gui
+ panel.CanvasSize=UDim2.new(0,0,0,980); panel.AutomaticCanvasSize=Enum.AutomaticSize.None
+ panel.ScrollingDirection=Enum.ScrollingDirection.Y; panel.ScrollBarThickness=6
+ panel.ScrollBarImageColor3=Color3.fromRGB(100,145,220); panel.VerticalScrollBarInset=Enum.ScrollBarInset.ScrollBar
+ panel.ElasticBehavior=Enum.ElasticBehavior.WhenScrollable
+ TelekinesisPanel=panel
+ Instance.new("UICorner",panel).CornerRadius=UDim.new(0,10)
+ local GiveShotBlockInTK=MakeTelekinesisButton(panel,"GiveShotBlock","GIVE SHOTBLOCK ITEM",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,734),Color3.fromRGB(135,55,45))
+ GiveShotBlockInTK.Activated:Connect(function() if GiveShotBlockTool then GiveShotBlockTool() end end)
+ local title=MakeTelekinesisButton(panel,"Title","TELEKINESIS CONTROLS",UDim2.new(1,-82,0,28),UDim2.new(0,6,0,5),Color3.fromRGB(45,75,130))
+ title.Active=false
+ TelekinesisCollapseButton=MakeTelekinesisButton(panel,"CollapseControls","−",UDim2.new(0,28,0,28),UDim2.new(1,-64,0,5),Color3.fromRGB(165,65,65))
+ TelekinesisGuiCloseButton=MakeTelekinesisButton(panel,"CloseControls","X",UDim2.new(0,28,0,28),UDim2.new(1,-32,0,5),Color3.fromRGB(180,45,45))
+ TelekinesisRestoreButton=MakeTelekinesisButton(gui,"RestoreControls","+",UDim2.new(0,48,0,48),UDim2.new(1,-62,0.55,-24),Color3.fromRGB(45,135,85))
+ TelekinesisRestoreButton.Visible=false
+ -- Independent shooter overlay: it must work without equipping Telekinesis or a ShootBlock tool.
+ local shooterScreen=Instance.new("ScreenGui")
+ shooterScreen.Name="BLUE_MODE_BLOCK_SHOOTER_OVERLAY"
+ shooterScreen.ResetOnSpawn=false; shooterScreen.IgnoreGuiInset=true
+ shooterScreen.DisplayOrder=PRIORITY.CONSOLE+101; shooterScreen.ZIndexBehavior=Enum.ZIndexBehavior.Global
+ shooterScreen.Parent=GuiContainer
+ -- No standalone ShotBlock toggle here. The toggle is created only while the ShotBlock tool is equipped.
+ -- Screen-center aiming reticle. It is non-interactive so it never blocks taps or aiming.
+ local crosshair=Instance.new("Frame")
+ crosshair.Name="TelekinesisCrosshair"
+ crosshair.Size=UDim2.new(0,30,0,30)
+ crosshair.AnchorPoint=Vector2.new(0.5,0.5)
+ crosshair.Position=UDim2.new(0.5,0,0.5,0)
+ crosshair.BackgroundTransparency=1
+ crosshair.BorderSizePixel=0
+ crosshair.Active=false
+ crosshair.Selectable=false
+ crosshair.Visible=false
+ crosshair.ZIndex=10000
+ crosshair.Parent=shooterScreen
+ TelekinesisCrosshair=crosshair
+ -- Mobile shooter controls: stack them above the jump button on the lower-right,
+ -- like the fire controls in a mobile shooter. They appear while MAGNET or sphere is active.
+ local shooterGui=Instance.new("Frame")
+ shooterGui.Name="BlockShooterTouchControls"
+ shooterGui.Size=UDim2.new(0,140,0,142)
+ shooterGui.AnchorPoint=Vector2.new(1,1)
+ shooterGui.Position=UDim2.new(1,-24,1,-195)
+ shooterGui.BackgroundTransparency=1
+ shooterGui.Visible=false
+ shooterGui.Active=false
+ shooterGui.ZIndex=10000
+ shooterGui.Parent=shooterScreen
+ BlockShooterGui=shooterGui
+ BlockShooterShootButton=MakeTelekinesisButton(shooterGui,"ShootOne","SHOOT BLOCK",UDim2.new(1,0,0,44),UDim2.new(0,0,0,0),Color3.fromRGB(205,65,45))
+ BlockShooterShootButton.TextSize=14
+ BlockShooterShootButton.ZIndex=10001
+ BlockShooterShootAllButton=MakeTelekinesisButton(shooterGui,"ShootAll","SHOOT ALL",UDim2.new(1,0,0,40),UDim2.new(0,0,0,46),Color3.fromRGB(145,45,35))
+ BlockShooterShootAllButton.TextSize=15
+ BlockShooterShootAllButton.ZIndex=10001
+ BlockShooterShootAllToggleButton=MakeTelekinesisButton(shooterGui,"ShootAllToggle","SHOOT ALL: ON",UDim2.new(1,0,0,40),UDim2.new(0,0,0,90),Color3.fromRGB(35,145,70))
+ BlockShooterShootAllToggleButton.TextSize=13
+ BlockShooterShootAllToggleButton.ZIndex=10001
+ BlockShooterShootAllToggleButton.Activated:Connect(function()
+  BlockShooterShootAllEnabled=not BlockShooterShootAllEnabled
+  BlockShooterShootAllToggleButton.Text=BlockShooterShootAllEnabled and "SHOOT ALL: ON" or "SHOOT ALL: OFF"
+  BlockShooterShootAllToggleButton.BackgroundColor3=BlockShooterShootAllEnabled and Color3.fromRGB(35,145,70) or Color3.fromRGB(145,45,45)
+  TelekinesisNotice(BlockShooterShootAllEnabled and "BlockShooter Shoot All enabled." or "BlockShooter Shoot All disabled.")
+ end)
+ local function AddTelekinesisSection(name,text,y)
+  local label=Instance.new("TextLabel")
+  label.Name=name
+  label.Size=UDim2.new(1,-16,0,20)
+  label.Position=UDim2.new(0,8,0,y)
+  label.BackgroundColor3=Color3.fromRGB(38,48,68)
+  label.BackgroundTransparency=0.08
+  label.Text="  "..text
+  label.TextColor3=Color3.fromRGB(205,220,255)
+  label.TextXAlignment=Enum.TextXAlignment.Left
+  label.Font=Enum.Font.GothamBold
+  label.TextSize=11
+  label.Active=false
+  label.Parent=panel
+  Instance.new("UICorner",label).CornerRadius=UDim.new(0,5)
+  return label
+ end
+ local function AddCrosshairLine(name,size,pos)
+  local line=Instance.new("Frame")
+  line.Name=name
+  line.Size=size
+  line.Position=pos
+  line.AnchorPoint=Vector2.new(0.5,0.5)
+  line.BackgroundColor3=Color3.fromRGB(255,255,255)
+  line.BorderSizePixel=0
+  line.Active=false
+  line.Selectable=false
+  line.ZIndex=100
+  line.ZIndex=10001
+  line.Parent=crosshair
+  local stroke=Instance.new("UIStroke")
+  stroke.Color=Color3.fromRGB(0,0,0)
+  stroke.Thickness=1
+  stroke.Parent=line
+ end
+ AddCrosshairLine("Top",UDim2.new(0,2,0,8),UDim2.new(0.5,0,0,4))
+ AddCrosshairLine("Bottom",UDim2.new(0,2,0,8),UDim2.new(0.5,0,1,-4))
+ AddCrosshairLine("Left",UDim2.new(0,8,0,2),UDim2.new(0,4,0.5,0))
+ AddCrosshairLine("Right",UDim2.new(0,8,0,2),UDim2.new(1,-4,0.5,0))
+ local centerDot=Instance.new("Frame")
+ centerDot.Name="CenterDot"
+ centerDot.Size=UDim2.new(0,3,0,3)
+ centerDot.AnchorPoint=Vector2.new(0.5,0.5)
+ centerDot.Position=UDim2.new(0.5,0,0.5,0)
+ centerDot.BackgroundColor3=Color3.fromRGB(255,255,255)
+ centerDot.BorderSizePixel=0
+ centerDot.Active=false
+ centerDot.Selectable=false
+ centerDot.ZIndex=101
+ centerDot.ZIndex=10001
+ centerDot.Parent=crosshair
+ local dotStroke=Instance.new("UIStroke")
+ dotStroke.Color=Color3.fromRGB(0,0,0)
+ dotStroke.Thickness=1
+ dotStroke.Parent=centerDot
+ TelekinesisGuiCloseButton.Activated:Connect(function()
+  TelekinesisGuiMode=false
+  SetTelekinesisControlsVisible(false)
+ end)
+ TelekinesisCollapseButton.Activated:Connect(function()
+  TelekinesisControlsCollapsed=true
+  if TelekinesisPanel then TelekinesisPanel.Visible=false end
+  if TelekinesisRestoreButton then TelekinesisRestoreButton.Visible=true end
+ end)
+ TelekinesisRestoreButton.Activated:Connect(function()
+  TelekinesisControlsCollapsed=false
+  if TelekinesisPanel then TelekinesisPanel.Visible=true end
+  TelekinesisRestoreButton.Visible=false
+ end)
+ AddTelekinesisSection("SphereSection","SPHERE CONTROLS",38)
+ TelekinesisPickButton=MakeTelekinesisButton(panel,"PickUp","START GLASS PICKUP ZONE",UDim2.new(1,-16,0,34),UDim2.new(0,8,0,296),Color3.fromRGB(35,135,75))
+ TelekinesisUnpickButton=MakeTelekinesisButton(panel,"UnpickUp","CANCEL / RELEASE ALL",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,334),Color3.fromRGB(175,55,55))
+ TelekinesisThrowButton=MakeTelekinesisButton(panel,"ThrowBlock","THROW BLOCK",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,370),Color3.fromRGB(190,105,35))
+ TelekinesisThrowMagnetButton=MakeTelekinesisButton(panel,"ThrowMagnetBlock","THROW MAGNETED BLOCK",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,504),Color3.fromRGB(210,80,35))
+ TelekinesisThrowAllMagnetButton=MakeTelekinesisButton(panel,"ThrowAllMagnetBlocks","THROW ALL MAGNETED",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,540),Color3.fromRGB(225,65,35))
+ TelekinesisThrowSphereButton=MakeTelekinesisButton(panel,"ThrowSphereBlock","THROW SPHERE BLOCK",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,198),Color3.fromRGB(125,75,175))
+ TelekinesisThrowSphereAllButton=MakeTelekinesisButton(panel,"ThrowAllSphereBlocks","THROW ALL SPHERE BLOCKS",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,234),Color3.fromRGB(155,65,190))
+ AddTelekinesisSection("HeadPickupSection","OVERHEAD PICKUP ZONE",770)
+ HeadPickupButton=MakeTelekinesisButton(panel,"HeadPickupStart","START HEAD PICKUP",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,794),Color3.fromRGB(40,135,105))
+ HeadThrowButton=MakeTelekinesisButton(panel,"HeadThrowOne","THROW BLOCK",UDim2.new(0.5,-12,0,30),UDim2.new(0,8,0,828),Color3.fromRGB(190,105,35))
+ HeadThrowAllButton=MakeTelekinesisButton(panel,"HeadThrowAll","THROW ALL",UDim2.new(0.5,-12,0,30),UDim2.new(0.5,4,0,828),Color3.fromRGB(220,70,35))
+ HeadCancelButton=MakeTelekinesisButton(panel,"HeadPickupCancel","CANCEL / STOP",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,862),Color3.fromRGB(175,55,55))
+ AddTelekinesisSection("PickupSection","PICKUP & THROW",272)
+ -- Color-code every sphere movement control to match the sphere's 3D markers:
+ -- LEFT=green, RIGHT=blue, FORWARD/up-arrow=red, BACKWARD/down-arrow=purple.
+ TelekinesisDirectionButtons.Left=MakeTelekinesisButton(panel,"MoveLeft","←",UDim2.new(0,48,0,38),UDim2.new(0,22,0,62),Color3.fromRGB(65,235,110))
+ TelekinesisDirectionButtons.Left.TextColor3=Color3.fromRGB(0,35,10)
+ TelekinesisDirectionButtons.Up=MakeTelekinesisButton(panel,"MoveUp","↑",UDim2.new(0,48,0,38),UDim2.new(0,74,0,62),Color3.fromRGB(255,65,65))
+ TelekinesisDirectionButtons.Up.TextColor3=Color3.fromRGB(255,255,255)
+ TelekinesisDirectionButtons.Down=MakeTelekinesisButton(panel,"MoveDown","↓",UDim2.new(0,48,0,38),UDim2.new(0,126,0,62),Color3.fromRGB(190,85,255))
+ TelekinesisDirectionButtons.Down.TextColor3=Color3.fromRGB(255,255,255)
+ TelekinesisDirectionButtons.Right=MakeTelekinesisButton(panel,"MoveRight","→",UDim2.new(0,48,0,38),UDim2.new(0,178,0,62),Color3.fromRGB(45,145,255))
+ TelekinesisDirectionButtons.Right.TextColor3=Color3.fromRGB(255,255,255)
+ AddTelekinesisSection("MovementSection","MAGNET & BLOCK MOVEMENT",406)
+ TelekinesisForwardButton=MakeTelekinesisButton(panel,"MoveForward","UP",UDim2.new(0,104,0,28),UDim2.new(0,8,0,104),Color3.fromRGB(255,255,255))
+ TelekinesisForwardButton.TextColor3=Color3.fromRGB(0,0,0)
+ TelekinesisForwardButton.Text="UP  ↑"
+ TelekinesisBackButton=MakeTelekinesisButton(panel,"MoveBack","DOWN",UDim2.new(0,104,0,28),UDim2.new(0,120,0,104),Color3.fromRGB(0,0,0))
+ TelekinesisBackButton.TextColor3=Color3.fromRGB(255,255,255)
+ TelekinesisBackButton.Text="DOWN  ↓"
+ -- Adjustable glass-sphere radius: SIZE + scales up progressively without a small fixed cap.
+ local SphereSizeLabel=MakeTelekinesisButton(panel,"SphereRadiusLabel","SPHERE SIZE: 3",UDim2.new(1,-16,0,24),UDim2.new(0,8,0,136),Color3.fromRGB(45,75,130))
+ SphereSizeLabel.Active=false
+ local SphereSizeDown=MakeTelekinesisButton(panel,"SphereSizeDown","SIZE −",UDim2.new(0.5,-12,0,30),UDim2.new(0,8,0,162),Color3.fromRGB(70,100,155))
+ local SphereSizeUp=MakeTelekinesisButton(panel,"SphereSizeUp","SIZE +",UDim2.new(0.5,-12,0,30),UDim2.new(0.5+4/240,0,0,162),Color3.fromRGB(35,135,85))
+ local function SetGlassSphereRadius(newRadius)
+  -- No fixed gameplay cap: larger spheres get progressively larger increments.
+  -- Keep the value finite and positive to avoid invalid Roblox Vector3 values.
+  TelekinesisGlassRadius=math.max(2,math.min(1e6,math.floor(tonumber(newRadius) or 3)))
+  SphereSizeLabel.Text="SPHERE SIZE: "..tostring(TelekinesisGlassRadius)
+  if TelekinesisGlassSphere and TelekinesisGlassSphere.Parent then
+   TelekinesisGlassSphere.Size=Vector3.new(TelekinesisGlassRadius*2,TelekinesisGlassRadius*2,TelekinesisGlassRadius*2)
+  end
+ end
+ SphereSizeDown.Activated:Connect(function() SetGlassSphereRadius(TelekinesisGlassRadius-1) end)
+ SphereSizeUp.Activated:Connect(function() SetGlassSphereRadius(TelekinesisGlassRadius+math.max(1,math.floor(TelekinesisGlassRadius*0.5))) end)
+
+ -- Character flight: no ride blocks and no dedicated UP/DOWN buttons.
+ -- The normal movement joystick/WASD steers the character while altitude is held.
+ TelekinesisRainBlocksButton=MakeTelekinesisButton(panel,"RainMagnetedBlocks","RAIN BLOCKS",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,576),Color3.fromRGB(35,125,185))
+ AddTelekinesisSection("FlightSection","FLIGHT & AIM",614)
+ TelekinesisRideButton=MakeTelekinesisButton(panel,"CharacterFly","FLY: OFF",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,638),Color3.fromRGB(35,115,180))
+ TelekinesisCrosshairButton=MakeTelekinesisButton(panel,"CrosshairToggle","CROSSHAIR: OFF",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,674),Color3.fromRGB(90,90,110))
+ TelekinesisCrosshairButton.Activated:Connect(function()
+  TelekinesisCrosshairEnabled=not TelekinesisCrosshairEnabled
+  if TelekinesisCrosshair then TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled end
+  TelekinesisCrosshairButton.Text=TelekinesisCrosshairEnabled and "CROSSHAIR: ON" or "CROSSHAIR: OFF"
+  TelekinesisCrosshairButton.BackgroundColor3=TelekinesisCrosshairEnabled and Color3.fromRGB(35,145,75) or Color3.fromRGB(90,90,110)
+ end)
+ TelekinesisGiveShooterButton=MakeTelekinesisButton(panel,"GiveShooterItem","GIVE SHOOTER ITEM",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,710),Color3.fromRGB(190,65,45))
+ TelekinesisGiveShooterButton.Activated:Connect(function()
+  local backpack=LocalPlayer:FindFirstChildOfClass("Backpack") or LocalPlayer:WaitForChild("Backpack",5)
+  if not backpack then TelekinesisNotice("Backpack not available."); return end
+  local char=LocalPlayer.Character
+  local existing=backpack:FindFirstChild("BlockShooter") or (char and char:FindFirstChild("BlockShooter"))
+  if existing then TelekinesisNotice("BlockShooter is already in your inventory."); return end
+  local tool=Instance.new("Tool"); tool.Name="BlockShooter"; tool.ToolTip="Equip to show the Shoot Block / Shoot All buttons when Magnet or sphere is active"; tool.RequiresHandle=false; tool.CanBeDropped=false; tool.Parent=backpack
+  BlockShooterTool=tool
+  tool.Equipped:Connect(function()
+   BlockShooterEquipped=true
+   local active=TelekinesisMagnetActive or TelekinesisGlassActive
+   if BlockShooterGui then BlockShooterGui.Visible=active end
+   if TelekinesisCrosshair then TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled or active end
+   TelekinesisNotice("BlockShooter equipped. Turn on MAGNET or sphere to show shooting controls.")
+  end)
+  tool.Unequipped:Connect(function()
+   BlockShooterEquipped=false
+   if BlockShooterGui then BlockShooterGui.Visible=false end
+   if TelekinesisCrosshair then TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled end
+  end)
+  TelekinesisNotice("BlockShooter added to inventory.")
+ end)
+ local CharacterFlyConnection=nil
+ local CharacterFlyVelocity=nil
+ local CharacterFlyGyro=nil
+ local CharacterFlyHumanoid=nil
+ local CharacterFlyRoot=nil
+ local CharacterFlyAltitude=nil
+ local CharacterFlySpeed=55
+ local CharacterFlyInputs={Left=false,Right=false,Up=false,Down=false,Forward=false,Back=false}
+ local CharacterFlyHeightSpeed=38
+ local CharacterFlyControls=nil
+ -- Mobile flight overlay: arrows near the left movement joystick and vertical controls near jump.
+ local FlightOverlay=Instance.new("ScreenGui")
+ FlightOverlay.Name="BLUE_MODE_FLIGHT_TOUCH_CONTROLS"; FlightOverlay.ResetOnSpawn=false; FlightOverlay.DisplayOrder=PRIORITY.MAIN+5; FlightOverlay.IgnoreGuiInset=true; FlightOverlay.Enabled=false; FlightOverlay.Parent=GuiContainer
+ local function MakeFlightTouchButton(name,label,pos,size,color)
+  local b=Instance.new("TextButton"); b.Name=name; b.Text=label; b.Font=Enum.Font.GothamBold; b.TextSize=20; b.TextColor3=Color3.new(1,1,1); b.BackgroundColor3=color; b.BackgroundTransparency=0.18; b.Size=size; b.Position=pos; b.AutoButtonColor=true; b.Active=true; b.Parent=FlightOverlay; Instance.new("UICorner",b).CornerRadius=UDim.new(0,12); return b
+ end
+ local arrowSize=UDim2.new(0,48,0,48)
+ local leftBtn=MakeFlightTouchButton("FlyLeft","←",UDim2.new(0,18,1,-150),arrowSize,Color3.fromRGB(40,130,220))
+ local rightBtn=MakeFlightTouchButton("FlyRight","→",UDim2.new(0,122,1,-150),arrowSize,Color3.fromRGB(40,130,220))
+ local forwardBtn=MakeFlightTouchButton("FlyForward","↑",UDim2.new(0,70,1,-202),arrowSize,Color3.fromRGB(40,130,220))
+ local backBtn=MakeFlightTouchButton("FlyBack","↓",UDim2.new(0,70,1,-98),arrowSize,Color3.fromRGB(40,130,220))
+ -- Diagonal/X arrows let mobile users steer like a full 8-direction thumbstick.
+ local diagonalSize=UDim2.new(0,42,0,42)
+ local upLeftBtn=MakeFlightTouchButton("FlyUpLeft","↖",UDim2.new(0,20,1,-202),diagonalSize,Color3.fromRGB(55,105,190))
+ local upRightBtn=MakeFlightTouchButton("FlyUpRight","↗",UDim2.new(0,126,1,-202),diagonalSize,Color3.fromRGB(55,105,190))
+ local downLeftBtn=MakeFlightTouchButton("FlyDownLeft","↙",UDim2.new(0,20,1,-98),diagonalSize,Color3.fromRGB(55,105,190))
+ local downRightBtn=MakeFlightTouchButton("FlyDownRight","↘",UDim2.new(0,126,1,-98),diagonalSize,Color3.fromRGB(55,105,190))
+ local riseBtn=MakeFlightTouchButton("FlyRise","UP",UDim2.new(1,-116,1,-215),UDim2.new(0,54,0,48),Color3.fromRGB(35,155,85))
+ local descendBtn=MakeFlightTouchButton("FlyDescend","DOWN",UDim2.new(1,-116,1,-160),UDim2.new(0,54,0,48),Color3.fromRGB(180,70,55))
+ local function bindFlightHold(btn,key)
+  local function set(v) if CharacterFlyInputs[key]~=nil then CharacterFlyInputs[key]=v end end
+  btn.InputBegan:Connect(function(input) if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then set(true) end end)
+  btn.InputEnded:Connect(function(input) if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then set(false) end end)
+  UserInputService.InputEnded:Connect(function(input) if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then set(false) end end)
+ end
+ bindFlightHold(leftBtn,"Left"); bindFlightHold(rightBtn,"Right"); bindFlightHold(forwardBtn,"Up"); bindFlightHold(backBtn,"Down"); bindFlightHold(riseBtn,"Forward"); bindFlightHold(descendBtn,"Back")
+ local function bindFlightDiagonal(btn,keyA,keyB)
+  local function set(v) CharacterFlyInputs[keyA]=v; CharacterFlyInputs[keyB]=v end
+  btn.InputBegan:Connect(function(input) if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then set(true) end end)
+  btn.InputEnded:Connect(function(input) if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then set(false) end end)
+  UserInputService.InputEnded:Connect(function(input) if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then set(false) end end)
+ end
+ bindFlightDiagonal(upLeftBtn,"Left","Up"); bindFlightDiagonal(upRightBtn,"Right","Up"); bindFlightDiagonal(downLeftBtn,"Left","Down"); bindFlightDiagonal(downRightBtn,"Right","Down")
+ local function ClearCharacterFlyInputs()
+  for key in pairs(CharacterFlyInputs) do CharacterFlyInputs[key]=false end
+ end
+ local function StopCharacterFly()
+  if CharacterFlyConnection then CharacterFlyConnection:Disconnect(); CharacterFlyConnection=nil end
+  if CharacterFlyVelocity then pcall(function() CharacterFlyVelocity:Destroy() end); CharacterFlyVelocity=nil end
+  if CharacterFlyGyro then pcall(function() CharacterFlyGyro:Destroy() end); CharacterFlyGyro=nil end
+  if CharacterFlyHumanoid and CharacterFlyHumanoid.Parent then
+   pcall(function() CharacterFlyHumanoid.PlatformStand=false; CharacterFlyHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp) end)
+  end
+  if CharacterFlyControls then pcall(function() CharacterFlyControls:Enable() end); CharacterFlyControls=nil end
+  CharacterFlyHumanoid=nil; CharacterFlyRoot=nil; CharacterFlyAltitude=nil
+  ClearCharacterFlyInputs()
+  TelekinesisRideBlock=nil; TelekinesisRideMover=nil; TelekinesisRideConnection=nil
+  FlightOverlay.Enabled=false
+  if TelekinesisRideButton then TelekinesisRideButton.Text="FLY: OFF" end
+ end
+ TelekinesisRideButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
+  if CharacterFlyConnection then
+   StopCharacterFly()
+   TelekinesisNotice("Flight stopped.")
+   return
+  end
+  local character=LocalPlayer.Character
+  local root=character and character:FindFirstChild("HumanoidRootPart")
+  local humanoid=character and character:FindFirstChildOfClass("Humanoid")
+  if not root or not humanoid then TelekinesisNotice("Your character is not ready."); return end
+  CharacterFlyRoot=root; CharacterFlyHumanoid=humanoid; CharacterFlyAltitude=root.Position.Y
+  local velocity=Instance.new("BodyVelocity")
+  velocity.Name="BlueModeCharacterFlightVelocity"
+  velocity.MaxForce=Vector3.new(1e8,1e8,1e8)
+  velocity.P=3e4
+  velocity.Velocity=Vector3.zero
+  velocity.Parent=root
+  CharacterFlyVelocity=velocity
+  local gyro=Instance.new("BodyGyro")
+  gyro.Name="BlueModeCharacterFlightGyro"
+  gyro.MaxTorque=Vector3.new(1e8,1e8,1e8)
+  gyro.P=2e4; gyro.D=800
+  gyro.CFrame=root.CFrame
+  gyro.Parent=root
+  CharacterFlyGyro=gyro
+  humanoid.PlatformStand=false
+  -- Replace the default mobile thumbstick with the on-screen arrow controls while flying.
+  pcall(function()
+   local playerScripts=LocalPlayer:FindFirstChild("PlayerScripts")
+   local playerModule=playerScripts and require(playerScripts:WaitForChild("PlayerModule"))
+   if playerModule and playerModule.GetControls then
+    CharacterFlyControls=playerModule:GetControls()
+    CharacterFlyControls:Disable()
+   end
+  end)
+  TelekinesisRideButton.Text="FLY: ON"
+  FlightOverlay.Enabled=true
+  CharacterFlyConnection=RunService.RenderStepped:Connect(function()
+   local currentChar=LocalPlayer.Character
+   local currentRoot=currentChar and currentChar:FindFirstChild("HumanoidRootPart")
+   local currentHumanoid=currentChar and currentChar:FindFirstChildOfClass("Humanoid")
+   if not currentRoot or not currentHumanoid or currentRoot~=CharacterFlyRoot or not CharacterFlyVelocity or not CharacterFlyVelocity.Parent then
+    StopCharacterFly(); return
+   end
+   local cameraNow=Workspace.CurrentCamera
+   local basis=(cameraNow and cameraNow.CFrame) or currentRoot.CFrame
+   local right=Vector3.new(basis.RightVector.X,0,basis.RightVector.Z)
+   local forward=Vector3.new(basis.LookVector.X,0,basis.LookVector.Z)
+   if right.Magnitude>0 then right=right.Unit end
+   if forward.Magnitude>0 then forward=forward.Unit end
+   local horizontal=Vector3.zero
+   if CharacterFlyInputs.Left then horizontal-=right end
+   if CharacterFlyInputs.Right then horizontal+=right end
+   if CharacterFlyInputs.Up then horizontal+=forward end
+   if CharacterFlyInputs.Down then horizontal-=forward end
+   -- UP/DOWN are hold controls: altitude only changes while one is held.
+   local vertical=0
+   if CharacterFlyInputs.Forward then vertical=CharacterFlyHeightSpeed; CharacterFlyAltitude=currentRoot.Position.Y end
+   if CharacterFlyInputs.Back then vertical=-CharacterFlyHeightSpeed; CharacterFlyAltitude=currentRoot.Position.Y end
+   if horizontal.Magnitude>1 then horizontal=horizontal.Unit end
+   CharacterFlyVelocity.Velocity=Vector3.new(horizontal.X*CharacterFlySpeed,vertical,horizontal.Z*CharacterFlySpeed)
+   if horizontal.Magnitude>0.05 and CharacterFlyGyro then
+    CharacterFlyGyro.CFrame=CFrame.lookAt(currentRoot.Position,currentRoot.Position+horizontal)
+   end
+  end)
+  TelekinesisNotice("FLY ON: arrows are at bottom-left near movement; UP/DOWN are at bottom-right near jump. Hold controls to move.")
+ end)
+ TelekinesisMagnetButton=MakeTelekinesisButton(panel,"Magnet","MAGNET: OFF",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,430),Color3.fromRGB(120,75,190))
+ TelekinesisUnmagnetButton=MakeTelekinesisButton(panel,"Unmagnet","UNMAGNET / STOP",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,466),Color3.fromRGB(175,55,55))
+ TelekinesisMagnetButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
+  if TelekinesisMagnetActive then TelekinesisNotice("Magnet is already on and scanning the whole map. Tap UNMAGNET to stop it."); return end
+  local character=LocalPlayer.Character
+  local root=character and character:FindFirstChild("HumanoidRootPart")
+  if not root then TelekinesisNotice("Your character is not ready."); return end
+
+  -- Low-lag full-map scanner: traverse the Workspace tree gradually instead of
+  -- calling GetDescendants() repeatedly (which can cause large frame spikes).
+  -- A bounded number of physical assemblies is moved at once to avoid overload.
+  TelekinesisMagnetActive=true
+  TelekinesisMagnetButton.Text="MAGNET: ACTIVE"
+  local started=os.clock()
+  local scanElapsed=0
+  local updateElapsed=0
+  local scanInterval=0.03
+  local scanBudget=2500
+  -- No fixed assembly cap: keep scanning and magnetizing every eligible unanchored assembly across Workspace.
+  -- Very large maps may use more client physics and can cause lag.
+  local maxMagnetAssemblies=math.huge
+  local mapScanQueue={Workspace}
+  local mapScanIndex=1
+  local mapScanSeen=setmetatable({}, {__mode="k"})
+  local mapScanQueued=setmetatable({[Workspace]=true}, {__mode="k"})
+  local mapScanSeenAssemblies=setmetatable({}, {__mode="k"})
+  local function EnqueueScanNode(node)
+   if node and not mapScanSeen[node] and not mapScanQueued[node] then
+    mapScanQueued[node]=true
+    table.insert(mapScanQueue,node)
+   end
+  end
+
+  local function CountMagnetAssemblies()
+   local count=0
+   for _ in pairs(TelekinesisMagnetParts) do count=count+1 end
+   return count
+  end
+  local activeCount=0
+  local nextOrbitPhase=0
+
+  local function AddMagnetAssembly(assembly, char)
+   if not assembly or not assembly.Parent then return false end
+   local ignoreUntil=TelekinesisMagnetIgnoreUntil[assembly]
+   if ignoreUntil and os.clock()<ignoreUntil then return false end
+   if ignoreUntil then TelekinesisMagnetIgnoreUntil[assembly]=nil end
+   if TelekinesisMagnetParts[assembly] then return false end
+   if activeCount >= maxMagnetAssemblies then return false end
+   if char and assembly:IsDescendantOf(char) then return false end
+   if TelekinesisTool and assembly:IsDescendantOf(TelekinesisTool) then return false end
+   if assembly==TelekinesisTarget then return false end
+   if assembly.Anchored then return false end
+   local mass=1
+   pcall(function() mass=math.max(1,assembly.AssemblyMass) end)
+   -- More moderate force values reduce physics spikes for very large assemblies.
+   local force=math.clamp(mass*Workspace.Gravity*180,2e6,8e9)
+   local torque=math.clamp(mass*60000,5e5,1e9)
+   -- Disable collisions on the magneted assembly so it cannot shove the player.
+   -- Preserve the original values and restore them when magnet is stopped.
+   local collisionStates={}
+   local connectedParts={assembly}
+   pcall(function()
+    for _,connectedPart in ipairs(assembly:GetConnectedParts(true)) do
+     table.insert(connectedParts,connectedPart)
+    end
+   end)
+   for _,bodyPart in ipairs(connectedParts) do
+    if bodyPart and bodyPart:IsA("BasePart") and not collisionStates[bodyPart] then
+     collisionStates[bodyPart]=bodyPart.CanCollide
+     pcall(function() bodyPart.CanCollide=false end)
+    end
+   end
+   local physicalStates=MakeAssemblyLight(assembly)
+   nextOrbitPhase=nextOrbitPhase+math.rad(137.5)
+   local orbitPhase=nextOrbitPhase
+   local orbitRadius=math.clamp(9+assembly.Size.Magnitude*0.45,9,24)
+   local pos=Instance.new("BodyPosition")
+   pos.Name="BlueModeMagnetPosition"
+   pos.MaxForce=Vector3.new(force,force,force)
+   pos.P=math.clamp(mass*9000,90000,2e7)
+   pos.D=math.clamp(mass*650,12000,2e6)
+   local currentChar=LocalPlayer.Character
+   local currentRoot=currentChar and currentChar:FindFirstChild("HumanoidRootPart")
+   if currentRoot then pos.Position=currentRoot.Position+Vector3.new(5,3,0) end
+   pos.Parent=assembly
+   local spin=Instance.new("BodyAngularVelocity")
+   spin.Name="BlueModeMagnetSpin"
+   -- Keep the block from spinning in place; its target position makes it orbit the player.
+   spin.MaxTorque=Vector3.new(0,0,0)
+   spin.AngularVelocity=Vector3.zero
+   spin.P=math.clamp(mass*120,1000,3e5)
+   spin.Parent=assembly
+   TelekinesisMagnetParts[assembly]={pos,spin,CollisionStates=collisionStates,PhysicalStates=physicalStates,OrbitPhase=orbitPhase,OrbitRadius=orbitRadius}
+   activeCount=activeCount+1
+   return true
+  end
+
+  local function ProcessMagnetCandidate(candidate, char)
+   if not candidate or not candidate:IsA("BasePart") or not candidate.Parent then return end
+   local ancestor=candidate.Parent
+   while ancestor and ancestor~=Workspace do
+    if ancestor:IsA("Model") and ancestor:FindFirstChildOfClass("Humanoid") then
+     return -- do not treat player/NPC body parts as loose blocks
+    end
+    ancestor=ancestor.Parent
+   end
+   local assembly=candidate.AssemblyRootPart or candidate
+   if not assembly or mapScanSeenAssemblies[assembly] then return end
+   mapScanSeenAssemblies[assembly]=true
+   AddMagnetAssembly(assembly,char)
+  end
+
+  -- New parts/containers are queued incrementally, avoiding another full-map snapshot.
+  TelekinesisMagnetAddedConnection=Workspace.DescendantAdded:Connect(function(obj)
+   if TelekinesisMagnetActive and obj and obj~=Workspace then
+    EnqueueScanNode(obj)
+   end
+  end)
+
+  TelekinesisMagnetConnection=RunService.Heartbeat:Connect(function(dt)
+   if not TelekinesisMagnetActive then return end
+   updateElapsed=updateElapsed+dt
+   if updateElapsed<0.05 then return end -- update magnet targets at ~20 Hz for a more responsive pull
+   dt=updateElapsed
+   updateElapsed=0
+   local char=LocalPlayer.Character
+   local hrp=char and char:FindFirstChild("HumanoidRootPart")
+   if not hrp or not hrp.Parent then return end
+
+   scanElapsed=scanElapsed+dt
+   if scanElapsed>=scanInterval then
+    scanElapsed=0
+    activeCount=CountMagnetAssemblies()
+    local processed=0
+    while mapScanIndex<=#mapScanQueue and processed<scanBudget do
+     local node=mapScanQueue[mapScanIndex]
+     mapScanIndex=mapScanIndex+1
+     processed=processed+1
+     if node then mapScanQueued[node]=nil end
+     if node and node.Parent and not mapScanSeen[node] then
+      mapScanSeen[node]=true
+      if node:IsA("BasePart") then
+       ProcessMagnetCandidate(node,char)
+      end
+      -- Traverse one level at a time; this spreads large-map work across frames.
+      local ok,children=pcall(function() return node:GetChildren() end)
+      if ok and children then
+       for _,child in ipairs(children) do
+        EnqueueScanNode(child)
+       end
+      end
+     end
+    end
+    if mapScanIndex>#mapScanQueue then
+     -- Begin a fresh gradual pass to catch parts that were missed during changes.
+     mapScanQueue={Workspace}
+     mapScanIndex=1
+     mapScanSeen=setmetatable({}, {__mode="k"})
+     mapScanQueued=setmetatable({[Workspace]=true}, {__mode="k"})
+     mapScanSeenAssemblies=setmetatable({}, {__mode="k"})
+    end
+
+
+   end
+
+   -- Update magneted assemblies at ~20 Hz; each block keeps its own stable orbit phase and radius.
+   local elapsed=os.clock()-started
+   local index=0
+   for part,movers in pairs(TelekinesisMagnetParts) do
+    if not part.Parent or part.Anchored or not movers[1] or not movers[1].Parent then
+     if movers then
+      for _,m in ipairs(movers) do
+       if typeof(m) == "Instance" then pcall(function() m:Destroy() end) end
+      end
+      local collisionStates=movers.CollisionStates
+      if collisionStates then
+       for bodyPart,wasCollidable in pairs(collisionStates) do
+        if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end
+       end
+      end
+      RestoreAssemblyMass(part, movers.PhysicalStates)
+     end
+     TelekinesisMagnetParts[part]=nil
+     activeCount=math.max(0,activeCount-1)
+    else
+     index=index+1
+     if CharacterFlyConnection and CharacterFlyRoot and CharacterFlyRoot.Parent then
+      -- Keep magneted blocks beneath the character as a temporary moving platform.
+      local offset=Vector3.new(0,-(CharacterFlyRoot.Size.Y*0.5+part.Size.Y*0.5+0.25),0)
+      movers[1].Position=CharacterFlyRoot.Position+offset
+      if movers.CollisionStates then
+       for bodyPart in pairs(movers.CollisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=true end) end end
+      end
+     else
+      if movers.CollisionStates then
+       for bodyPart,wasCollidable in pairs(movers.CollisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=false end) end end
+      end
+      local angle=elapsed*0.9+(movers.OrbitPhase or 0)
+      local radius=movers.OrbitRadius or 10
+      -- Keep the orbit clearly outside the avatar instead of targeting its body.
+      local orbitHeight=math.max(5, radius*0.28)+math.sin(angle*0.8)*math.min(2.5,radius*0.12)
+      movers[1].Position=hrp.Position+Vector3.new(math.cos(angle)*radius,orbitHeight,math.sin(angle)*radius)
+     end
+    end
+   end
+  end)
+  TelekinesisNotice("MAGNET ON: stronger full-map pull with wide orbit around your avatar and no in-place spinning; client/server physics may still limit what other players see. Large maps may take longer than a second; server physics may limit distant blocks.")
+ end)
+ TelekinesisUnmagnetButton.Activated:Connect(function()
+  StopTelekinesisMagnet()
+  TelekinesisNotice("Magnet stopped; parts released.")
+ end)
+ TelekinesisRainBlocksButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
+  local rainParts={}
+  for part in pairs(TelekinesisMagnetParts) do
+   if part and part.Parent and part:IsA("BasePart") and not part.Anchored then
+    local rootPart=part.AssemblyRootPart or part
+    if rootPart and rootPart.Parent and not rootPart.Anchored then rainParts[rootPart]=true end
+   end
+  end
+  if next(rainParts)==nil then TelekinesisNotice("No magneted blocks yet. Turn MAGNET on and wait for loose blocks to be captured."); return end
+  StopTelekinesisMagnet()
+  local count=0
+  for part in pairs(rainParts) do
+   if part.Parent and not part.Anchored then
+    pcall(function()
+     part.AssemblyLinearVelocity=Vector3.new(math.random(-55,55),math.random(75,115),math.random(-55,55))
+     part.AssemblyAngularVelocity=Vector3.new(math.random(-8,8),math.random(-8,8),math.random(-8,8))
+    end)
+    count+=1
+   end
+  end
+  TelekinesisNotice("RAIN BLOCKS: launched "..count.." magneted blocks upward with random sideways motion. Gravity makes them fall back down.")
+ end)
+ TelekinesisPickButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
+  if TelekinesisGlassActive then TelekinesisNotice("Glass pickup zone is already active. Move the sphere with the arrows and UP/DOWN."); return end
+  ReleaseTelekinesis()
+  local character=LocalPlayer.Character
+  local root=character and character:FindFirstChild("HumanoidRootPart")
+  if not root then TelekinesisNotice("Your character is not ready."); return end
+  local camera=Workspace.CurrentCamera
+  local look=(camera and camera.CFrame.LookVector) or root.CFrame.LookVector
+  local sphere=Instance.new("Part")
+  sphere.Name="BlueModeGlassPickupZone"
+  sphere.Shape=Enum.PartType.Ball
+  sphere.Size=Vector3.new(TelekinesisGlassRadius*2,TelekinesisGlassRadius*2,TelekinesisGlassRadius*2)
+  sphere.Material=Enum.Material.Glass
+  sphere.Color=Color3.fromRGB(125,210,255)
+  sphere.Transparency=0.58
+  sphere.Anchored=true
+  sphere.CanCollide=false
+  sphere.CanTouch=false
+  sphere.CanQuery=false
+  sphere.CastShadow=false
+  sphere.CFrame=CFrame.new(root.Position+look*8+Vector3.new(0,2,0))
+  sphere.Parent=Workspace
+  TelekinesisGlassSphere=sphere
+  -- Four visible color handles around the glass sphere: green=left, blue=right,
+  -- red=forward (-Z), purple=backward (+Z). They are visual handles only.
+  TelekinesisGlassMarkers={}
+  local markerSpecs={
+   {name="Left_Green",color=Color3.fromRGB(65,235,110),offset=Vector3.new(-TelekinesisGlassRadius-1.2,0,0)},
+   {name="Right_Blue",color=Color3.fromRGB(45,145,255),offset=Vector3.new(TelekinesisGlassRadius+1.2,0,0)},
+   {name="Forward_Red",color=Color3.fromRGB(255,65,65),offset=Vector3.new(0,0,-TelekinesisGlassRadius-1.2)},
+   {name="Backward_Purple",color=Color3.fromRGB(190,85,255),offset=Vector3.new(0,0,TelekinesisGlassRadius+1.2)},
+  }
+  for _,spec in ipairs(markerSpecs) do
+   local marker=Instance.new("Part")
+   marker.Name="BlueModeGlassMarker_"..spec.name
+   marker.Shape=Enum.PartType.Ball
+   marker.Size=Vector3.new(1.8,1.8,1.8)
+   marker.Material=Enum.Material.Neon
+   marker.Color=spec.color
+   marker.Anchored=true
+   marker.CanCollide=false
+   marker.CanTouch=false
+   marker.CanQuery=false
+   marker.CastShadow=false
+   marker.Position=sphere.Position+spec.offset
+   marker.Parent=Workspace
+   table.insert(TelekinesisGlassMarkers,marker)
+  end
+  TelekinesisGlassActive=true
+  TelekinesisGlassOffset=Vector3.new(0,0,0)
+  -- Preserve the direction the player was looking when the zone was created.
+  -- Later movement is along fixed world X/Y/Z axes, never camera-relative.
+  TelekinesisGlassBaseOffset=(look*8)+Vector3.new(0,2,0)
+  TelekinesisGlassScanElapsed=0
+  TelekinesisPickButton.Text="GLASS ZONE ACTIVE"
+  -- Incremental map-wide scan: blocks anywhere in Workspace are pulled toward
+  -- the sphere center, without rebuilding the entire descendant list every frame.
+  local glassMapScanList={}
+  local glassMapScanIndex=1
+  local glassMapRefreshElapsed=2
+  local overlap=OverlapParams.new()
+  overlap.FilterType=Enum.RaycastFilterType.Exclude
+  -- Do not require CanCollide: many loose blocks are non-collidable.
+  overlap.RespectCanCollide=false
+  overlap.FilterDescendantsInstances={character,sphere,TelekinesisControls,TelekinesisTool}
+  local function IsExcluded(part)
+   if not part or not part:IsA("BasePart") or not part.Parent or part.Anchored then return true end
+   if IsHumanoidCharacterPart(part) then return true end
+   local charNow=LocalPlayer.Character
+   if charNow and part:IsDescendantOf(charNow) then return true end
+   return false
+  end
+  local function CapturePart(part, center)
+   local assembly=part.AssemblyRootPart or part
+   if IsExcluded(assembly) or TelekinesisGlassCaptured[assembly] or TelekinesisMagnetParts[assembly] then return end
+   local collisionStates={}
+   local connected={assembly}
+   pcall(function() for _,p in ipairs(assembly:GetConnectedParts(true)) do table.insert(connected,p) end end)
+   for _,p in ipairs(connected) do
+    if p and p:IsA("BasePart") and not collisionStates[p] then
+     collisionStates[p]=p.CanCollide
+     pcall(function() p.CanCollide=false end)
+    end
+   end
+   local physicalStates=MakeAssemblyLight(assembly)
+   local mover=Instance.new("BodyPosition")
+   mover.Name="BlueModeGlassPickupMover"
+   local mass=1; pcall(function() mass=math.max(1,assembly.AssemblyMass) end)
+   local force=math.clamp(mass*Workspace.Gravity*180,2e6,8e9)
+   mover.MaxForce=Vector3.new(force,force,force)
+   -- Match the stronger magnet pull tuning, but hold at a point inside the sphere.
+   mover.P=math.clamp(mass*5200,50000,1.2e7)
+   mover.D=math.clamp(mass*420,6000,1.2e6)
+   -- Pull the block inward instead of freezing it at the spot where it entered.
+   -- Keep only a small fraction of its original offset so captured blocks gather
+   -- near the moving sphere center, similar to the working magnet pull.
+   local relative=assembly.Position-center
+   local maxHoldOffset=math.max(1,TelekinesisGlassRadius-1)
+   if relative.Magnitude>maxHoldOffset then
+    relative=relative.Unit*maxHoldOffset
+   end
+   local holdOffset=relative*0.18
+   mover.Position=center+holdOffset
+   mover.Parent=assembly
+   TelekinesisGlassCaptured[assembly]={mover=mover,offset=holdOffset,collisionStates=collisionStates,physicalStates=physicalStates}
+  end
+  TelekinesisGlassConnection=RunService.RenderStepped:Connect(function(dt)
+   if not TelekinesisGlassActive or not TelekinesisGlassSphere or not TelekinesisGlassSphere.Parent then return end
+   local charNow=LocalPlayer.Character
+   local rootNow=charNow and charNow:FindFirstChild("HumanoidRootPart")
+   if not rootNow then return end
+   -- The sphere follows the player, but its direction stays fixed after activation.
+   local center=rootNow.Position+TelekinesisGlassBaseOffset+TelekinesisGlassOffset
+   TelekinesisGlassSphere.Position=center
+   local markerOffsets={
+    Vector3.new(-TelekinesisGlassRadius-1.2,0,0),
+    Vector3.new(TelekinesisGlassRadius+1.2,0,0),
+    Vector3.new(0,0,-TelekinesisGlassRadius-1.2),
+    Vector3.new(0,0,TelekinesisGlassRadius+1.2),
+   }
+   for i,marker in ipairs(TelekinesisGlassMarkers) do
+    if marker and marker.Parent and markerOffsets[i] then marker.Position=center+markerOffsets[i] end
+   end
+   TelekinesisGlassScanElapsed=TelekinesisGlassScanElapsed+dt
+   TelekinesisGlassFallbackScanElapsed=TelekinesisGlassFallbackScanElapsed+dt
+   if TelekinesisGlassScanElapsed>=0.05 then
+    TelekinesisGlassScanElapsed=0
+    overlap.FilterDescendantsInstances={charNow,TelekinesisGlassSphere,TelekinesisControls,TelekinesisTool}
+    local ok,parts=pcall(function() return Workspace:GetPartBoundsInRadius(center,TelekinesisGlassRadius,overlap) end)
+    if ok and parts then
+     -- First use the fast spatial query.
+     for _,part in ipairs(parts) do
+      local assembly=part.AssemblyRootPart or part
+      -- Test the scanned part itself: an assembly root can be outside the sphere
+      -- while another connected part is physically inside it.
+      if not TelekinesisGlassCaptured[assembly] and not IsExcluded(assembly) and not TelekinesisMagnetParts[assembly] and (part.Position-center).Magnitude<=TelekinesisGlassRadius then
+       CapturePart(part,center)
+      end
+     end
+    end
+   end
+   -- Map-wide scan: pull eligible loose parts from anywhere in Workspace into
+   -- the sphere. Work in batches to avoid freezing the client on large maps.
+   glassMapRefreshElapsed=glassMapRefreshElapsed+dt
+   if TelekinesisGlassFallbackScanElapsed>=0.12 then
+    TelekinesisGlassFallbackScanElapsed=0
+    if glassMapRefreshElapsed>=2 or glassMapScanIndex>#glassMapScanList then
+     glassMapRefreshElapsed=0
+     local ok,list=pcall(function() return Workspace:GetDescendants() end)
+     if ok and list then
+      glassMapScanList=list
+      glassMapScanIndex=1
+     end
+    end
+    local batchEnd=math.min(#glassMapScanList,glassMapScanIndex+179)
+    for scanIndex=glassMapScanIndex,batchEnd do
+     local obj=glassMapScanList[scanIndex]
+     if obj and obj.Parent and obj:IsA("BasePart") then
+      local assembly=obj.AssemblyRootPart or obj
+      -- Match Magnet's exclusions: only loose, unanchored physical assemblies;
+      -- never capture any part belonging to a humanoid model or the local avatar.
+      local inHumanoidModel=false
+      local ancestor=obj.Parent
+      while ancestor and ancestor~=Workspace do
+       if ancestor:IsA("Model") and ancestor:FindFirstChildOfClass("Humanoid") then inHumanoidModel=true; break end
+       ancestor=ancestor.Parent
+      end
+      local charForScan=LocalPlayer.Character
+      if not inHumanoidModel and not (charForScan and obj:IsDescendantOf(charForScan))
+       and not TelekinesisGlassCaptured[assembly] and not TelekinesisMagnetParts[assembly]
+       and not IsExcluded(assembly) and assembly.Parent and not assembly.Anchored then
+       CapturePart(assembly,center)
+      end
+     end
+    end
+    glassMapScanIndex=batchEnd+1
+   end
+   for part,data in pairs(TelekinesisGlassCaptured) do
+    if not part.Parent or part.Anchored or not data.mover or not data.mover.Parent then
+     if data.mover then pcall(function() data.mover:Destroy() end) end
+     if data.collisionStates then for bodyPart,wasCollidable in pairs(data.collisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end end end
+     RestoreAssemblyMass(part, data.physicalStates)
+     TelekinesisGlassCaptured[part]=nil
+    else
+     -- Continuously pull captured blocks toward the sphere's moving center.
+     -- Do not CFrame-snap them: abrupt local teleports can be corrected by the
+     -- game/server and make a grabbed block appear to jump back to its old spot.
+     -- Keep every captured sphere block held even after it moves outside the visible sphere.
+     -- It is only removed from this table when shot, explicitly canceled, or destroyed/anchored.
+     data.mover.MaxForce=Vector3.new(2e9,2e9,2e9)
+     data.mover.Position=center+data.offset
+    end
+   end
+  end)
+  TelekinesisNotice("Sphere magnet ON: scanning Workspace in batches and pulling eligible loose, unanchored blocks toward the sphere center. Large maps take longer; physics ownership may limit movement.")
+ end)
+ TelekinesisUnpickButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then return end
+  ReleaseTelekinesis()
+  StopTelekinesisMagnet()
+  TelekinesisNotice("Canceled pickup: all held sphere and magnet blocks released.")
+ end)
+ -- Ensure released/throwing assemblies can collide with the map again.
+ local function EnableThrownAssemblyCollision(part)
+  if not part or not part.Parent then return end
+  local parts={part}
+  pcall(function()
+   for _,connectedPart in ipairs(part:GetConnectedParts(true)) do
+    table.insert(parts,connectedPart)
+   end
+  end)
+  for _,bodyPart in ipairs(parts) do
+   if bodyPart and bodyPart.Parent and bodyPart:IsA("BasePart") then
+    pcall(function() bodyPart.CanCollide=true end)
+   end
+  end
+ end
+ 
+ -- Sphere throw helper: detach the sphere's hold mover, restore collision, and
+ -- briefly apply a strong velocity controller so the hold force cannot cancel
+ -- the launch immediately. Server-owned assemblies may still be restricted by
+ -- the experience, but this gives locally controlled blocks a clear launch.
+ local function LaunchSphereAssembly(part)
+  if not part or not part.Parent or not part:IsA("BasePart") then return false end
+  local launchPart=part.AssemblyRootPart or part
+  if not launchPart or not launchPart.Parent or launchPart.Anchored then return false end
+  EnableThrownAssemblyCollision(launchPart)
+  local direction=GetTelekinesisAimDirection(launchPart.Position)
+  local velocity=direction*350+Vector3.new(0,8,0)
+  pcall(function()
+   launchPart.AssemblyAngularVelocity=Vector3.new(0,8,0)
+   launchPart.AssemblyLinearVelocity=velocity
+  end)
+  local boost
+  pcall(function()
+   boost=Instance.new("BodyVelocity")
+   boost.Name="BlueModeSphereThrowVelocity"
+   boost.Velocity=velocity
+   boost.MaxForce=Vector3.new(1e9,1e9,1e9)
+   boost.P=1e6
+   boost.Parent=launchPart
+  end)
+  task.spawn(function()
+   for _=1,5 do
+    task.wait(0.04)
+    if launchPart and launchPart.Parent and not launchPart.Anchored then
+     pcall(function() launchPart.AssemblyLinearVelocity=velocity end)
+    end
+   end
+   if boost then pcall(function() boost:Destroy() end) end
+  end)
+  return true
+ end
+
+ -- Fast, gunshot-like launch: high forward velocity and only a small upward lift.
+ TelekinesisThrowButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
+  local direction=GetTelekinesisAimDirection()
+  local target=TelekinesisTarget
+
+  -- Sphere-captured blocks are a separate pickup source. Throw one of those first
+  -- when no classic individually selected block is active.
+  for part,data in pairs(TelekinesisGlassCaptured) do
+   if part and part.Parent and part:IsA("BasePart") and not part.Anchored then
+    TelekinesisGlassCaptured[part]=nil
+    if data then
+     RestoreAssemblyMass(part, data.physicalStates)
+     if data.mover then pcall(function() data.mover:Destroy() end) end
+     if data.collisionStates then
+      for bodyPart,wasCollidable in pairs(data.collisionStates) do
+       if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end
+      end
+     end
+    end
+    pcall(function()
+     EnableThrownAssemblyCollision(part)
+     part.AssemblyLinearVelocity=GetTelekinesisAimDirection(part.Position)*350+Vector3.new(0,8,0)
+     part.AssemblyAngularVelocity=Vector3.new(0,8,0)
+    end)
+    TelekinesisNotice("Threw one block captured by the sphere.")
+    return
+   else
+    TelekinesisGlassCaptured[part]=nil
+    if data and data.mover then pcall(function() data.mover:Destroy() end) end
+   end
+  end
+
+  -- First throw the classic individually picked-up block, if there is one.
+  if target and target.Parent and TelekinesisMover then
+   ReleaseTelekinesis()
+   pcall(function()
+    if not target.Anchored then
+     EnableThrownAssemblyCollision(target)
+     target.AssemblyLinearVelocity=GetTelekinesisAimDirection(target.Position)*350+Vector3.new(0,8,0)
+     target.AssemblyAngularVelocity=Vector3.new(0,8,0)
+    end
+   end)
+   TelekinesisNotice("Threw the selected block. Server rules may limit the effect.")
+   return
+  end
+
+  -- If no individually held block exists, THROW BLOCK now throws one block
+  -- currently held by the map-wide magnet instead of reporting no selection.
+  for part,movers in pairs(TelekinesisMagnetParts) do
+   if part and part.Parent and not part.Anchored then
+    TelekinesisMagnetParts[part]=nil
+    if movers then
+     for _,mover in ipairs(movers) do pcall(function() mover:Destroy() end) end
+    end
+    pcall(function()
+     EnableThrownAssemblyCollision(part)
+     part.AssemblyLinearVelocity=GetTelekinesisAimDirection(part.Position)*350+Vector3.new(0,8,0)
+     part.AssemblyAngularVelocity=Vector3.new(0,8,0)
+    end)
+    TelekinesisNotice("Threw one magneted block. Other magneted blocks remain held.")
+    return
+   else
+    if movers then for _,mover in ipairs(movers) do pcall(function() mover:Destroy() end) end end
+    TelekinesisMagnetParts[part]=nil
+   end
+  end
+
+  TelekinesisNotice("No held block found. Pick up a block or turn MAGNET on first.")
+ end)
+ TelekinesisThrowMagnetButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then
+   TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first.")
+   return
+  end
+  local direction=GetTelekinesisAimDirection()
+  local chosenPart,chosenMovers=nil,nil
+  -- Snapshot and validate the magnet list, then choose exactly one valid part.
+  for part,movers in pairs(TelekinesisMagnetParts) do
+   if typeof(part)=="Instance" and part:IsA("BasePart") and part.Parent and not part.Anchored then
+    chosenPart,chosenMovers=part,movers
+    break
+   else
+    TelekinesisMagnetParts[part]=nil
+    if movers then for _,mover in ipairs(movers) do pcall(function() mover:Destroy() end) end end
+   end
+  end
+  if not chosenPart then
+   TelekinesisNotice("No magneted block found. Turn MAGNET on and wait until a block is held.")
+   return
+  end
+
+  local launchPart=chosenPart.AssemblyRootPart or chosenPart
+  -- Remove only this block from magnet tracking, including an assembly-root alias.
+  TelekinesisMagnetParts[chosenPart]=nil
+  TelekinesisMagnetParts[launchPart]=nil
+  local ignoreUntil=os.clock()+6
+  TelekinesisMagnetIgnoreUntil[chosenPart]=ignoreUntil
+  TelekinesisMagnetIgnoreUntil[launchPart]=ignoreUntil
+  if chosenMovers then
+   RestoreAssemblyMass(launchPart, chosenMovers.PhysicalStates)
+   for _,mover in ipairs(chosenMovers) do
+    if typeof(mover)=="Instance" then pcall(function() mover:Destroy() end) end
+   end
+   local collisionStates=chosenMovers.CollisionStates
+   if collisionStates then
+    for bodyPart,wasCollidable in pairs(collisionStates) do
+     if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end
+    end
+   end
+  end
+  local launchVelocity=GetTelekinesisAimDirection(launchPart.Position)*350+Vector3.new(0,8,0)
+  local function ApplyLaunch()
+   if launchPart and launchPart.Parent and not launchPart.Anchored then
+    pcall(function()
+     EnableThrownAssemblyCollision(launchPart)
+     launchPart.AssemblyAngularVelocity=Vector3.new(0,8,0)
+     launchPart.AssemblyLinearVelocity=launchVelocity
+    end)
+   end
+  end
+  -- Reapply for a short burst so leftover magnet/ride movers cannot cancel the throw.
+  ApplyLaunch()
+  task.spawn(function()
+   for _=1,16 do
+    task.wait(0.05)
+    ApplyLaunch()
+   end
+  end)
+  if next(TelekinesisMagnetParts)==nil then
+   task.delay(0.9,function()
+    if next(TelekinesisMagnetParts)==nil then StopTelekinesisMagnet() end
+   end)
+  end
+  TelekinesisNotice("Threw one magneted block. Other magneted blocks remain held.")
+ end)
+ TelekinesisThrowAllMagnetButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
+  local direction=GetTelekinesisAimDirection()
+  local thrown=0
+  -- Snapshot the tracked assemblies first, then remove their orbit movers and launch all together.
+  local magneted={}
+  for part,movers in pairs(TelekinesisMagnetParts) do
+   table.insert(magneted,{part=part,movers=movers})
+  end
+  for _,entry in ipairs(magneted) do
+   local part,movers=entry.part,entry.movers
+   TelekinesisMagnetParts[part]=nil
+   if movers then
+    for _,mover in ipairs(movers) do pcall(function() mover:Destroy() end) end
+   end
+   if part and part.Parent and not part.Anchored then
+    pcall(function()
+     EnableThrownAssemblyCollision(part)
+     part.AssemblyLinearVelocity=GetTelekinesisAimDirection(part.Position)*350+Vector3.new(0,8,0)
+     part.AssemblyAngularVelocity=Vector3.new(0,8,0)
+    end)
+    thrown=thrown+1
+   end
+  end
+  if next(TelekinesisMagnetParts)==nil then StopTelekinesisMagnet() end
+  if thrown>0 then
+   TelekinesisNotice("Threw all "..thrown.." magneted blocks. Server rules may limit the effect.")
+  else
+   TelekinesisNotice("No magneted blocks to throw. Turn MAGNET on first.")
+  end
+ end)
+ TelekinesisThrowSphereButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
+  for part,data in pairs(TelekinesisGlassCaptured) do
+   if part and part.Parent and part:IsA("BasePart") and not part.Anchored then
+    TelekinesisGlassCaptured[part]=nil
+    if data then
+     RestoreAssemblyMass(part, data.physicalStates)
+     if data.mover then pcall(function() data.mover:Destroy() end) end
+     if data.collisionStates then
+      for bodyPart,wasCollidable in pairs(data.collisionStates) do
+       if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end
+      end
+     end
+    end
+    LaunchSphereAssembly(part)
+    TelekinesisNotice("Threw one sphere-captured block toward the crosshair.")
+    return
+   else
+    TelekinesisGlassCaptured[part]=nil
+    if data and data.mover then pcall(function() data.mover:Destroy() end) end
+   end
+  end
+  TelekinesisNotice("No sphere-captured block found. Turn on the glass pickup zone and wait for a block to enter.")
+ end)
+
+ TelekinesisThrowSphereAllButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
+  local captured={}
+  for part,data in pairs(TelekinesisGlassCaptured) do
+   table.insert(captured,{part=part,data=data})
+  end
+  local thrown=0
+  for _,entry in ipairs(captured) do
+   local part,data=entry.part,entry.data
+   TelekinesisGlassCaptured[part]=nil -- remove from the sphere updater before launching
+   if data then
+    RestoreAssemblyMass(part, data.physicalStates)
+    if data.mover then pcall(function() data.mover:Destroy() end) end
+    if data.collisionStates then
+     for bodyPart,wasCollidable in pairs(data.collisionStates) do
+      if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end
+     end
+    end
+   end
+   if part and part.Parent and part:IsA("BasePart") and not part.Anchored then
+    if LaunchSphereAssembly(part) then thrown=thrown+1 end
+   end
+  end
+  if thrown>0 then
+   TelekinesisNotice("Threw all "..thrown.." sphere-captured blocks toward the crosshair.")
+  else
+   TelekinesisNotice("The sphere has no captured blocks yet. Turn on the glass pickup zone and wait for blocks to gather.")
+  end
+ end)
+
+
+ -- Overhead pickup zone: gathers loose, unanchored parts near a visible orb above the avatar.
+ local function HeadReleaseAll(throwDirection)
+  for part,data in pairs(HeadPickupCaptured) do
+   HeadPickupCaptured[part]=nil
+   if data and data.mover then pcall(function() data.mover:Destroy() end) end
+   if data and data.collisionStates then
+    for bodyPart,wasCollidable in pairs(data.collisionStates) do
+     if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end
+    end
+   end
+   if part and part.Parent and not part.Anchored then
+    RestoreAssemblyMass(part,data and data.physicalStates)
+    if throwDirection then
+     pcall(function() part.AssemblyLinearVelocity=throwDirection*350+Vector3.new(0,8,0) end)
+     task.delay(0.05,function() if part and part.Parent and not part.Anchored then pcall(function() part.AssemblyLinearVelocity=throwDirection*350+Vector3.new(0,8,0) end) end end)
+    end
+   end
+  end
+ end
+ local function StopHeadPickup()
+  HeadPickupActive=false
+  if HeadPickupConnection then HeadPickupConnection:Disconnect(); HeadPickupConnection=nil end
+  HeadReleaseAll(nil)
+  if HeadPickupSphere then pcall(function() HeadPickupSphere:Destroy() end); HeadPickupSphere=nil end
+  if HeadPickupButton then HeadPickupButton.Text="START HEAD PICKUP" end
+ end
+ local function HeadAimDirection()
+  local cam=Workspace.CurrentCamera
+  return cam and cam.CFrame.LookVector or Vector3.new(0,0,-1)
+ end
+ HeadPickupButton.Activated:Connect(function()
+  if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
+  if HeadPickupActive then TelekinesisNotice("Overhead pickup is already active."); return end
+  local char=LocalPlayer.Character; local root=char and char:FindFirstChild("HumanoidRootPart")
+  if not root then TelekinesisNotice("Your character is not ready."); return end
+  local orb=Instance.new("Part"); orb.Name="BlueModeHeadPickupZone"; orb.Shape=Enum.PartType.Ball
+  orb.Size=Vector3.new(12,12,12); orb.Material=Enum.Material.ForceField; orb.Color=Color3.fromRGB(110,220,255)
+  orb.Transparency=0.78; orb.Anchored=true; orb.CanCollide=false; orb.CanTouch=false; orb.CanQuery=false; orb.Parent=Workspace
+  HeadPickupSphere=orb; HeadPickupActive=true; HeadPickupButton.Text="HEAD PICKUP: ACTIVE"
+  local overlap=OverlapParams.new(); overlap.FilterType=Enum.RaycastFilterType.Exclude; overlap.RespectCanCollide=false
+  HeadPickupConnection=RunService.Heartbeat:Connect(function()
+   if not HeadPickupActive or not HeadPickupSphere or not HeadPickupSphere.Parent then return end
+   local c=LocalPlayer.Character; local r=c and c:FindFirstChild("HumanoidRootPart"); if not r then return end
+   local center=r.Position+Vector3.new(0,7,0); HeadPickupSphere.Position=center
+   overlap.FilterDescendantsInstances={c,HeadPickupSphere,TelekinesisControls,TelekinesisTool}
+   local ok,parts=pcall(function() return Workspace:GetPartBoundsInRadius(center,6,overlap) end)
+   if ok and parts then
+    for _,obj in ipairs(parts) do
+     if obj:IsA("BasePart") and obj.Parent and not obj.Anchored and not IsHumanoidCharacterPart(obj) then
+      local assembly=obj.AssemblyRootPart or obj
+      if assembly and assembly.Parent and not assembly.Anchored and not HeadPickupCaptured[assembly] and not TelekinesisMagnetParts[assembly] and not TelekinesisGlassCaptured[assembly] and not (c and assembly:IsDescendantOf(c)) then
+       local humanoidAncestor=false; local anc=assembly.Parent
+       while anc and anc~=Workspace do if anc:IsA("Model") and anc:FindFirstChildOfClass("Humanoid") then humanoidAncestor=true; break end; anc=anc.Parent end
+       if not humanoidAncestor then
+        local collisions={}; local connected={assembly}; pcall(function() for _,cp in ipairs(assembly:GetConnectedParts(true)) do table.insert(connected,cp) end end)
+        for _,cp in ipairs(connected) do if cp and cp:IsA("BasePart") and collisions[cp]==nil then collisions[cp]=cp.CanCollide; pcall(function() cp.CanCollide=false end) end end
+        local physical=MakeAssemblyLight(assembly); local mass=1; pcall(function() mass=math.max(1,assembly.AssemblyMass) end)
+        local mover=Instance.new("BodyPosition"); mover.Name="BlueModeHeadPickupHold"; local force=math.clamp(mass*Workspace.Gravity*180,2e6,8e9)
+        mover.MaxForce=Vector3.new(force,force,force); mover.P=math.clamp(mass*6500,50000,1.5e7); mover.D=math.clamp(mass*500,6000,1.5e6)
+        mover.Position=center+Vector3.new(math.random(-3,3),math.random(-2,2),math.random(-3,3)); mover.Parent=assembly
+        HeadPickupCaptured[assembly]={mover=mover,collisionStates=collisions,physicalStates=physical,offset=mover.Position-center}
+       end
+      end
+     end
+    end
+   end
+   for part,data in pairs(HeadPickupCaptured) do
+    if not part or not part.Parent or part.Anchored or not data.mover or not data.mover.Parent then
+     if data.mover then pcall(function() data.mover:Destroy() end) end
+     if data.collisionStates then for bp,was in pairs(data.collisionStates) do if bp and bp.Parent then pcall(function() bp.CanCollide=was end) end end end
+     RestoreAssemblyMass(part,data.physicalStates); HeadPickupCaptured[part]=nil
+    else data.mover.MaxForce=Vector3.new(2e9,2e9,2e9); data.mover.Position=center+(data.offset or Vector3.zero) end
+   end
+  end)
+  TelekinesisNotice("Overhead pickup started. Loose blocks gather above your head.")
+ end)
+ HeadThrowButton.Activated:Connect(function()
+  local part,data=next(HeadPickupCaptured)
+  if not part then TelekinesisNotice("No overhead-captured block to throw."); return end
+  HeadPickupCaptured[part]=nil
+  if data.mover then pcall(function() data.mover:Destroy() end) end
+  if data.collisionStates then for bp,was in pairs(data.collisionStates) do if bp and bp.Parent then pcall(function() bp.CanCollide=was end) end end end
+  RestoreAssemblyMass(part,data.physicalStates)
+  if part.Parent and not part.Anchored then local dir=HeadAimDirection(); pcall(function() part.AssemblyLinearVelocity=dir*350+Vector3.new(0,8,0) end) end
+  TelekinesisNotice("Threw one overhead-captured block.")
+ end)
+ HeadThrowAllButton.Activated:Connect(function()
+  local count=0; local dir=HeadAimDirection(); local list={}; for part in pairs(HeadPickupCaptured) do table.insert(list,part) end
+  for _,part in ipairs(list) do local data=HeadPickupCaptured[part]; HeadPickupCaptured[part]=nil
+   if data and data.mover then pcall(function() data.mover:Destroy() end) end
+   if data and data.collisionStates then for bp,was in pairs(data.collisionStates) do if bp and bp.Parent then pcall(function() bp.CanCollide=was end) end end end
+   if part and part.Parent and not part.Anchored then RestoreAssemblyMass(part,data and data.physicalStates); pcall(function() part.AssemblyLinearVelocity=dir*350+Vector3.new(0,8,0) end); count=count+1 end
+  end
+  TelekinesisNotice(count>0 and ("Threw "..count.." overhead-captured blocks.") or "No overhead-captured blocks to throw.")
+ end)
+ HeadCancelButton.Activated:Connect(function() StopHeadPickup(); TelekinesisNotice("Overhead pickup stopped; held blocks released.") end)
+
+ -- Shooter item fires one or all loose blocks currently captured by the sphere or magnet.
+ local function ShootOneCapturedBlock()
+  -- Prefer a sphere-captured assembly when one is available.
+  for part,data in pairs(TelekinesisGlassCaptured) do
+   if part and part.Parent and part:IsA("BasePart") and not part.Anchored and not IsHumanoidCharacterPart(part) then
+    TelekinesisGlassCaptured[part]=nil
+    if data then
+     RestoreAssemblyMass(part,data.physicalStates)
+     if data.mover then pcall(function() data.mover:Destroy() end) end
+     if data.collisionStates then for bodyPart,wasCollidable in pairs(data.collisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end end end
+    end
+    local ok=LaunchSphereAssembly(part)
+    if ok then TelekinesisNotice("SHOOT: launched one sphere-captured block toward the crosshair.") else TelekinesisNotice("Could not launch that sphere block.") end
+    return
+   else
+    TelekinesisGlassCaptured[part]=nil
+    if data and data.mover then pcall(function() data.mover:Destroy() end) end
+   end
+  end
+  -- Also support blocks held by the overhead pickup zone.
+  for part,data in pairs(HeadPickupCaptured) do
+   if part and part.Parent and part:IsA("BasePart") and not part.Anchored and not IsHumanoidCharacterPart(part) then
+    HeadPickupCaptured[part]=nil
+    if data then
+     if data.mover then pcall(function() data.mover:Destroy() end) end
+     if data.collisionStates then for bodyPart,wasCollidable in pairs(data.collisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end end end
+     RestoreAssemblyMass(part,data.physicalStates)
+    end
+    local launchPart=part.AssemblyRootPart or part
+    pcall(function() EnableThrownAssemblyCollision(launchPart); launchPart.AssemblyAngularVelocity=Vector3.new(0,8,0); launchPart.AssemblyLinearVelocity=GetTelekinesisAimDirection(launchPart.Position)*350+Vector3.new(0,8,0) end)
+    task.spawn(function() for _=1,12 do task.wait(0.05); if launchPart and launchPart.Parent and not launchPart.Anchored then pcall(function() launchPart.AssemblyLinearVelocity=GetTelekinesisAimDirection(launchPart.Position)*350+Vector3.new(0,8,0) end) end end end)
+    TelekinesisNotice("SHOOT: launched one overhead-captured block toward the crosshair.")
+    return
+   else
+    HeadPickupCaptured[part]=nil
+    if data and data.mover then pcall(function() data.mover:Destroy() end) end
+   end
+  end
+  for part,movers in pairs(TelekinesisMagnetParts) do
+   if part and part.Parent and part:IsA("BasePart") and not part.Anchored and not IsHumanoidCharacterPart(part) then
+    local launchPart=part.AssemblyRootPart or part
+    TelekinesisMagnetParts[part]=nil
+    TelekinesisMagnetParts[launchPart]=nil
+    TelekinesisMagnetIgnoreUntil[part]=os.clock()+6
+    TelekinesisMagnetIgnoreUntil[launchPart]=os.clock()+6
+    if movers then
+     RestoreAssemblyMass(launchPart,movers.PhysicalStates)
+     for _,mover in ipairs(movers) do pcall(function() mover:Destroy() end) end
+     if movers.CollisionStates then for bodyPart,wasCollidable in pairs(movers.CollisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end end end
+    end
+    pcall(function() EnableThrownAssemblyCollision(launchPart); launchPart.AssemblyAngularVelocity=Vector3.new(0,8,0); launchPart.AssemblyLinearVelocity=GetTelekinesisAimDirection(launchPart.Position)*350+Vector3.new(0,8,0) end)
+    task.spawn(function() for _=1,12 do task.wait(0.05); if launchPart and launchPart.Parent and not launchPart.Anchored then pcall(function() launchPart.AssemblyLinearVelocity=GetTelekinesisAimDirection(launchPart.Position)*350+Vector3.new(0,8,0) end) end end end)
+    TelekinesisNotice("SHOOT: launched one magneted block toward the crosshair.")
+    return
+   else
+    TelekinesisMagnetParts[part]=nil
+   end
+  end
+  TelekinesisNotice("Nothing to shoot. Capture loose blocks with the sphere, MAGNET, or OVERHEAD PICKUP first.")
+ end
+ local function ShootAllCapturedBlocks()
+  local count=0
+  local sphereList={}
+  for part,data in pairs(TelekinesisGlassCaptured) do table.insert(sphereList,{part=part,data=data}) end
+  for _,entry in ipairs(sphereList) do
+   local part,data=entry.part,entry.data
+   TelekinesisGlassCaptured[part]=nil
+   if data then
+    RestoreAssemblyMass(part,data.physicalStates)
+    if data.mover then pcall(function() data.mover:Destroy() end) end
+    if data.collisionStates then for bodyPart,wasCollidable in pairs(data.collisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end end end
+   end
+   if part and part.Parent and part:IsA("BasePart") and not part.Anchored and not IsHumanoidCharacterPart(part) then
+    if LaunchSphereAssembly(part) then count=count+1 end
+   end
+  end
+  local headList={}
+  for part,data in pairs(HeadPickupCaptured) do table.insert(headList,{part=part,data=data}) end
+  for _,entry in ipairs(headList) do
+   local part,data=entry.part,entry.data
+   HeadPickupCaptured[part]=nil
+   if data then
+    if data.mover then pcall(function() data.mover:Destroy() end) end
+    if data.collisionStates then for bodyPart,wasCollidable in pairs(data.collisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end end end
+    RestoreAssemblyMass(part,data.physicalStates)
+   end
+   if part and part.Parent and part:IsA("BasePart") and not part.Anchored and not IsHumanoidCharacterPart(part) then
+    local launchPart=part.AssemblyRootPart or part
+    pcall(function() EnableThrownAssemblyCollision(launchPart); launchPart.AssemblyAngularVelocity=Vector3.new(0,8,0); launchPart.AssemblyLinearVelocity=GetTelekinesisAimDirection(launchPart.Position)*350+Vector3.new(0,8,0) end)
+    count=count+1
+   end
+  end
+  local magnetList={}
+  for part,movers in pairs(TelekinesisMagnetParts) do table.insert(magnetList,{part=part,movers=movers}) end
+  for _,entry in ipairs(magnetList) do
+   local part,movers=entry.part,entry.movers
+   TelekinesisMagnetParts[part]=nil
+   if movers then
+    RestoreAssemblyMass(part,movers.PhysicalStates)
+    for _,mover in ipairs(movers) do pcall(function() mover:Destroy() end) end
+    if movers.CollisionStates then for bodyPart,wasCollidable in pairs(movers.CollisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end end end
+   end
+   if part and part.Parent and part:IsA("BasePart") and not part.Anchored and not IsHumanoidCharacterPart(part) then
+    local launchPart=part.AssemblyRootPart or part
+    pcall(function() EnableThrownAssemblyCollision(launchPart); launchPart.AssemblyAngularVelocity=Vector3.new(0,8,0); launchPart.AssemblyLinearVelocity=GetTelekinesisAimDirection(launchPart.Position)*350+Vector3.new(0,8,0) end)
+    count=count+1
+   end
+  end
+  if next(TelekinesisMagnetParts)==nil and TelekinesisMagnetActive then StopTelekinesisMagnet() end
+  if count>0 then TelekinesisNotice("SHOOT ALL: launched "..count.." captured blocks toward the crosshair.") else TelekinesisNotice("Nothing to shoot. Capture loose blocks with the sphere, MAGNET, or OVERHEAD PICKUP first.") end
+ end
+ -- ShotBlock inventory tool is defined outside this function's local scope.
+ -- Publish the active callbacks so its tap handler can actually invoke them.
+ _G.__BLUE_MODE_SHOOT_ONE_CAPTURED_BLOCK = ShootOneCapturedBlock
+ _G.__BLUE_MODE_SHOOT_ALL_CAPTURED_BLOCKS = ShootAllCapturedBlocks
+ if BlockShooterShootButton then BlockShooterShootButton.Activated:Connect(ShootOneCapturedBlock) end
+ if BlockShooterShootAllButton then BlockShooterShootAllButton.Activated:Connect(function() if not BlockShooterShootAllEnabled then TelekinesisNotice("BlockShooter Shoot All is OFF. Turn it ON using the button on BlockShooter."); return end; ShootAllCapturedBlocks() end) end
+ if BlockShooterVisibilityConnection then BlockShooterVisibilityConnection:Disconnect() end
+ BlockShooterVisibilityConnection=RunService.RenderStepped:Connect(function()
+  local captureActive=TelekinesisMagnetActive or TelekinesisGlassActive or HeadPickupActive
+  if TelekinesisCrosshair then
+   TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled or (BlockShooterEquipped and captureActive)
+  end
+  if BlockShooterGui then BlockShooterGui.Visible=BlockShooterEquipped and captureActive end
+ end)
+
+ local function MoveTarget(direction, stepAmount)
+  local moveStep = stepAmount or TelekinesisStep
+  if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
+  if TelekinesisGlassActive and TelekinesisGlassSphere and TelekinesisGlassSphere.Parent then
+   -- Move the glass zone on fixed world axes, independent of camera orientation:
+   -- Left/Right = world X, Up/Down = world Z, UP/DOWN buttons = world Y.
+   if direction=="Left" then TelekinesisGlassOffset=TelekinesisGlassOffset-Vector3.new(1,0,0)*moveStep
+   elseif direction=="Right" then TelekinesisGlassOffset=TelekinesisGlassOffset+Vector3.new(1,0,0)*moveStep
+   elseif direction=="Up" then TelekinesisGlassOffset=TelekinesisGlassOffset-Vector3.new(0,0,1)*moveStep
+   elseif direction=="Down" then TelekinesisGlassOffset=TelekinesisGlassOffset+Vector3.new(0,0,1)*moveStep
+   elseif direction=="Forward" then TelekinesisGlassOffset=TelekinesisGlassOffset+Vector3.new(0,1,0)*moveStep
+   elseif direction=="Back" then TelekinesisGlassOffset=TelekinesisGlassOffset-Vector3.new(0,1,0)*moveStep end
+   return
+  end
+  if not TelekinesisTarget or not TelekinesisTarget.Parent then TelekinesisNotice("Start the glass pickup zone or select a block first."); return end
+  -- Arrow buttons can pick up the selected movable assembly automatically, rather than
+  -- doing nothing just because PICK UP has not been pressed yet.
+  if not TelekinesisMover or not TelekinesisMover.Parent then
+   local target=TelekinesisTarget
+   if IsHumanoidCharacterPart(target) then TelekinesisNotice("NPCs and characters are excluded. Select an unanchored block instead."); return end
+   local rootPart=target.AssemblyRootPart or target
+   if target.Anchored or rootPart.Anchored then TelekinesisNotice("That selected block/assembly is anchored."); return end
+   TelekinesisTarget=rootPart
+   local character=LocalPlayer.Character
+   local root=character and character:FindFirstChild("HumanoidRootPart")
+   local camera=Workspace.CurrentCamera
+   local look=(camera and camera.CFrame.LookVector) or (root and root.CFrame.LookVector) or Vector3.new(0,0,-1)
+   local holdPosition=root and (root.Position+look*8+Vector3.new(0,2,0)) or rootPart.Position
+   local ok,mover=pcall(function()
+    local bp=Instance.new("BodyPosition")
+    bp.Name="BlueModeTelekinesisPosition"
+    bp.MaxForce=Vector3.new(1e8,1e8,1e8); bp.P=30000; bp.D=1800
+    bp.Position=holdPosition; bp.Parent=rootPart
+    return bp
+   end)
+   if not ok or not mover then TelekinesisNotice("Could not pick up this block locally."); return end
+   TelekinesisMover=mover
+   MakeAssemblyLight(rootPart)
+   TelekinesisTargetPosition=holdPosition
+   TelekinesisFollowOffset=Vector3.new(0,0,0)
+   TelekinesisPickButton.Text="BLOCK PICKED UP"
+   if TelekinesisRenderConnection then TelekinesisRenderConnection:Disconnect() end
+   TelekinesisRenderConnection=RunService.RenderStepped:Connect(function()
+    if not TelekinesisTarget or not TelekinesisTarget.Parent or not TelekinesisMover or not TelekinesisMover.Parent then ReleaseTelekinesis(); return end
+    if TelekinesisTarget.Anchored or ((TelekinesisTarget.AssemblyRootPart or TelekinesisTarget).Anchored) then ReleaseTelekinesis(); return end
+    local characterNow=LocalPlayer.Character
+    local rootNow=characterNow and characterNow:FindFirstChild("HumanoidRootPart")
+    local cameraNow=Workspace.CurrentCamera
+    if rootNow then
+     local look=(cameraNow and cameraNow.CFrame.LookVector) or rootNow.CFrame.LookVector
+     TelekinesisTargetPosition=rootNow.Position+look*8+Vector3.new(0,2,0)+TelekinesisFollowOffset
+    end
+    TelekinesisMover.Position=TelekinesisTargetPosition
+   end)
+  end
+  local camera=Workspace.CurrentCamera
+  local character=LocalPlayer.Character
+  local root=character and character:FindFirstChild("HumanoidRootPart")
+  if not camera and not root then return end
+  local basis=camera and camera.CFrame or root.CFrame
+  local right=basis.RightVector
+  local forward=basis.LookVector
+  local up=Vector3.new(0,1,0)
+  -- Arrow up/down move the held block forward/backward relative to the camera.
+  -- The separate UP/DOWN buttons move it vertically.
+  if direction=="Left" then TelekinesisFollowOffset=TelekinesisFollowOffset-right*moveStep
+  elseif direction=="Right" then TelekinesisFollowOffset=TelekinesisFollowOffset+right*moveStep
+  elseif direction=="Up" then TelekinesisFollowOffset=TelekinesisFollowOffset+forward*moveStep
+  elseif direction=="Down" then TelekinesisFollowOffset=TelekinesisFollowOffset-forward*moveStep
+  elseif direction=="Forward" then TelekinesisFollowOffset=TelekinesisFollowOffset+up*moveStep
+  elseif direction=="Back" then TelekinesisFollowOffset=TelekinesisFollowOffset-up*moveStep end
+ end
+ -- Hold-to-move controls: while the player keeps a button pressed, keep
+ -- nudging the held block in that direction. Supports mouse and touch input.
+ local function BindHoldMove(button, direction)
+  if not button then return end
+  local heldInputs = {}
+  button.InputBegan:Connect(function(input)
+   if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+   heldInputs[input] = true
+   if CharacterFlyConnection and CharacterFlyInputs[direction]~=nil then
+    CharacterFlyInputs[direction]=true
+    return
+   end
+   task.spawn(function()
+    while heldInputs[input] and button.Parent and TelekinesisCanControl() do
+     if CharacterFlyConnection and CharacterFlyInputs[direction]~=nil then
+      CharacterFlyInputs[direction]=true
+     else
+      MoveTarget(direction, 0.45)
+     end
+     task.wait(0.05)
+    end
+    heldInputs[input] = nil
+    if CharacterFlyInputs[direction]~=nil then CharacterFlyInputs[direction]=false end
+   end)
+  end)
+  button.InputEnded:Connect(function(input)
+   heldInputs[input] = nil
+   if CharacterFlyInputs[direction]~=nil then CharacterFlyInputs[direction]=false end
+  end)
+  UserInputService.InputEnded:Connect(function(input)
+   if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    heldInputs[input] = nil
+   end
+  end)
+ end
+ for direction,button in pairs(TelekinesisDirectionButtons) do
+  BindHoldMove(button, direction)
+ end
+ BindHoldMove(TelekinesisForwardButton, "Forward")
+ BindHoldMove(TelekinesisBackButton, "Back")
+end
+
+local function GiveTelekinesisTool()
+ local backpack=LocalPlayer:FindFirstChildOfClass("Backpack") or LocalPlayer:WaitForChild("Backpack",5)
+ if not backpack then return end
+ local existing=backpack:FindFirstChild(TelekinesisToolName) or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(TelekinesisToolName))
+ if existing and existing == TelekinesisTool and TelekinesisControls and TelekinesisControls.Parent then
+  GhostWallwalk.Text="TELEKINESIS IN INVENTORY"
+  task.delay(1.5,function() if GhostWallwalk and GhostWallwalk.Parent then GhostWallwalk.Text="GIVE TELEKINESIS" end end)
+  return
+ elseif existing then
+  -- Replace a stale tool left by an older script run; its event handlers may no longer exist.
+  pcall(function() existing:Destroy() end)
+ end
+ CreateTelekinesisControls()
+ local tool=Instance.new("Tool")
+ tool.Name=TelekinesisToolName; tool.ToolTip="Equip, click an unanchored block, then use the on-screen controls"
+ tool.RequiresHandle=false; tool.CanBeDropped=false; tool.Parent=backpack
+ TelekinesisTool=tool
+ tool.Equipped:Connect(function(mouse)
+  TelekinesisEquipped=true
+  CreateTelekinesisControls()
+  TelekinesisMouse=mouse or LocalPlayer:GetMouse()
+  SetTelekinesisControlsVisible(true)
+ end)
+ tool.Unequipped:Connect(function()
+  TelekinesisEquipped=false
+  -- Hide the UI, but keep a picked-up block following the player and keep an
+  -- active magnet running. Re-equip to access DROP / UNMAGNET controls again.
+  TelekinesisMouse=nil
+  SetTelekinesisControlsVisible(TelekinesisGuiMode)
+ end)
+ tool.Activated:Connect(SelectTelekinesisTarget)
+ GhostWallwalk.Text="TELEKINESIS GIVEN"
+ task.delay(1.5,function() if GhostWallwalk and GhostWallwalk.Parent then GhostWallwalk.Text="GIVE TELEKINESIS" end end)
+end
+
+GhostWallwalk.Activated:Connect(GiveTelekinesisTool)
+local ShotBlockTool=nil
+local ShotBlockEquipped=false
+local ShotBlockInputConnection=nil
+local ShotBlockLastFire=0
+local ShotBlockItemGui=nil
+local function SetShotBlockAimRay(screenPos)
+ local camera=Workspace.CurrentCamera
+ if not camera then return false end
+ local pos=screenPos
+ if not pos then pos=UserInputService:GetMouseLocation() end
+ if not pos then return false end
+ local guiService=game:GetService("GuiService")
+ local inset=guiService:GetGuiInset()
+ local ray=nil
+ -- MouseLocation and Input.Position are screen-space coordinates. Prefer
+ -- ScreenPointToRay so the tap/click lands at the same screen pixel; fall back
+ -- to viewport coordinates if the runtime does not support it.
+ local ok=pcall(function() ray=camera:ScreenPointToRay(pos.X,pos.Y) end)
+ if not ok or not ray then
+  ok=pcall(function() ray=camera:ViewportPointToRay(pos.X-inset.X,pos.Y-inset.Y) end)
+ end
+ if ok and ray then _G.__BLUE_MODE_SHOTBLOCK_TAP_RAY=ray; return true end
+ return false
+end
+local function FireShotBlock(screenPos)
+ if not ShotBlockEquipped then return end
+ if not ShotBlockShootAllEnabled then TelekinesisNotice("ShotBlock Shoot All is OFF. Turn the separate SHOT ALL: ON toggle back on to fire captured blocks."); return end
+ if not (TelekinesisMagnetActive or TelekinesisGlassActive or HeadPickupActive) then
+  TelekinesisNotice("Turn MAGNET, sphere, or OVERHEAD PICKUP ON and let loose blocks get captured first.")
+  return
+ end
+ SetShotBlockAimRay(screenPos)
+ local shootAll = _G.__BLUE_MODE_SHOOT_ALL_CAPTURED_BLOCKS
+ if type(shootAll)=="function" then
+  shootAll()
+ else
+  TelekinesisNotice("Open the Telekinesis GUI first so ShotBlock can connect to its capture system.")
+ end
+ task.delay(0.25,function() _G.__BLUE_MODE_SHOTBLOCK_TAP_RAY=nil end)
+end
+local function CreateShotBlockItemGui()
+ if ShotBlockItemGui and ShotBlockItemGui.Parent then ShotBlockItemGui:Destroy() end
+ local gui=Instance.new("ScreenGui")
+ gui.Name="BLUE_MODE_SHOTBLOCK_ITEM_CONTROLS"; gui.ResetOnSpawn=false; gui.IgnoreGuiInset=true
+ gui.DisplayOrder=PRIORITY.CONSOLE+102; gui.ZIndexBehavior=Enum.ZIndexBehavior.Global; gui.Parent=GuiContainer
+ ShotBlockItemGui=gui
+ ShotBlockShootAllToggleButton=MakeTelekinesisButton(gui,"ShotBlockShootAllToggle",ShotBlockShootAllEnabled and "SHOT ALL: ON" or "SHOT ALL: OFF",UDim2.new(0,142,0,42),UDim2.new(0,16,1,-18),ShotBlockShootAllEnabled and Color3.fromRGB(35,145,70) or Color3.fromRGB(145,45,45))
+ ShotBlockShootAllToggleButton.AnchorPoint=Vector2.new(0,1); ShotBlockShootAllToggleButton.ZIndex=10002; ShotBlockShootAllToggleButton.TextSize=13
+ ShotBlockShootAllToggleButton.Activated:Connect(function()
+  ShotBlockShootAllEnabled=not ShotBlockShootAllEnabled
+  UpdateShotBlockShootAllToggle()
+  TelekinesisNotice(ShotBlockShootAllEnabled and "ShotBlock Shoot All enabled." or "ShotBlock Shoot All disabled.")
+ end)
+ UpdateShotBlockShootAllToggle()
+end
+local function RemoveShotBlockItemGui()
+ if ShotBlockItemGui then ShotBlockItemGui:Destroy(); ShotBlockItemGui=nil end
+ ShotBlockShootAllToggleButton=nil
+end
+local function GiveShotBlockTool()
+ local backpack=LocalPlayer:FindFirstChildOfClass("Backpack") or LocalPlayer:WaitForChild("Backpack",5)
+ if not backpack then return end
+ local char=LocalPlayer.Character
+ local existing=backpack:FindFirstChild("ShotBlock") or (char and char:FindFirstChild("ShotBlock"))
+ if existing then TelekinesisNotice("ShotBlock is already in your inventory."); return end
+ local tool=Instance.new("Tool") tool.Name="ShotBlock" tool.ToolTip="Equip, capture loose blocks with MAGNET/sphere, then tap to SHOOT ALL" tool.RequiresHandle=false tool.CanBeDropped=false tool.Parent=backpack
+ ShotBlockTool=tool
+ tool.Equipped:Connect(function()
+  ShotBlockEquipped=true
+  CreateShotBlockItemGui()
+  if ShotBlockInputConnection then ShotBlockInputConnection:Disconnect() end
+  ShotBlockInputConnection=UserInputService.InputBegan:Connect(function(input,processed)
+   if not ShotBlockEquipped then return end
+   if input.UserInputType~=Enum.UserInputType.MouseButton1 and input.UserInputType~=Enum.UserInputType.Touch then return end
+   -- While equipped, accept the tap even when Roblox marks it processed; on mobile
+   -- that flag is commonly set for touches on the game viewport.
+   if os.clock()-ShotBlockLastFire<0.22 then return end
+   ShotBlockLastFire=os.clock()
+   FireShotBlock(input.Position)
+  end)
+  TelekinesisNotice("ShotBlock equipped: tap/click to SHOOT ALL captured loose blocks toward that point.")
+ end)
+ tool.Activated:Connect(function()
+  -- Tool activation fallback for desktop/controller. Touch uses its exact tap position above.
+  if not UserInputService.TouchEnabled then
+   if os.clock()-ShotBlockLastFire<0.22 then return end
+   ShotBlockLastFire=os.clock()
+   FireShotBlock(UserInputService:GetMouseLocation())
+  end
+ end)
+ tool.Unequipped:Connect(function() ShotBlockEquipped=false; RemoveShotBlockItemGui(); if ShotBlockInputConnection then ShotBlockInputConnection:Disconnect(); ShotBlockInputConnection=nil end; _G.__BLUE_MODE_SHOTBLOCK_TAP_RAY=nil end)
+ TelekinesisNotice("ShotBlock added to inventory. Equip ShotBlock to show its SHOT ALL: ON/OFF button.")
+end
+GhostGiveShotBlock.Activated:Connect(GiveShotBlockTool)
+GhostGiveShooter.Activated:Connect(function()
+ local backpack=LocalPlayer:FindFirstChildOfClass("Backpack") or LocalPlayer:WaitForChild("Backpack",5)
+ if not backpack then return end
+ local char=LocalPlayer.Character
+ local existing=backpack:FindFirstChild("BlockShooter") or (char and char:FindFirstChild("BlockShooter"))
+ if existing then TelekinesisNotice("BlockShooter is already in your inventory."); return end
+ local tool=Instance.new("Tool"); tool.Name="BlockShooter"; tool.ToolTip="Equip for Shoot Block / Shoot All controls"; tool.RequiresHandle=false; tool.CanBeDropped=false; tool.Parent=backpack
+ BlockShooterTool=tool
+ tool.Equipped:Connect(function() BlockShooterEquipped=true; local active=TelekinesisMagnetActive or TelekinesisGlassActive or HeadPickupActive; if BlockShooterGui then BlockShooterGui.Visible=active end; if TelekinesisCrosshair then TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled or active end end)
+ tool.Unequipped:Connect(function() BlockShooterEquipped=false; if BlockShooterGui then BlockShooterGui.Visible=false end; if TelekinesisCrosshair then TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled end end)
+ TelekinesisNotice("BlockShooter added to inventory.")
+end)
+GhostTelekinesisGui.Activated:Connect(function()
+ CreateTelekinesisControls()
+ TelekinesisGuiMode=true
+ SetTelekinesisControlsVisible(true)
+ TelekinesisNotice("Telekinesis GUI opened. Tap a movable block in the world to select it, then tap PICK UP.")
+end)
+
 GhostFreeze.MouseButton1Click:Connect(function()
  local character=LocalPlayer.Character local hum=character and character:FindFirstChildOfClass("Humanoid") local root=character and character:FindFirstChild("HumanoidRootPart")
  if not GhostIsFrozen then
@@ -1212,7 +3066,7 @@ GhostFreeze.MouseButton1Click:Connect(function()
 end)
 GhostIcon.MouseButton1Click:Connect(function() GhostPanel.Visible=not GhostPanel.Visible GhostPanelOpen=GhostPanel.Visible end)
 GhostCloseBtn.MouseButton1Click:Connect(function() GhostPanel.Visible=false GhostPanelOpen=false end)
-GhostMinBtn.MouseButton1Click:Connect(function() GhostMinimized=not GhostMinimized SetGhostActionButtonsVisible(not GhostMinimized) GhostPanel.Size=GhostMinimized and UDim2.new(0,240,0,38) or UDim2.new(0,240,0,220) end)
+GhostMinBtn.MouseButton1Click:Connect(function() GhostMinimized=not GhostMinimized SetGhostActionButtonsVisible(not GhostMinimized) GhostPanel.Size=GhostMinimized and UDim2.new(0,240,0,38) or UDim2.new(0,240,0,264) end)
 GhostLockBtn.MouseButton1Click:Connect(function() GhostLocked=not GhostLocked GhostLockBtn.Text=GhostLocked and "🔒" or "🔓" GhostTitle.Active=not GhostLocked end)
 local GhostDragging=false local GhostDragInput=nil local GhostDragStart=nil local GhostStartPos=nil
 GhostTitle.InputBegan:Connect(function(input)
@@ -1226,7 +3080,7 @@ UserInputService.InputChanged:Connect(function(input)
  end
 end)
 
-local DragHandle=Instance.new("TextButton")DragHandle.Size=UDim2.new(1,-30,0,22)DragHandle.BackgroundColor3=Color3.fromRGB(60,140,220)DragHandle.Text="🔵 BLUE MODE HUB | DRAG ME"DragHandle.TextColor3=Color3.new(1,1,1)DragHandle.Font=Enum.Font.GothamBold DragHandle.Parent=MainFrame AddRainbowGlow(DragHandle,2)local MinBtn=Instance.new("TextButton")MinBtn.Size=UDim2.new(0,22,1,0)MinBtn.Position=UDim2.new(1,-22,0,0)MinBtn.BackgroundColor3=Color3.fromRGB(200,50,50)MinBtn.Text="➖"MinBtn.TextColor3=Color3.new(1,1,1)MinBtn.Parent=MainFrame AddRainbowGlow(MinBtn,2)ESPBtn=Instance.new("TextButton")ESPBtn.Size=UDim2.new(0,85,0,30)ESPBtn.Position=UDim2.new(0,10,0,30)ESPBtn.BackgroundColor3=Color3.fromRGB(40,40,40)ESPBtn.Text="ESP: OFF"ESPBtn.TextColor3=Color3.new(1,1,1)ESPBtn.Parent=MainFrame Instance.new("UICorner",ESPBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(ESPBtn,3)TPToolBtn=Instance.new("TextButton")TPToolBtn.Size=UDim2.new(0,85,0,30)TPToolBtn.Position=UDim2.new(0,100,0,30)TPToolBtn.BackgroundColor3=Color3.fromRGB(40,40,40)TPToolBtn.Text="TP: OFF"TPToolBtn.TextColor3=Color3.new(1,1,1)TPToolBtn.Parent=MainFrame Instance.new("UICorner",TPToolBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(TPToolBtn,3)local CustomRedBtn=Instance.new("TextButton")CustomRedBtn.Name="CustomRedBtn"CustomRedBtn.Size=UDim2.new(0,110,0,32)CustomRedBtn.Position=UDim2.new(0,495,0,65)CustomRedBtn.BackgroundColor3=Color3.fromRGB(210,35,35)CustomRedBtn.Text="YOUTUBE"CustomRedBtn.TextColor3=Color3.new(1,1,1)CustomRedBtn.Font=Enum.Font.GothamBold CustomRedBtn.TextScaled=false CustomRedBtn.TextSize=14 CustomRedBtn.AutoLocalize=false CustomRedBtn.ZIndex=2 CustomRedBtn.Parent=MainFrame Instance.new("UICorner",CustomRedBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(CustomRedBtn,3)CustomRedBtn.MouseButton1Click:Connect(function()local LINK_TO_COPY="https://youtube.com/@blue_mode"if setclipboard then setclipboard(LINK_TO_COPY)end CustomRedBtn.Text="✅ COPIED!"task.wait(1.5)CustomRedBtn.Text="YOUTUBE"end)local YouTubeBtn=Instance.new("TextButton")YouTubeBtn.Size=UDim2.new(0,95,0,30)YouTubeBtn.Position=UDim2.new(0,195,0,30)YouTubeBtn.BackgroundColor3=Color3.fromRGB(30,100,220)YouTubeBtn.Text="Blue Mode Hub"YouTubeBtn.TextColor3=Color3.new(1,1,1)YouTubeBtn.Parent=MainFrame Instance.new("UICorner",YouTubeBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(YouTubeBtn,3)local MusicBtn=Instance.new("TextButton")MusicBtn.Size=UDim2.new(0,90,0,30)MusicBtn.Position=UDim2.new(0,300,0,30)MusicBtn.BackgroundColor3=Color3.fromRGB(40,80,160)MusicBtn.Text="🎵 MUSIC"MusicBtn.TextColor3=Color3.new(1,1,1)MusicBtn.Parent=MainFrame Instance.new("UICorner",MusicBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(MusicBtn,3)local LockBtn=Instance.new("TextButton")LockBtn.Size=UDim2.new(0,90,0,30)LockBtn.Position=UDim2.new(0,405,0,30)LockBtn.BackgroundColor3=Color3.fromRGB(50,50,50)LockBtn.Text="🔓 UNLOCK"LockBtn.TextColor3=Color3.new(1,1,1)LockBtn.Parent=MainFrame Instance.new("UICorner",LockBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(LockBtn,3)local ConsoleBtn=Instance.new("TextButton")ConsoleBtn.Size=UDim2.new(0,110,0,30)ConsoleBtn.Position=UDim2.new(0,505,0,30)ConsoleBtn.BackgroundColor3=Color3.fromRGB(30,120,90)ConsoleBtn.Text="💻 CONSOLE"ConsoleBtn.TextColor3=Color3.new(1,1,1)ConsoleBtn.Parent=MainFrame Instance.new("UICorner",ConsoleBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(ConsoleBtn,3)local MoveBtn=Instance.new("TextButton")MoveBtn.Size=UDim2.new(0,30,0,28)MoveBtn.Position=UDim2.new(0,620,0,65)MoveBtn.BackgroundColor3=Color3.fromRGB(72,28,110)MoveBtn.Text="👾"MoveBtn.TextColor3=Color3.new(1,1,1)MoveBtn.Parent=MainFrame Instance.new("UICorner",MoveBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(MoveBtn,3)local ExitBtn=Instance.new("TextButton")ExitBtn.Size=UDim2.new(0,30,0,28)ExitBtn.Position=UDim2.new(0,620,0,31)ExitBtn.BackgroundColor3=Color3.fromRGB(140,20,20)ExitBtn.Text="🗑️"ExitBtn.TextColor3=Color3.new(1,1,1)ExitBtn.Parent=MainFrame Instance.new("UICorner",ExitBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(ExitBtn,3)local AntiFlingBtn=Instance.new("TextButton")AntiFlingBtn.Name="AntiFlingToggleButton"AntiFlingBtn.Size=UDim2.new(0,170,0,30)AntiFlingBtn.Position=UDim2.new(0,10,0,105)AntiFlingBtn.BackgroundColor3=Color3.fromRGB(50,50,50)AntiFlingBtn.Text="🛡️ ANTI-FLING: OFF"AntiFlingBtn.TextColor3=Color3.new(1,1,1)AntiFlingBtn.Font=Enum.Font.GothamBold AntiFlingBtn.TextSize=13 AntiFlingBtn.Parent=MainFrame Instance.new("UICorner",AntiFlingBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(AntiFlingBtn,3)local TPGunMM2Btn=Instance.new("TextButton")TPGunMM2Btn.Name="TPToGunMM2Button"TPGunMM2Btn.Size=UDim2.new(0,170,0,30)TPGunMM2Btn.Position=UDim2.new(0,185,0,105)TPGunMM2Btn.BackgroundColor3=Color3.fromRGB(40,75,130)TPGunMM2Btn.Text="🎯 TP to gun(mm2)"TPGunMM2Btn.TextColor3=Color3.new(1,1,1)TPGunMM2Btn.Font=Enum.Font.GothamBold TPGunMM2Btn.TextSize=13 TPGunMM2Btn.Parent=MainFrame Instance.new("UICorner",TPGunMM2Btn).CornerRadius=UDim.new(0,6)AddRainbowGlow(TPGunMM2Btn,3)local TPGunMM2Busy=false local function FindRealMM2GunDrop()local exact={gundrop=true,droppedgun=true,dropped_gun=true}for _,obj in ipairs(workspace:GetDescendants())do local n=string.lower(obj.Name)if exact[n] and not (LocalPlayer.Character and obj:IsDescendantOf(LocalPlayer.Character)) then if obj:IsA("BasePart") then return obj elseif obj:IsA("Model") then local part=obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart",true)if part then return part end end end end return nil end TPGunMM2Btn.MouseButton1Click:Connect(function()if TPGunMM2Busy then return end if game.PlaceId~=142823291 then TPGunMM2Btn.Text="❌ MM2 ONLY"task.delay(1.5,function()if TPGunMM2Btn and TPGunMM2Btn.Parent then TPGunMM2Btn.Text="🎯 TP to gun(mm2)"end end)return end local character=LocalPlayer.Character local root=character and character:FindFirstChild("HumanoidRootPart")if not root then return end local drop=FindRealMM2GunDrop()if not drop then TPGunMM2Btn.Text="❌ GUN NOT FOUND"task.delay(1.5,function()if TPGunMM2Btn and TPGunMM2Btn.Parent then TPGunMM2Btn.Text="🎯 TP to gun(mm2)"end end)return end local oldCFrame=root.CFrame TPGunMM2Busy=true TPGunMM2Btn.Text="⏳ GOING TO GUN..."local ok=pcall(function()root.CFrame=drop.CFrame+Vector3.new(0,3,0)end)if ok then task.wait(0.08)local current=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")if current then pcall(function()current.CFrame=oldCFrame end)end TPGunMM2Btn.Text="✅ RETURNED"else TPGunMM2Btn.Text="❌ FAILED"end task.wait(1)if TPGunMM2Btn and TPGunMM2Btn.Parent then TPGunMM2Btn.Text="🎯 TP to gun(mm2)"end TPGunMM2Busy=false end)local function MakeMM2RoleTPButton(name,label,x,color)
+local DragHandle=Instance.new("TextButton")DragHandle.Size=UDim2.new(1,-30,0,22)DragHandle.BackgroundColor3=Color3.fromRGB(60,140,220)DragHandle.Text="🔵 BLUE MODE HUB | DRAG ME"DragHandle.TextColor3=Color3.new(1,1,1)DragHandle.Font=Enum.Font.GothamBold DragHandle.Parent=MainFrame AddRainbowGlow(DragHandle,2)local MinBtn=Instance.new("TextButton")MinBtn.Size=UDim2.new(0,22,1,0)MinBtn.Position=UDim2.new(1,-22,0,0)MinBtn.BackgroundColor3=Color3.fromRGB(200,50,50)MinBtn.Text="➖"MinBtn.TextColor3=Color3.new(1,1,1)MinBtn.Parent=MainFrame AddRainbowGlow(MinBtn,2)ESPBtn=Instance.new("TextButton")ESPBtn.Size=UDim2.new(0,85,0,30)ESPBtn.Position=UDim2.new(0,10,0,30)ESPBtn.BackgroundColor3=Color3.fromRGB(40,40,40)ESPBtn.Text="ESP: OFF"ESPBtn.TextColor3=Color3.new(1,1,1)ESPBtn.Parent=MainFrame Instance.new("UICorner",ESPBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(ESPBtn,3)TPToolBtn=Instance.new("TextButton")TPToolBtn.Size=UDim2.new(0,85,0,30)TPToolBtn.Position=UDim2.new(0,100,0,30)TPToolBtn.BackgroundColor3=Color3.fromRGB(40,40,40)TPToolBtn.Text="TP: OFF"TPToolBtn.TextColor3=Color3.new(1,1,1)TPToolBtn.Parent=MainFrame Instance.new("UICorner",TPToolBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(TPToolBtn,3)local CustomRedBtn=Instance.new("TextButton")CustomRedBtn.Name="CustomRedBtn"CustomRedBtn.Size=UDim2.new(0,110,0,32)CustomRedBtn.Position=UDim2.new(0,495,0,65)CustomRedBtn.BackgroundColor3=Color3.fromRGB(210,35,35)CustomRedBtn.Text="YOUTUBE"CustomRedBtn.TextColor3=Color3.new(1,1,1)CustomRedBtn.Font=Enum.Font.GothamBold CustomRedBtn.TextScaled=false CustomRedBtn.TextSize=14 CustomRedBtn.AutoLocalize=false CustomRedBtn.ZIndex=2 CustomRedBtn.Parent=MainFrame Instance.new("UICorner",CustomRedBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(CustomRedBtn,3)CustomRedBtn.MouseButton1Click:Connect(function()local LINK_TO_COPY="https://youtube.com/@blue_mode"if setclipboard then setclipboard(LINK_TO_COPY)end CustomRedBtn.Text="✅ COPIED!"task.wait(1.5)CustomRedBtn.Text="YOUTUBE"end)local YouTubeBtn=Instance.new("TextButton")YouTubeBtn.Size=UDim2.new(0,95,0,30)YouTubeBtn.Position=UDim2.new(0,195,0,30)YouTubeBtn.BackgroundColor3=Color3.fromRGB(30,100,220)YouTubeBtn.Text="Blue Mode Hub"YouTubeBtn.TextColor3=Color3.new(1,1,1)YouTubeBtn.Parent=MainFrame Instance.new("UICorner",YouTubeBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(YouTubeBtn,3)local MusicBtn=Instance.new("TextButton")MusicBtn.Size=UDim2.new(0,90,0,30)MusicBtn.Position=UDim2.new(0,300,0,30)MusicBtn.BackgroundColor3=Color3.fromRGB(40,80,160)MusicBtn.Text="🎵 MUSIC"MusicBtn.TextColor3=Color3.new(1,1,1)MusicBtn.Parent=MainFrame Instance.new("UICorner",MusicBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(MusicBtn,3)local LockBtn=Instance.new("TextButton")LockBtn.Size=UDim2.new(0,90,0,30)LockBtn.Position=UDim2.new(0,405,0,30)LockBtn.BackgroundColor3=Color3.fromRGB(50,50,50)LockBtn.Text="🔓 UNLOCK"LockBtn.TextColor3=Color3.new(1,1,1)LockBtn.Parent=MainFrame Instance.new("UICorner",LockBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(LockBtn,3)local ConsoleBtn=Instance.new("TextButton")ConsoleBtn.Size=UDim2.new(0,110,0,30)ConsoleBtn.Position=UDim2.new(0,505,0,30)ConsoleBtn.BackgroundColor3=Color3.fromRGB(30,120,90)ConsoleBtn.Text="💻 CONSOLE"ConsoleBtn.TextColor3=Color3.new(1,1,1)ConsoleBtn.Parent=MainFrame Instance.new("UICorner",ConsoleBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(ConsoleBtn,3)local MoveBtn=Instance.new("TextButton")MoveBtn.Size=UDim2.new(0,30,0,28)MoveBtn.Position=UDim2.new(0,620,0,65)MoveBtn.BackgroundColor3=Color3.fromRGB(72,28,110)MoveBtn.Text="👾"MoveBtn.TextColor3=Color3.new(1,1,1)MoveBtn.Parent=MainFrame Instance.new("UICorner",MoveBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(MoveBtn,3)local ExitBtn=Instance.new("TextButton")ExitBtn.Size=UDim2.new(0,30,0,28)ExitBtn.Position=UDim2.new(0,620,0,31)ExitBtn.BackgroundColor3=Color3.fromRGB(140,20,20)ExitBtn.Text="🗑️"ExitBtn.TextColor3=Color3.new(1,1,1)ExitBtn.Parent=MainFrame Instance.new("UICorner",ExitBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(ExitBtn,3)local AntiFlingBtn=Instance.new("TextButton")AntiFlingBtn.Name="AntiFlingToggleButton"AntiFlingBtn.Size=UDim2.new(0,170,0,30)AntiFlingBtn.Position=UDim2.new(0,10,0,105)AntiFlingBtn.BackgroundColor3=Color3.fromRGB(50,50,50)AntiFlingBtn.Text="🛡️ ANTI-FLING: OFF"AntiFlingBtn.TextColor3=Color3.new(1,1,1)AntiFlingBtn.Font=Enum.Font.GothamBold AntiFlingBtn.TextSize=13 AntiFlingBtn.Parent=MainFrame Instance.new("UICorner",AntiFlingBtn).CornerRadius=UDim.new(0,6)AddRainbowGlow(AntiFlingBtn,3)local TPGunMM2Btn=Instance.new("TextButton")TPGunMM2Btn.Name="TPToGunMM2Button"TPGunMM2Btn.Size=UDim2.new(0,170,0,30)TPGunMM2Btn.Position=UDim2.new(0,185,0,105)TPGunMM2Btn.BackgroundColor3=Color3.fromRGB(40,75,130)TPGunMM2Btn.Text="🎯 TP to gun(mm2)"TPGunMM2Btn.TextColor3=Color3.new(1,1,1)TPGunMM2Btn.Font=Enum.Font.GothamBold TPGunMM2Btn.TextSize=13 TPGunMM2Btn.Parent=MainFrame Instance.new("UICorner",TPGunMM2Btn).CornerRadius=UDim.new(0,6)AddRainbowGlow(TPGunMM2Btn,3)local TPGunMM2Busy=false local function FindRealMM2GunDrop()local exact={gundrop=true,droppedgun=true,dropped_gun=true}for _,obj in ipairs(workspace:GetDescendants())do local n=string.lower(obj.Name)if exact[n] and not (LocalPlayer.Character and obj:IsDescendantOf(LocalPlayer.Character)) then if obj:IsA("BasePart") then return obj elseif obj:IsA("Model") then local part=obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart",true)if part then return part end end end end return nil end TPGunMM2Btn.MouseButton1Click:Connect(function()if TPGunMM2Busy then return end if game.PlaceId~=142823291 then TPGunMM2Btn.Text="❌ MM2 ONLY"task.delay(1.5,function()if TPGunMM2Btn and TPGunMM2Btn.Parent then TPGunMM2Btn.Text="🎯 TP to gun(mm2)"end end)return end local character=LocalPlayer.Character local root=character and character:FindFirstChild("HumanoidRootPart")if not root then return end local drop=FindRealMM2GunDrop()if not drop then TPGunMM2Btn.Text="❌ GUN NOT FOUND"task.delay(1.5,function()if TPGunMM2Btn and TPGunMM2Btn.Parent then TPGunMM2Btn.Text="🎯 TP to gun(mm2)"end end)return end local oldCFrame=root.CFrame TPGunMM2Busy=true TPGunMM2Btn.Text="⏳ GOING TO GUN..."local ok=pcall(function()root.CFrame=drop.CFrame+Vector3.new(0,3,0)end)if ok then task.wait(0.28)local current=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")if current then pcall(function()current.CFrame=oldCFrame end)end TPGunMM2Btn.Text="✅ RETURNED"else TPGunMM2Btn.Text="❌ FAILED"end task.wait(1)if TPGunMM2Btn and TPGunMM2Btn.Parent then TPGunMM2Btn.Text="🎯 TP to gun(mm2)"end TPGunMM2Busy=false end)local function MakeMM2RoleTPButton(name,label,x,color)
  local b=Instance.new("TextButton") b.Name=name b.Size=UDim2.new(0,130,0,30) b.Position=UDim2.new(0,x,0,105) b.BackgroundColor3=color b.Text=label b.TextColor3=Color3.new(1,1,1) b.Font=Enum.Font.GothamBold b.TextSize=11 b.Parent=MainFrame Instance.new("UICorner",b).CornerRadius=UDim.new(0,6) AddRainbowGlow(b,3) return b
 end
 local TPTOMurdMM2Btn=MakeMM2RoleTPButton("TPToMurdererMM2Button","🔪 TP to murd(mm2)",360,Color3.fromRGB(130,35,35))
@@ -1509,15 +3363,21 @@ local function BMH_ClearPatchVisuals()
 end
 Players.PlayerRemoving:Connect(function(plr) BMH_ROLE_CACHE[plr.UserId] = nil end)
 GuiContainer.AncestryChanged:Connect(function(_, parent) if parent == nil then getgenv().BlueMode_ESP_Enabled=false getgenv().BlueMode_ESP_Unloading=true pcall(BMH_ClearPatchVisuals) end end)
+local BMH_PATCH_VISUALS_WERE_ENABLED = false
 task.spawn(function()
-    while task.wait(0.3) do
+    while task.wait(1) do
         if getgenv().BlueMode_ESP_Unloading then
             BMH_ClearPatchVisuals()
             break
         elseif not getgenv().BlueMode_ESP_Enabled then
-            BMH_ClearPatchVisuals()
+            -- Avoid repeatedly walking the entire Workspace while ESP is already off.
+            if BMH_PATCH_VISUALS_WERE_ENABLED or BMH_WAS_ROUND_ACTIVE then
+                BMH_ClearPatchVisuals()
+            end
+            BMH_PATCH_VISUALS_WERE_ENABLED = false
             BMH_WAS_ROUND_ACTIVE = false
         else
+            BMH_PATCH_VISUALS_WERE_ENABLED = true
             local isMM2 = BMH_IsMM2()
             local active = isMM2 and BMH_RoundActive()
             if isMM2 and active then
@@ -1554,7 +3414,7 @@ task.spawn(function()
                     end
                     if BMH_HasGun(plr) and plr.Character then
                         local h = BMH_GetHighlight(plr.Character, BMH_ROLE_HIGHLIGHT, plr.Character)
-                        h.FillColor = Color3.new(1,1,1); h.OutlineColor = Color3.new(1,1,1)
+                        h.FillColor = Color3.new(1,1,1); h.OutlineColor = Color3.fromRGB(0,0,0)
                         h.FillTransparency = 0.25; h.OutlineTransparency = 0
                     end
                 end
@@ -1621,4 +3481,3 @@ task.spawn(function()
         end
     end
 end)
-
