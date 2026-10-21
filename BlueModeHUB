@@ -758,7 +758,7 @@ local function SendChatMessage()
 end
 SendButton.MouseButton1Click:Connect(SendChatMessage)
 ChatInput.FocusLost:Connect(function(enterPressed) if enterPressed then SendChatMessage() end end)
-local function CopyText(value,button)local copyFn=setclipboard or toclipboard if type(copyFn)=="function"then local ok=pcall(copyFn,tostring(value or""))if ok then local oldText=button.Text button.Text="COPIED!"task.delay(1.2,function()if button and button.Parent then button.Text=oldText end end)return end end button.Text="CLIPBOARD UNAVAILABLE"task.delay(1.5,function()if button and button.Parent then button.Text="COPY FAILED"end end)end local function OpenChatMessageInfo(info)local InfoFrame=Instance.new("Frame")InfoFrame.Name="ChatMessageInfo"InfoFrame.Size=UDim2.new(0,310,0,300)InfoFrame.Position=UDim2.new(0.5,-155,0.5,-130)InfoFrame.BackgroundColor3=Color3.fromRGB(15,22,38)InfoFrame.Active=true InfoFrame.ZIndex=20 InfoFrame.Parent=ChatUI Instance.new("UICorner",InfoFrame).CornerRadius=UDim.new(0,12)AddRainbowGlow(InfoFrame,3)local InfoTitle=Instance.new("TextLabel")InfoTitle.Size=UDim2.new(1,-50,0,35)InfoTitle.Position=UDim2.new(0,12,0,4)InfoTitle.BackgroundTransparency=1 InfoTitle.Font=Enum.Font.GothamBold InfoTitle.Text="MESSAGE DETAILS"InfoTitle.TextColor3=Color3.new(1,1,1)InfoTitle.TextXAlignment=Enum.TextXAlignment.Left InfoTitle.ZIndex=21 InfoTitle.Parent=InfoFrame local CloseInfo=Instance.new("TextButton")CloseInfo.Size=UDim2.new(0,30,0,30)CloseInfo.Position=UDim2.new(1,-36,0,5)CloseInfo.BackgroundColor3=Color3.fromRGB(170,35,35)CloseInfo.Text="✕"CloseInfo.TextColor3=Color3.new(1,1,1)CloseInfo.Font=Enum.Font.GothamBold CloseInfo.ZIndex=21 CloseInfo.Parent=InfoFrame Instance.new("UICorner",CloseInfo).CornerRadius=UDim.new(0,7)CloseInfo.MouseButton1Click:Connect(function()InfoFrame:Destroy()end)local Preview=Instance.new("TextLabel")Preview.Size=UDim2.new(1,-24,0,52)Preview.Position=UDim2.new(0,12,0,42)Preview.BackgroundColor3=Color3.fromRGB(28,38,58)Preview.Font=Enum.Font.Gotham Preview.TextSize=13 Preview.TextWrapped=true Preview.Text="@"..tostring(info.username).."  •  "..tostring(info.time).."\n"..tostring(info.message)Preview.TextColor3=Color3.fromRGB(235,240,255)Preview.ZIndex=21 Preview.Parent=InfoFrame Instance.new("UICorner",Preview).CornerRadius=UDim.new(0,7)local function MakeCopyButton(text,y,value)local button=Instance.new("TextButton")button.Size=UDim2.new(1,-24,0,38)button.Position=UDim2.new(0,12,0,y)button.BackgroundColor3=Color3.fromRGB(20,95,170)button.Font=Enum.Font.GothamBold button.TextSize=13 button.Text=text button.TextColor3=Color3.new(1,1,1)button.ZIndex=21 button.Parent=InfoFrame Instance.new("UICorner",button).CornerRadius=UDim.new(0,7)button.MouseButton1Click:Connect(function()CopyText(value,button)end)return button end MakeCopyButton("📋 COPY USERNAME",102,info.username)MakeCopyButton("📋 COPY DISPLAY NAME",147,info.displayName)MakeCopyButton("📋 COPY MESSAGE",192,info.message)local UseLanguage=Instance.new("TextButton")UseLanguage.Size=UDim2.new(1,-24,0,38)UseLanguage.Position=UDim2.new(0,12,0,237)UseLanguage.BackgroundColor3=Color3.fromRGB(20,125,90)UseLanguage.Font=Enum.Font.GothamBold UseLanguage.TextSize=12 UseLanguage.TextColor3=Color3.new(1,1,1)UseLanguage.ZIndex=21 UseLanguage.Parent=InfoFrame Instance.new("UICorner",UseLanguage).CornerRadius=UDim.new(0,7)local detected=info.sourceLanguage or ""UseLanguage.Text=detected~="" and ("🌐 USE LANGUAGE: "..detected) or "🌐 AUTO-DETECT LANGUAGE"UseLanguage.MouseButton1Click:Connect(function()if detected=="" then UseLanguage.Text="DETECTION UNAVAILABLE" return end for i,language in ipairs(Languages) do if language:lower()==detected:lower() then SelectedLanguageIndex=i LanguageButton.Text="To: "..language HeaderLanguageInput.Text=language UseLanguage.Text="✓ TARGET: "..language return end end UseLanguage.Text="LANGUAGE NOT IN LIST"end)end AddChatEntry=function(username,displayName,message,userId,sentTime,sourceLanguage,originalMessage)if not ChatLogBox.Parent or not message or tostring(message)==""then return end username=tostring(username or"Unknown")displayName=tostring(displayName or username)message=tostring(message)local timeText=sentTime or os.date("%H:%M:%S")local dedupeKey=tostring(userId or username).."|"..message.."|"..timeText if SeenChatKeys[dedupeKey]then return end SeenChatKeys[dedupeKey]=true if not IsRestoringChatHistory then table.insert(SharedChatHistory,{username=username,displayName=displayName,message=message,userId=userId,sentTime=timeText,sourceLanguage=sourceLanguage,originalMessage=originalMessage}) while #SharedChatHistory>100 do table.remove(SharedChatHistory,1) end end local Entry=Instance.new("TextButton")Entry.Name="ChatEntry"Entry.Size=UDim2.new(1,-4,0,66)Entry.BackgroundColor3=Color3.fromRGB(25,34,52)Entry.BorderSizePixel=0 Entry.AutoButtonColor=true Entry.Text=""Entry.LayoutOrder=#ChatLogBox:GetChildren()Entry.Parent=ChatLogBox Instance.new("UICorner",Entry).CornerRadius=UDim.new(0,6)local TextService=game:GetService("TextService")
+local function CopyText(value,button)local copyFn=setclipboard or toclipboard if type(copyFn)=="function"then local ok=pcall(copyFn,tostring(value or""))if ok then local oldText=button.Text button.Text="COPIED!"task.delay(1.2,function()if button and button.Parent then button.Text=oldText end end)return end end button.Text="CLIPBOARD UNAVAILABLE"task.delay(1.5,function()if button and button.Parent then button.Text="COPY FAILED"end end)end local function OpenChatMessageInfo(info)local InfoFrame=Instance.new("Frame")InfoFrame.Name="ChatMessageInfo"InfoFrame.Size=UDim2.new(0,310,0,300)InfoFrame.Position=UDim2.new(0.5,-155,0.5,-130)InfoFrame.BackgroundColor3=Color3.fromRGB(15,22,38)InfoFrame.Active=true InfoFrame.ZIndex=20 InfoFrame.Parent=ChatUI Instance.new("UICorner",InfoFrame).CornerRadius=UDim.new(0,12)AddRainbowGlow(InfoFrame,3)local InfoTitle=Instance.new("TextLabel")InfoTitle.Size=UDim2.new(1,-50,0,35)InfoTitle.Position=UDim2.new(0,12,0,4)InfoTitle.BackgroundTransparency=1 InfoTitle.Font=Enum.Font.GothamBold InfoTitle.Text="MESSAGE DETAILS"InfoTitle.TextColor3=Color3.new(1,1,1)InfoTitle.TextXAlignment=Enum.TextXAlignment.Left InfoTitle.ZIndex=21 InfoTitle.Parent=InfoFrame local CloseInfo=Instance.new("TextButton")CloseInfo.Size=UDim2.new(0,30,0,30)CloseInfo.Position=UDim2.new(1,-36,0,5)CloseInfo.BackgroundColor3=Color3.fromRGB(170,35,35)CloseInfo.Text="✕"CloseInfo.TextColor3=Color3.new(1,1,1)CloseInfo.Font=Enum.Font.GothamBold CloseInfo.ZIndex=21 CloseInfo.Parent=InfoFrame Instance.new("UICorner",CloseInfo).CornerRadius=UDim.new(0,7)CloseInfo.MouseButton1Click:Connect(function()InfoFrame:Destroy()end)local Preview=Instance.new("TextLabel")Preview.Size=UDim2.new(1,-24,0,52)Preview.Position=UDim2.new(0,12,0,42)Preview.BackgroundColor3=Color3.fromRGB(28,38,58)Preview.Font=Enum.Font.Gotham Preview.TextSize=13 Preview.TextWrapped=true Preview.Text="@"..tostring(info.username).."  •  "..tostring(info.time).."\n"..tostring(info.message)Preview.TextColor3=Color3.fromRGB(235,240,255)Preview.ZIndex=21 Preview.Parent=InfoFrame Instance.new("UICorner",Preview).CornerRadius=UDim.new(0,7)local function MakeCopyButton(text,y,value)local button=Instance.new("TextButton")button.Size=UDim2.new(1,-24,0,38)button.Position=UDim2.new(0,12,0,y)button.BackgroundColor3=Color3.fromRGB(20,95,170)button.Font=Enum.Font.GothamBold button.TextSize=13 button.Text=text button.TextColor3=Color3.new(1,1,1)button.ZIndex=21 button.Parent=InfoFrame Instance.new("UICorner",button).CornerRadius=UDim.new(0,7)button.MouseButton1Click:Connect(function()CopyText(value,button)end)return button end MakeCopyButton("📋 COPY USERNAME",102,info.username)MakeCopyButton("📋 COPY DISPLAY NAME",147,info.displayName)MakeCopyButton("📋 COPY MESSAGE",192,info.message)local UseLanguage=Instance.new("TextButton")UseLanguage.Size=UDim2.new(1,-24,0,38)UseLanguage.Position=UDim2.new(0,12,0,237)UseLanguage.BackgroundColor3=Color3.fromRGB(20,125,90)UseLanguage.Font=Enum.Font.GothamBold UseLanguage.TextSize=12 UseLanguage.TextColor3=Color3.new(1,1,1)UseLanguage.ZIndex=21 UseLanguage.Parent=InfoFrame Instance.new("UICorner",UseLanguage).CornerRadius=UDim.new(0,7)local detected=info.sourceLanguage or info.detectedLanguage or ""UseLanguage.Text=detected~="" and ("🌐 USE LANGUAGE: "..detected) or "🌐 AUTO-DETECT LANGUAGE"UseLanguage.MouseButton1Click:Connect(function()if detected=="" then UseLanguage.Text="DETECTION UNAVAILABLE" return end for i,language in ipairs(Languages) do if language:lower()==detected:lower() then SelectedLanguageIndex=i LanguageButton.Text="To: "..language HeaderLanguageInput.Text=language UseLanguage.Text="✓ TARGET: "..language return end end UseLanguage.Text="LANGUAGE NOT IN LIST"end)end AddChatEntry=function(username,displayName,message,userId,sentTime,sourceLanguage,originalMessage)if not ChatLogBox.Parent or not message or tostring(message)==""then return end username=tostring(username or"Unknown")displayName=tostring(displayName or username)message=tostring(message)local timeText=sentTime or os.date("%H:%M:%S")local dedupeKey=tostring(userId or username).."|"..message.."|"..timeText if SeenChatKeys[dedupeKey]then return end SeenChatKeys[dedupeKey]=true if not IsRestoringChatHistory then table.insert(SharedChatHistory,{username=username,displayName=displayName,message=message,userId=userId,sentTime=timeText,sourceLanguage=sourceLanguage,originalMessage=originalMessage}) while #SharedChatHistory>100 do table.remove(SharedChatHistory,1) end end local Entry=Instance.new("TextButton")Entry.Name="ChatEntry"Entry.Size=UDim2.new(1,-4,0,66)Entry.BackgroundColor3=Color3.fromRGB(25,34,52)Entry.BorderSizePixel=0 Entry.AutoButtonColor=true Entry.Text=""Entry.LayoutOrder=#ChatLogBox:GetChildren()Entry.Parent=ChatLogBox if sourceLanguage and tostring(sourceLanguage)~="" then Entry:SetAttribute("DetectedLanguage",tostring(sourceLanguage)) end Instance.new("UICorner",Entry).CornerRadius=UDim.new(0,6)local TextService=game:GetService("TextService")
 local availableWidth=math.max(100,ChatLogBox.AbsoluteSize.X-36)
 local function makeWrappedLabel(text,font,fontSize,y,color,bold)
  local label=Instance.new("TextLabel")
@@ -776,7 +776,7 @@ local MessageLine,msgH=makeWrappedLabel("Translated: "..message,Enum.Font.Gotham
 local originalText="Original: "..tostring(originalMessage or message)
 local OriginalLine,origH=makeWrappedLabel(originalText,Enum.Font.Gotham,12,4+lineH+3+msgH+3,Color3.fromRGB(255,255,255))
 Entry.Size=UDim2.new(1,-4,0,4+lineH+3+msgH+3+origH+5)
-Entry.MouseButton1Click:Connect(function()OpenChatMessageInfo({username=username,displayName=displayName,message=message,originalMessage=originalMessage or message,userId=userId,time=timeText,sourceLanguage=sourceLanguage})end)local entries={}for _,child in ipairs(ChatLogBox:GetChildren())do if child.Name=="ChatEntry"then table.insert(entries,child)end end if#entries>100 then entries[1]:Destroy()end task.defer(function()if ChatLogBox.Parent then ChatLogBox.CanvasPosition=Vector2.new(0,math.max(0,ChatLogBox.AbsoluteCanvasSize.Y))end end) return Entry end
+Entry.MouseButton1Click:Connect(function()OpenChatMessageInfo({username=username,displayName=displayName,message=message,originalMessage=originalMessage or message,userId=userId,time=timeText,sourceLanguage=sourceLanguage or Entry:GetAttribute("DetectedLanguage")})end)local entries={}for _,child in ipairs(ChatLogBox:GetChildren())do if child.Name=="ChatEntry"then table.insert(entries,child)end end if#entries>100 then entries[1]:Destroy()end task.defer(function()if ChatLogBox.Parent then ChatLogBox.CanvasPosition=Vector2.new(0,math.max(0,ChatLogBox.AbsoluteCanvasSize.Y))end end) return Entry end
 -- ChatLog archive slots: named snapshots with a separate read-only viewer.
 local CHAT_ARCHIVE_FOLDER="BlueModeChatArchive/"
 local ChatArchiveManager, ChatArchiveViewer
@@ -920,6 +920,7 @@ local function HandleIncomingChat(username,displayName,message,userId)
    historyRecord.originalMessage=original
    historyRecord.sourceLanguage=detectedLanguage
   end
+  if entry and entry.Parent and detectedLanguage then pcall(function() entry:SetAttribute("DetectedLanguage",detectedLanguage) end) end
  end)
 end
 -- Listen to Roblox's server-delivered TextChatService stream and individual text channels.
@@ -1207,15 +1208,15 @@ local TelekinesisGlassConnection = nil
 local TelekinesisGlassScanElapsed = 0
 local TelekinesisGlassFallbackScanElapsed = 0
 local TelekinesisGlassRadius = 3
--- Independent overhead pickup zone.
-local HeadPickupActive=false
-local HeadPickupSphere=nil
-local HeadPickupConnection=nil
-local HeadPickupCaptured={}
-local HeadPickupButton=nil
-local HeadThrowButton=nil
-local HeadThrowAllButton=nil
-local HeadCancelButton=nil
+-- Independent halo pickup zone.
+local HaloPickupActive=false
+local HaloPickupSphere=nil
+local HaloPickupConnection=nil
+local HaloPickupCaptured={}
+local HaloPickupButton=nil
+local HaloThrowButton=nil
+local HaloThrowAllButton=nil
+local HaloCancelButton=nil
 local TelekinesisRideBlock = nil
 local TelekinesisRideMover = nil
 local TelekinesisRideConnection = nil
@@ -1227,8 +1228,6 @@ local BlockShooterTool = nil
 local BlockShooterGui = nil
 local BlockShooterShootButton = nil
 local BlockShooterShootAllButton = nil
-local BlockShooterShootAllToggleButton = nil
-local BlockShooterShootAllEnabled = true
 local BlockShooterEquipped = false
 local BlockShooterVisibilityConnection = nil
 local TelekinesisGiveShooterButton = nil
@@ -1415,6 +1414,14 @@ end
 UserInputService.InputBegan:Connect(function(input, processed)
  if not TelekinesisGuiMode or processed then return end
  if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+ -- Ignore taps that begin over visible GUI controls so opening/using the GUI cannot trigger world selection.
+ local pointer=input.Position
+ for _,gui in ipairs(GuiContainer:GetDescendants()) do
+  if gui:IsA("GuiObject") and gui.Visible and gui.Active and gui.AbsoluteSize.X>0 and gui.AbsoluteSize.Y>0 then
+   local pos,size=gui.AbsolutePosition,gui.AbsoluteSize
+   if pointer.X>=pos.X and pointer.X<=pos.X+size.X and pointer.Y>=pos.Y and pointer.Y<=pos.Y+size.Y then return end
+  end
+ end
  task.defer(function()
   if TelekinesisGuiMode then SelectTelekinesisTarget() end
  end)
@@ -1508,7 +1515,7 @@ local function CreateTelekinesisControls()
  panel.Name="TelekinesisPanel"; panel.Size=UDim2.new(0,240,0.68,0)
  panel.Position=UDim2.new(1,-252,0.16,0); panel.BackgroundColor3=Color3.fromRGB(24,27,38)
  panel.BackgroundTransparency=0.08; panel.Active=true; panel.Parent=gui
- panel.CanvasSize=UDim2.new(0,0,0,980); panel.AutomaticCanvasSize=Enum.AutomaticSize.None
+ panel.CanvasSize=UDim2.new(0,0,0,1160); panel.AutomaticCanvasSize=Enum.AutomaticSize.None
  panel.ScrollingDirection=Enum.ScrollingDirection.Y; panel.ScrollBarThickness=6
  panel.ScrollBarImageColor3=Color3.fromRGB(100,145,220); panel.VerticalScrollBarInset=Enum.ScrollBarInset.ScrollBar
  panel.ElasticBehavior=Enum.ElasticBehavior.WhenScrollable
@@ -1547,7 +1554,7 @@ local function CreateTelekinesisControls()
  -- like the fire controls in a mobile shooter. They appear while MAGNET or sphere is active.
  local shooterGui=Instance.new("Frame")
  shooterGui.Name="BlockShooterTouchControls"
- shooterGui.Size=UDim2.new(0,140,0,142)
+ shooterGui.Size=UDim2.new(0,140,0,96)
  shooterGui.AnchorPoint=Vector2.new(1,1)
  shooterGui.Position=UDim2.new(1,-24,1,-195)
  shooterGui.BackgroundTransparency=1
@@ -1562,15 +1569,6 @@ local function CreateTelekinesisControls()
  BlockShooterShootAllButton=MakeTelekinesisButton(shooterGui,"ShootAll","SHOOT ALL",UDim2.new(1,0,0,40),UDim2.new(0,0,0,46),Color3.fromRGB(145,45,35))
  BlockShooterShootAllButton.TextSize=15
  BlockShooterShootAllButton.ZIndex=10001
- BlockShooterShootAllToggleButton=MakeTelekinesisButton(shooterGui,"ShootAllToggle","SHOOT ALL: ON",UDim2.new(1,0,0,40),UDim2.new(0,0,0,90),Color3.fromRGB(35,145,70))
- BlockShooterShootAllToggleButton.TextSize=13
- BlockShooterShootAllToggleButton.ZIndex=10001
- BlockShooterShootAllToggleButton.Activated:Connect(function()
-  BlockShooterShootAllEnabled=not BlockShooterShootAllEnabled
-  BlockShooterShootAllToggleButton.Text=BlockShooterShootAllEnabled and "SHOOT ALL: ON" or "SHOOT ALL: OFF"
-  BlockShooterShootAllToggleButton.BackgroundColor3=BlockShooterShootAllEnabled and Color3.fromRGB(35,145,70) or Color3.fromRGB(145,45,45)
-  TelekinesisNotice(BlockShooterShootAllEnabled and "BlockShooter Shoot All enabled." or "BlockShooter Shoot All disabled.")
- end)
  local function AddTelekinesisSection(name,text,y)
   local label=Instance.new("TextLabel")
   label.Name=name
@@ -1648,11 +1646,11 @@ local function CreateTelekinesisControls()
  TelekinesisThrowAllMagnetButton=MakeTelekinesisButton(panel,"ThrowAllMagnetBlocks","THROW ALL MAGNETED",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,540),Color3.fromRGB(225,65,35))
  TelekinesisThrowSphereButton=MakeTelekinesisButton(panel,"ThrowSphereBlock","THROW SPHERE BLOCK",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,198),Color3.fromRGB(125,75,175))
  TelekinesisThrowSphereAllButton=MakeTelekinesisButton(panel,"ThrowAllSphereBlocks","THROW ALL SPHERE BLOCKS",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,234),Color3.fromRGB(155,65,190))
- AddTelekinesisSection("HeadPickupSection","OVERHEAD PICKUP ZONE",770)
- HeadPickupButton=MakeTelekinesisButton(panel,"HeadPickupStart","START HEAD PICKUP",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,794),Color3.fromRGB(40,135,105))
- HeadThrowButton=MakeTelekinesisButton(panel,"HeadThrowOne","THROW BLOCK",UDim2.new(0.5,-12,0,30),UDim2.new(0,8,0,828),Color3.fromRGB(190,105,35))
- HeadThrowAllButton=MakeTelekinesisButton(panel,"HeadThrowAll","THROW ALL",UDim2.new(0.5,-12,0,30),UDim2.new(0.5,4,0,828),Color3.fromRGB(220,70,35))
- HeadCancelButton=MakeTelekinesisButton(panel,"HeadPickupCancel","CANCEL / STOP",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,862),Color3.fromRGB(175,55,55))
+ AddTelekinesisSection("HaloPickupSection","HALO PICKUP ZONE",770)
+ HaloPickupButton=MakeTelekinesisButton(panel,"HaloPickupStart","START HALO PICKUP",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,794),Color3.fromRGB(40,135,105))
+ HaloThrowButton=MakeTelekinesisButton(panel,"HaloThrowOne","THROW BLOCK",UDim2.new(0.5,-12,0,30),UDim2.new(0,8,0,828),Color3.fromRGB(190,105,35))
+ HaloThrowAllButton=MakeTelekinesisButton(panel,"HaloThrowAll","THROW ALL",UDim2.new(0.5,-12,0,30),UDim2.new(0.5,4,0,828),Color3.fromRGB(220,70,35))
+ HaloCancelButton=MakeTelekinesisButton(panel,"HaloPickupCancel","CANCEL / STOP",UDim2.new(1,-16,0,30),UDim2.new(0,8,0,862),Color3.fromRGB(175,55,55))
  AddTelekinesisSection("PickupSection","PICKUP & THROW",272)
  -- Color-code every sphere movement control to match the sphere's 3D markers:
  -- LEFT=green, RIGHT=blue, FORWARD/up-arrow=red, BACKWARD/down-arrow=purple.
@@ -1671,22 +1669,44 @@ local function CreateTelekinesisControls()
  TelekinesisBackButton=MakeTelekinesisButton(panel,"MoveBack","DOWN",UDim2.new(0,104,0,28),UDim2.new(0,120,0,104),Color3.fromRGB(0,0,0))
  TelekinesisBackButton.TextColor3=Color3.fromRGB(255,255,255)
  TelekinesisBackButton.Text="DOWN  ↓"
- -- Adjustable glass-sphere radius: SIZE + scales up progressively without a small fixed cap.
- local SphereSizeLabel=MakeTelekinesisButton(panel,"SphereRadiusLabel","SPHERE SIZE: 3",UDim2.new(1,-16,0,24),UDim2.new(0,8,0,136),Color3.fromRGB(45,75,130))
+ -- Adjustable glass-sphere radius. SIZE + always adds exactly 2; numeric input sets an exact size.
+ local SphereSizeLabel=MakeTelekinesisButton(panel,"SphereRadiusLabel","SPHERE SIZE: 3",UDim2.new(0.58,-8,0,24),UDim2.new(0,8,0,136),Color3.fromRGB(45,75,130))
  SphereSizeLabel.Active=false
+ local SphereSizeInput=Instance.new("TextBox")
+ SphereSizeInput.Name="SphereSizeNumberInput"
+ SphereSizeInput.Size=UDim2.new(0.42,-12,0,24)
+ SphereSizeInput.Position=UDim2.new(0.58,0,0,136)
+ SphereSizeInput.BackgroundColor3=Color3.fromRGB(35,45,65)
+ SphereSizeInput.BorderSizePixel=0
+ SphereSizeInput.TextColor3=Color3.fromRGB(255,255,255)
+ SphereSizeInput.PlaceholderColor3=Color3.fromRGB(190,195,205)
+ SphereSizeInput.PlaceholderText="Enter size"
+ SphereSizeInput.Text=tostring(TelekinesisGlassRadius)
+ SphereSizeInput.TextSize=14
+ SphereSizeInput.Font=Enum.Font.GothamSemibold
+ SphereSizeInput.ClearTextOnFocus=false
+ SphereSizeInput.ZIndex=SphereSizeLabel.ZIndex+1
+ SphereSizeInput.Parent=panel
  local SphereSizeDown=MakeTelekinesisButton(panel,"SphereSizeDown","SIZE −",UDim2.new(0.5,-12,0,30),UDim2.new(0,8,0,162),Color3.fromRGB(70,100,155))
- local SphereSizeUp=MakeTelekinesisButton(panel,"SphereSizeUp","SIZE +",UDim2.new(0.5,-12,0,30),UDim2.new(0.5+4/240,0,0,162),Color3.fromRGB(35,135,85))
+ local SphereSizeUp=MakeTelekinesisButton(panel,"SphereSizeUp","SIZE +2",UDim2.new(0.5,-12,0,30),UDim2.new(0.5+4/240,0,0,162),Color3.fromRGB(35,135,85))
  local function SetGlassSphereRadius(newRadius)
-  -- No fixed gameplay cap: larger spheres get progressively larger increments.
-  -- Keep the value finite and positive to avoid invalid Roblox Vector3 values.
-  TelekinesisGlassRadius=math.max(2,math.min(1e6,math.floor(tonumber(newRadius) or 3)))
+  local parsed=tonumber(newRadius)
+  if not parsed or parsed~=parsed or parsed==math.huge or parsed==-math.huge then
+   SphereSizeInput.Text=tostring(TelekinesisGlassRadius)
+   return
+  end
+  TelekinesisGlassRadius=math.max(2,math.min(1e6,math.floor(parsed)))
   SphereSizeLabel.Text="SPHERE SIZE: "..tostring(TelekinesisGlassRadius)
+  SphereSizeInput.Text=tostring(TelekinesisGlassRadius)
   if TelekinesisGlassSphere and TelekinesisGlassSphere.Parent then
    TelekinesisGlassSphere.Size=Vector3.new(TelekinesisGlassRadius*2,TelekinesisGlassRadius*2,TelekinesisGlassRadius*2)
   end
  end
  SphereSizeDown.Activated:Connect(function() SetGlassSphereRadius(TelekinesisGlassRadius-1) end)
- SphereSizeUp.Activated:Connect(function() SetGlassSphereRadius(TelekinesisGlassRadius+math.max(1,math.floor(TelekinesisGlassRadius*0.5))) end)
+ SphereSizeUp.Activated:Connect(function() SetGlassSphereRadius(TelekinesisGlassRadius+2) end)
+ SphereSizeInput.FocusLost:Connect(function(enterPressed)
+  if enterPressed or SphereSizeInput.Text~="" then SetGlassSphereRadius(SphereSizeInput.Text) end
+ end)
 
  -- Character flight: no ride blocks and no dedicated UP/DOWN buttons.
  -- The normal movement joystick/WASD steers the character while altitude is held.
@@ -1711,10 +1731,9 @@ local function CreateTelekinesisControls()
   BlockShooterTool=tool
   tool.Equipped:Connect(function()
    BlockShooterEquipped=true
-   local active=TelekinesisMagnetActive or TelekinesisGlassActive
-   if BlockShooterGui then BlockShooterGui.Visible=active end
-   if TelekinesisCrosshair then TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled or active end
-   TelekinesisNotice("BlockShooter equipped. Turn on MAGNET or sphere to show shooting controls.")
+   if BlockShooterGui then BlockShooterGui.Visible=true end
+   if TelekinesisCrosshair then TelekinesisCrosshair.Visible=true end
+   TelekinesisNotice("BlockShooter equipped. SHOOT BLOCK and SHOOT ALL are ready.")
   end)
   tool.Unequipped:Connect(function()
    BlockShooterEquipped=false
@@ -1927,7 +1946,7 @@ local function CreateTelekinesisControls()
    local physicalStates=MakeAssemblyLight(assembly)
    nextOrbitPhase=nextOrbitPhase+math.rad(137.5)
    local orbitPhase=nextOrbitPhase
-   local orbitRadius=math.clamp(9+assembly.Size.Magnitude*0.45,9,24)
+   local orbitRadius=math.clamp(12+assembly.Size.Magnitude*0.35,12,18) -- Wide orbit with extra clearance so blocks do not sit inside the torso.
    local pos=Instance.new("BodyPosition")
    pos.Name="BlueModeMagnetPosition"
    pos.MaxForce=Vector3.new(force,force,force)
@@ -2038,23 +2057,18 @@ local function CreateTelekinesisControls()
      activeCount=math.max(0,activeCount-1)
     else
      index=index+1
-     if CharacterFlyConnection and CharacterFlyRoot and CharacterFlyRoot.Parent then
-      -- Keep magneted blocks beneath the character as a temporary moving platform.
-      local offset=Vector3.new(0,-(CharacterFlyRoot.Size.Y*0.5+part.Size.Y*0.5+0.25),0)
-      movers[1].Position=CharacterFlyRoot.Position+offset
-      if movers.CollisionStates then
-       for bodyPart in pairs(movers.CollisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=true end) end end
+     -- Always orbit around the character; do not let the fly-platform branch pin blocks to the torso.
+     if movers.CollisionStates then
+      for bodyPart in pairs(movers.CollisionStates) do
+       if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=false end) end
       end
-     else
-      if movers.CollisionStates then
-       for bodyPart,wasCollidable in pairs(movers.CollisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=false end) end end
-      end
-      local angle=elapsed*0.9+(movers.OrbitPhase or 0)
-      local radius=movers.OrbitRadius or 10
-      -- Keep the orbit clearly outside the avatar instead of targeting its body.
-      local orbitHeight=math.max(5, radius*0.28)+math.sin(angle*0.8)*math.min(2.5,radius*0.12)
-      movers[1].Position=hrp.Position+Vector3.new(math.cos(angle)*radius,orbitHeight,math.sin(angle)*radius)
      end
+     local orbitRoot=hrp
+     local angle=elapsed*2.0+(movers.OrbitPhase or 0)
+     local radius=movers.OrbitRadius or 14
+     -- Keep the orbit clearly outside the avatar, slightly above the root, in a stable horizontal circle.
+     local orbitHeight=3.5+math.sin(angle*0.55)*0.6
+     movers[1].Position=orbitRoot.Position+Vector3.new(math.cos(angle)*radius,orbitHeight,math.sin(angle)*radius)
     end
    end
   end)
@@ -2565,10 +2579,10 @@ local function CreateTelekinesisControls()
  end)
 
 
- -- Overhead pickup zone: gathers loose, unanchored parts near a visible orb above the avatar.
- local function HeadReleaseAll(throwDirection)
-  for part,data in pairs(HeadPickupCaptured) do
-   HeadPickupCaptured[part]=nil
+ -- Halo pickup zone: gathers loose, unanchored parts inside a visible halo around the avatar from lower body to head.
+ local function HaloReleaseAll(throwDirection)
+  for part,data in pairs(HaloPickupCaptured) do
+   HaloPickupCaptured[part]=nil
    if data and data.mover then pcall(function() data.mover:Destroy() end) end
    if data and data.collisionStates then
     for bodyPart,wasCollidable in pairs(data.collisionStates) do
@@ -2584,83 +2598,92 @@ local function CreateTelekinesisControls()
    end
   end
  end
- local function StopHeadPickup()
-  HeadPickupActive=false
-  if HeadPickupConnection then HeadPickupConnection:Disconnect(); HeadPickupConnection=nil end
-  HeadReleaseAll(nil)
-  if HeadPickupSphere then pcall(function() HeadPickupSphere:Destroy() end); HeadPickupSphere=nil end
-  if HeadPickupButton then HeadPickupButton.Text="START HEAD PICKUP" end
+ local function StopHaloPickup()
+  HaloPickupActive=false
+  if HaloPickupConnection then HaloPickupConnection:Disconnect(); HaloPickupConnection=nil end
+  HaloReleaseAll(nil)
+  if HaloPickupSphere then pcall(function() HaloPickupSphere:Destroy() end); HaloPickupSphere=nil end
+  if HaloPickupButton then HaloPickupButton.Text="START HALO PICKUP" end
  end
- local function HeadAimDirection()
+ local function HaloAimDirection()
   local cam=Workspace.CurrentCamera
   return cam and cam.CFrame.LookVector or Vector3.new(0,0,-1)
  end
- HeadPickupButton.Activated:Connect(function()
+ HaloPickupButton.Activated:Connect(function()
   if not TelekinesisCanControl() then TelekinesisNotice("Open the Telekinesis GUI or equip the Telekinesis Tool first."); return end
-  if HeadPickupActive then TelekinesisNotice("Overhead pickup is already active."); return end
+  if HaloPickupActive then TelekinesisNotice("Halo pickup is already active."); return end
   local char=LocalPlayer.Character; local root=char and char:FindFirstChild("HumanoidRootPart")
   if not root then TelekinesisNotice("Your character is not ready."); return end
-  local orb=Instance.new("Part"); orb.Name="BlueModeHeadPickupZone"; orb.Shape=Enum.PartType.Ball
+  local orb=Instance.new("Part"); orb.Name="BlueModeHaloPickupZone"; orb.Shape=Enum.PartType.Ball
   orb.Size=Vector3.new(12,12,12); orb.Material=Enum.Material.ForceField; orb.Color=Color3.fromRGB(110,220,255)
   orb.Transparency=0.78; orb.Anchored=true; orb.CanCollide=false; orb.CanTouch=false; orb.CanQuery=false; orb.Parent=Workspace
-  HeadPickupSphere=orb; HeadPickupActive=true; HeadPickupButton.Text="HEAD PICKUP: ACTIVE"
+  HaloPickupSphere=orb; HaloPickupActive=true; HaloPickupButton.Text="HALO PICKUP: ACTIVE"
   local overlap=OverlapParams.new(); overlap.FilterType=Enum.RaycastFilterType.Exclude; overlap.RespectCanCollide=false
-  HeadPickupConnection=RunService.Heartbeat:Connect(function()
-   if not HeadPickupActive or not HeadPickupSphere or not HeadPickupSphere.Parent then return end
+  HaloPickupConnection=RunService.Heartbeat:Connect(function()
+   if not HaloPickupActive or not HaloPickupSphere or not HaloPickupSphere.Parent then return end
    local c=LocalPlayer.Character; local r=c and c:FindFirstChild("HumanoidRootPart"); if not r then return end
-   local center=r.Position+Vector3.new(0,7,0); HeadPickupSphere.Position=center
-   overlap.FilterDescendantsInstances={c,HeadPickupSphere,TelekinesisControls,TelekinesisTool}
-   local ok,parts=pcall(function() return Workspace:GetPartBoundsInRadius(center,6,overlap) end)
+   local center=r.Position+Vector3.new(0,5,0); HaloPickupSphere.Position=center
+   overlap.FilterDescendantsInstances={c,HaloPickupSphere,TelekinesisControls,TelekinesisTool}
+   local ok,parts=pcall(function() return Workspace:GetPartBoundsInRadius(center,8,overlap) end)
    if ok and parts then
     for _,obj in ipairs(parts) do
      if obj:IsA("BasePart") and obj.Parent and not obj.Anchored and not IsHumanoidCharacterPart(obj) then
       local assembly=obj.AssemblyRootPart or obj
-      if assembly and assembly.Parent and not assembly.Anchored and not HeadPickupCaptured[assembly] and not TelekinesisMagnetParts[assembly] and not TelekinesisGlassCaptured[assembly] and not (c and assembly:IsDescendantOf(c)) then
+      if assembly and assembly.Parent and not assembly.Anchored and not HaloPickupCaptured[assembly] and not TelekinesisMagnetParts[assembly] and not TelekinesisGlassCaptured[assembly] and not (c and assembly:IsDescendantOf(c)) then
        local humanoidAncestor=false; local anc=assembly.Parent
        while anc and anc~=Workspace do if anc:IsA("Model") and anc:FindFirstChildOfClass("Humanoid") then humanoidAncestor=true; break end; anc=anc.Parent end
        if not humanoidAncestor then
         local collisions={}; local connected={assembly}; pcall(function() for _,cp in ipairs(assembly:GetConnectedParts(true)) do table.insert(connected,cp) end end)
         for _,cp in ipairs(connected) do if cp and cp:IsA("BasePart") and collisions[cp]==nil then collisions[cp]=cp.CanCollide; pcall(function() cp.CanCollide=false end) end end
         local physical=MakeAssemblyLight(assembly); local mass=1; pcall(function() mass=math.max(1,assembly.AssemblyMass) end)
-        local mover=Instance.new("BodyPosition"); mover.Name="BlueModeHeadPickupHold"; local force=math.clamp(mass*Workspace.Gravity*180,2e6,8e9)
+        local mover=Instance.new("BodyPosition"); mover.Name="BlueModeHaloPickupHold"; local force=math.clamp(mass*Workspace.Gravity*180,2e6,8e9)
         mover.MaxForce=Vector3.new(force,force,force); mover.P=math.clamp(mass*6500,50000,1.5e7); mover.D=math.clamp(mass*500,6000,1.5e6)
-        mover.Position=center+Vector3.new(math.random(-3,3),math.random(-2,2),math.random(-3,3)); mover.Parent=assembly
-        HeadPickupCaptured[assembly]={mover=mover,collisionStates=collisions,physicalStates=physical,offset=mover.Position-center}
+        local orbitAngle=math.random()*math.pi*2
+        local orbitRadius=math.random(30,50)/10
+        local orbitHeight=math.random(0,20)/10
+        mover.Position=center+Vector3.new(math.cos(orbitAngle)*orbitRadius,orbitHeight,math.sin(orbitAngle)*orbitRadius); mover.Parent=assembly
+        HaloPickupCaptured[assembly]={mover=mover,collisionStates=collisions,physicalStates=physical,orbitAngle=orbitAngle,orbitRadius=orbitRadius,orbitHeight=orbitHeight}
        end
       end
      end
     end
    end
-   for part,data in pairs(HeadPickupCaptured) do
+   for part,data in pairs(HaloPickupCaptured) do
     if not part or not part.Parent or part.Anchored or not data.mover or not data.mover.Parent then
      if data.mover then pcall(function() data.mover:Destroy() end) end
      if data.collisionStates then for bp,was in pairs(data.collisionStates) do if bp and bp.Parent then pcall(function() bp.CanCollide=was end) end end end
-     RestoreAssemblyMass(part,data.physicalStates); HeadPickupCaptured[part]=nil
-    else data.mover.MaxForce=Vector3.new(2e9,2e9,2e9); data.mover.Position=center+(data.offset or Vector3.zero) end
+     RestoreAssemblyMass(part,data.physicalStates); HaloPickupCaptured[part]=nil
+    else
+     data.mover.MaxForce=Vector3.new(2e9,2e9,2e9)
+     data.orbitAngle=(data.orbitAngle or 0)+0.035
+     local radius=data.orbitRadius or 4
+     local height=data.orbitHeight or 1
+     data.mover.Position=center+Vector3.new(math.cos(data.orbitAngle)*radius,height,math.sin(data.orbitAngle)*radius)
+    end
    end
   end)
-  TelekinesisNotice("Overhead pickup started. Loose blocks gather above your head.")
+  TelekinesisNotice("Halo pickup started. Captured blocks circle above your head.")
  end)
- HeadThrowButton.Activated:Connect(function()
-  local part,data=next(HeadPickupCaptured)
-  if not part then TelekinesisNotice("No overhead-captured block to throw."); return end
-  HeadPickupCaptured[part]=nil
+ HaloThrowButton.Activated:Connect(function()
+  local part,data=next(HaloPickupCaptured)
+  if not part then TelekinesisNotice("No halo-captured block to throw."); return end
+  HaloPickupCaptured[part]=nil
   if data.mover then pcall(function() data.mover:Destroy() end) end
   if data.collisionStates then for bp,was in pairs(data.collisionStates) do if bp and bp.Parent then pcall(function() bp.CanCollide=was end) end end end
   RestoreAssemblyMass(part,data.physicalStates)
-  if part.Parent and not part.Anchored then local dir=HeadAimDirection(); pcall(function() part.AssemblyLinearVelocity=dir*350+Vector3.new(0,8,0) end) end
-  TelekinesisNotice("Threw one overhead-captured block.")
+  if part.Parent and not part.Anchored then local dir=HaloAimDirection(); pcall(function() part.AssemblyLinearVelocity=dir*350+Vector3.new(0,8,0) end) end
+  TelekinesisNotice("Threw one halo-captured block.")
  end)
- HeadThrowAllButton.Activated:Connect(function()
-  local count=0; local dir=HeadAimDirection(); local list={}; for part in pairs(HeadPickupCaptured) do table.insert(list,part) end
-  for _,part in ipairs(list) do local data=HeadPickupCaptured[part]; HeadPickupCaptured[part]=nil
+ HaloThrowAllButton.Activated:Connect(function()
+  local count=0; local dir=HaloAimDirection(); local list={}; for part in pairs(HaloPickupCaptured) do table.insert(list,part) end
+  for _,part in ipairs(list) do local data=HaloPickupCaptured[part]; HaloPickupCaptured[part]=nil
    if data and data.mover then pcall(function() data.mover:Destroy() end) end
    if data and data.collisionStates then for bp,was in pairs(data.collisionStates) do if bp and bp.Parent then pcall(function() bp.CanCollide=was end) end end end
    if part and part.Parent and not part.Anchored then RestoreAssemblyMass(part,data and data.physicalStates); pcall(function() part.AssemblyLinearVelocity=dir*350+Vector3.new(0,8,0) end); count=count+1 end
   end
-  TelekinesisNotice(count>0 and ("Threw "..count.." overhead-captured blocks.") or "No overhead-captured blocks to throw.")
+  TelekinesisNotice(count>0 and ("Threw "..count.." halo-captured blocks.") or "No halo-captured blocks to throw.")
  end)
- HeadCancelButton.Activated:Connect(function() StopHeadPickup(); TelekinesisNotice("Overhead pickup stopped; held blocks released.") end)
+ HaloCancelButton.Activated:Connect(function() StopHaloPickup(); TelekinesisNotice("Halo pickup stopped; held blocks released.") end)
 
  -- Shooter item fires one or all loose blocks currently captured by the sphere or magnet.
  local function ShootOneCapturedBlock()
@@ -2681,10 +2704,10 @@ local function CreateTelekinesisControls()
     if data and data.mover then pcall(function() data.mover:Destroy() end) end
    end
   end
-  -- Also support blocks held by the overhead pickup zone.
-  for part,data in pairs(HeadPickupCaptured) do
+  -- Also support blocks held by the halo pickup zone.
+  for part,data in pairs(HaloPickupCaptured) do
    if part and part.Parent and part:IsA("BasePart") and not part.Anchored and not IsHumanoidCharacterPart(part) then
-    HeadPickupCaptured[part]=nil
+    HaloPickupCaptured[part]=nil
     if data then
      if data.mover then pcall(function() data.mover:Destroy() end) end
      if data.collisionStates then for bodyPart,wasCollidable in pairs(data.collisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end end end
@@ -2693,10 +2716,10 @@ local function CreateTelekinesisControls()
     local launchPart=part.AssemblyRootPart or part
     pcall(function() EnableThrownAssemblyCollision(launchPart); launchPart.AssemblyAngularVelocity=Vector3.new(0,8,0); launchPart.AssemblyLinearVelocity=GetTelekinesisAimDirection(launchPart.Position)*350+Vector3.new(0,8,0) end)
     task.spawn(function() for _=1,12 do task.wait(0.05); if launchPart and launchPart.Parent and not launchPart.Anchored then pcall(function() launchPart.AssemblyLinearVelocity=GetTelekinesisAimDirection(launchPart.Position)*350+Vector3.new(0,8,0) end) end end end)
-    TelekinesisNotice("SHOOT: launched one overhead-captured block toward the crosshair.")
+    TelekinesisNotice("SHOOT: launched one halo-captured block toward the crosshair.")
     return
    else
-    HeadPickupCaptured[part]=nil
+    HaloPickupCaptured[part]=nil
     if data and data.mover then pcall(function() data.mover:Destroy() end) end
    end
   end
@@ -2739,10 +2762,10 @@ local function CreateTelekinesisControls()
    end
   end
   local headList={}
-  for part,data in pairs(HeadPickupCaptured) do table.insert(headList,{part=part,data=data}) end
+  for part,data in pairs(HaloPickupCaptured) do table.insert(headList,{part=part,data=data}) end
   for _,entry in ipairs(headList) do
    local part,data=entry.part,entry.data
-   HeadPickupCaptured[part]=nil
+   HaloPickupCaptured[part]=nil
    if data then
     if data.mover then pcall(function() data.mover:Destroy() end) end
     if data.collisionStates then for bodyPart,wasCollidable in pairs(data.collisionStates) do if bodyPart and bodyPart.Parent then pcall(function() bodyPart.CanCollide=wasCollidable end) end end end
@@ -2778,14 +2801,13 @@ local function CreateTelekinesisControls()
  _G.__BLUE_MODE_SHOOT_ONE_CAPTURED_BLOCK = ShootOneCapturedBlock
  _G.__BLUE_MODE_SHOOT_ALL_CAPTURED_BLOCKS = ShootAllCapturedBlocks
  if BlockShooterShootButton then BlockShooterShootButton.Activated:Connect(ShootOneCapturedBlock) end
- if BlockShooterShootAllButton then BlockShooterShootAllButton.Activated:Connect(function() if not BlockShooterShootAllEnabled then TelekinesisNotice("BlockShooter Shoot All is OFF. Turn it ON using the button on BlockShooter."); return end; ShootAllCapturedBlocks() end) end
+ if BlockShooterShootAllButton then BlockShooterShootAllButton.Activated:Connect(ShootAllCapturedBlocks) end
  if BlockShooterVisibilityConnection then BlockShooterVisibilityConnection:Disconnect() end
  BlockShooterVisibilityConnection=RunService.RenderStepped:Connect(function()
-  local captureActive=TelekinesisMagnetActive or TelekinesisGlassActive or HeadPickupActive
   if TelekinesisCrosshair then
-   TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled or (BlockShooterEquipped and captureActive)
+   TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled or BlockShooterEquipped
   end
-  if BlockShooterGui then BlockShooterGui.Visible=BlockShooterEquipped and captureActive end
+  if BlockShooterGui then BlockShooterGui.Visible=BlockShooterEquipped end
  end)
 
  local function MoveTarget(direction, stepAmount)
@@ -2964,15 +2986,14 @@ local function SetShotBlockAimRay(screenPos)
 end
 local function FireShotBlock(screenPos)
  if not ShotBlockEquipped then return end
- if not ShotBlockShootAllEnabled then TelekinesisNotice("ShotBlock Shoot All is OFF. Turn the separate SHOT ALL: ON toggle back on to fire captured blocks."); return end
- if not (TelekinesisMagnetActive or TelekinesisGlassActive or HeadPickupActive) then
+ if not (TelekinesisMagnetActive or TelekinesisGlassActive or HaloPickupActive) then
   TelekinesisNotice("Turn MAGNET, sphere, or OVERHEAD PICKUP ON and let loose blocks get captured first.")
   return
  end
  SetShotBlockAimRay(screenPos)
- local shootAll = _G.__BLUE_MODE_SHOOT_ALL_CAPTURED_BLOCKS
- if type(shootAll)=="function" then
-  shootAll()
+ local shoot = ShotBlockShootAllEnabled and _G.__BLUE_MODE_SHOOT_ALL_CAPTURED_BLOCKS or _G.__BLUE_MODE_SHOOT_ONE_CAPTURED_BLOCK
+ if type(shoot)=="function" then
+  shoot()
  else
   TelekinesisNotice("Open the Telekinesis GUI first so ShotBlock can connect to its capture system.")
  end
@@ -3040,12 +3061,13 @@ GhostGiveShooter.Activated:Connect(function()
  if existing then TelekinesisNotice("BlockShooter is already in your inventory."); return end
  local tool=Instance.new("Tool"); tool.Name="BlockShooter"; tool.ToolTip="Equip for Shoot Block / Shoot All controls"; tool.RequiresHandle=false; tool.CanBeDropped=false; tool.Parent=backpack
  BlockShooterTool=tool
- tool.Equipped:Connect(function() BlockShooterEquipped=true; local active=TelekinesisMagnetActive or TelekinesisGlassActive or HeadPickupActive; if BlockShooterGui then BlockShooterGui.Visible=active end; if TelekinesisCrosshair then TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled or active end end)
+ tool.Equipped:Connect(function() BlockShooterEquipped=true; if BlockShooterGui then BlockShooterGui.Visible=true end; if TelekinesisCrosshair then TelekinesisCrosshair.Visible=true end end)
  tool.Unequipped:Connect(function() BlockShooterEquipped=false; if BlockShooterGui then BlockShooterGui.Visible=false end; if TelekinesisCrosshair then TelekinesisCrosshair.Visible=TelekinesisCrosshairEnabled end end)
  TelekinesisNotice("BlockShooter added to inventory.")
 end)
 GhostTelekinesisGui.Activated:Connect(function()
  CreateTelekinesisControls()
+ -- Opening the panel only enables controls; pickup zones remain opt-in.
  TelekinesisGuiMode=true
  SetTelekinesisControlsVisible(true)
  TelekinesisNotice("Telekinesis GUI opened. Tap a movable block in the world to select it, then tap PICK UP.")
@@ -3220,7 +3242,7 @@ task.spawn(function()
         end
         task.wait(2)
     end
-end) TPToolBtn.MouseButton1Click:Connect(function()TPTool_Enabled=not TPTool_Enabled if TPTool_Enabled then TPToolBtn.Text="TP: ON"TPToolBtn.BackgroundColor3=Color3.fromRGB(25,120,25)else TPToolBtn.Text="TP: OFF"TPToolBtn.BackgroundColor3=Color3.fromRGB(40,40,40)end end)UserInputService.InputBegan:Connect(function(input,gameProcessed)if not TPTool_Enabled or gameProcessed then return end if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then local myRoot=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")if not myRoot then return end local Mouse=LocalPlayer:GetMouse()if Mouse.Target and Mouse.Target:IsDescendantOf(GuiContainer)then return end if Mouse.Hit then local pos=Vector3.new(Mouse.Hit.X,Mouse.Hit.Y+2.5,Mouse.Hit.Z)myRoot.CFrame=CFrame.new(pos)end end end)local SliderActiveMain=false VolBGMain.InputBegan:Connect(function(i)if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then SliderActiveMain=true end end)UserInputService.InputEnded:Connect(function(i)if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then SliderActiveMain=false end end)UserInputService.InputChanged:Connect(function(i)if SliderActiveMain and(i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch)then local rel=math.clamp((i.Position.X-VolBGMain.AbsolutePosition.X)/VolBGMain.AbsoluteSize.X,0,1)UpdateVolume(math.floor(rel*VOLUME_MAX))end end)local DragState={Active=false,StartX=0,StartY=0,PosX=0,PosY=0}DragHandle.InputBegan:Connect(function(Input)GuiFocused=true if Buttons_Locked then return end if Input.UserInputType==Enum.UserInputType.MouseButton1 or Input.UserInputType==Enum.UserInputType.Touch then DragState.Active=true DragState.StartX=Input.Position.X DragState.StartY=Input.Position.Y DragState.PosX=MainFrame.Position.X.Offset DragState.PosY=MainFrame.Position.Y.Offset end end)UserInputService.InputEnded:Connect(function(Input)if Input.UserInputType==Enum.UserInputType.MouseButton1 or Input.UserInputType==Enum.UserInputType.Touch then DragState.Active=false task.delay(0.2,function()GuiFocused=false end)end end)UserInputService.InputChanged:Connect(function(Input)if DragState.Active and not Buttons_Locked then MainFrame.Position=UDim2.new(0,DragState.PosX+(Input.Position.X-DragState.StartX),0,DragState.PosY+(Input.Position.Y-DragState.StartY))end end)LockBtn.MouseButton1Click:Connect(function()Buttons_Locked=not Buttons_Locked LockBtn.Text=Buttons_Locked and"🔒 LOCKED"or"🔓 UNLOCK"LockBtn.BackgroundColor3=Buttons_Locked and Color3.fromRGB(180,40,40)or Color3.fromRGB(50,50,50)end)MinBtn.MouseButton1Click:Connect(function()IsMinimized=not IsMinimized GhostIcon.Visible=not IsMinimized if IsMinimized then MainFrame.Size=MINI_SIZE ESPBtn.Visible=false TPToolBtn.Visible=false YouTubeBtn.Visible=false MoveBtn.Visible=false CustomRedBtn.Visible=false MusicBtn.Visible=false LockBtn.Visible=false ConsoleBtn.Visible=false ExitBtn.Visible=false AntiFlingBtn.Visible=false TPGunMM2Btn.Visible=false TPTOMurdMM2Btn.Visible=false TPTOSheriffMM2Btn.Visible=false VolLabelMain.Visible=false VolNumTextMain.Visible=false VolBGMain.Visible=false StatsBG.Visible=false DragHandle.Text="BLUE MODE"MinBtn.Text="➕"else MainFrame.Size=FULL_SIZE ESPBtn.Visible=true TPToolBtn.Visible=true YouTubeBtn.Visible=true MoveBtn.Visible=true CustomRedBtn.Visible=true MusicBtn.Visible=true LockBtn.Visible=true ConsoleBtn.Visible=true ExitBtn.Visible=true AntiFlingBtn.Visible=true TPGunMM2Btn.Visible=true TPTOMurdMM2Btn.Visible=true TPTOSheriffMM2Btn.Visible=true VolLabelMain.Visible=true VolNumTextMain.Visible=true VolBGMain.Visible=true StatsBG.Visible=true DragHandle.Text="🔵 BLUE MODE HUB | DRAG ME"MinBtn.Text="➖"end end)ESPBtn.MouseButton1Click:Connect(function()ESP_Enabled=not ESP_Enabled getgenv().BlueMode_ESP_Enabled=ESP_Enabled ESPBtn.Text=ESP_Enabled and"ESP: ON"or"ESP: OFF"ESPBtn.BackgroundColor3=ESP_Enabled and Color3.fromRGB(25,120,25)or Color3.fromRGB(40,40,40)ClearAllESP()end)YouTubeBtn.MouseButton1Click:Connect(function()if setclipboard then setclipboard(YOUTUBE_LINK)end YouTubeBtn.Text="✅ COPIED!"task.wait(1.5)YouTubeBtn.Text="Blue Mode Hub"end)MoveBtn.MouseButton1Click:Connect(ToggleMovementMenu)MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)ConsoleBtn.MouseButton1Click:Connect(ToggleConsole)ExitBtn.MouseButton1Click:Connect(function()ShowExitConfirm(function()ESP_Enabled=false getgenv().BlueMode_ESP_Enabled=false getgenv().BlueMode_ESP_Unloading=true TPTool_Enabled=false pcall(BMH_ClearPatchVisuals) pcall(ClearAllESP) pcall(StopSound) pcall(function() if MasterSoundGroup then MasterSoundGroup:Stop() MasterSoundGroup:Destroy() end end) pcall(function() for _,obj in ipairs(workspace:GetDescendants()) do if obj:IsA("Highlight") and (obj.Name=="BMH_MM2_RoleFill" or obj.Name=="BMH_MM2_NPCFill" or obj.Name=="BMH_MM2_GunFill" or obj.Name=="BLUE_Outline") then obj:Destroy() end if obj:IsA("BillboardGui") and (obj.Name=="FriendRainbowDot" or obj.Name=="BlueOwnerDot" or obj.Name=="GreenMemberDot" or obj.Name=="RedMemberDot" or obj.Name=="PurpleMemberDot") then obj:Destroy() end end end) pcall(function() for _,ui in ipairs(GuiContainer:GetChildren()) do ui:Destroy() end end) if CurrentBoomboxUI then pcall(function() CurrentBoomboxUI:Destroy() end) end if CurrentConsoleUI then pcall(function() CurrentConsoleUI:Destroy() end) end if GhostUI then pcall(function() GhostUI:Destroy() end) end if CurrentMovementUI then pcall(function() CurrentMovementUI:Destroy() end) end if CurrentPlayerListUI then pcall(function() CurrentPlayerListUI:Destroy() end) CurrentPlayerListUI=nil end pcall(function() MainUI:Destroy() end) pcall(function() GuiContainer:Destroy() end) getgenv().BlueMode_Loaded=nil end)end)SetupDeathCheck()Players.PlayerRemoving:Connect(ClearAllESP)task.spawn(function()while task.wait(1)do if FPSLabel then FPSLabel.Text="FPS: "..FPSCounter end FPSCounter=0 end end)RunService.RenderStepped:Connect(function()FPSCounter+=1 end)RunService.Heartbeat:Connect(function(Delta)Hue=(Hue+Delta*0.5)%1 BlueAnimTime=(BlueAnimTime+Delta*0.8)%1 GreenAnimTime=(GreenAnimTime+Delta*0.8)%1 RedAnimTime=(RedAnimTime+Delta*0.8)%1 PurpleAnimTime=(PurpleAnimTime+Delta*0.8)%1 local Rainbow=Color3.fromHSV(Hue,1,1)local DarkBlue=Color3.fromRGB(0,30,120)local LightBlue=Color3.fromRGB(80,190,255)local BlueOwnerColor=DarkBlue:Lerp(LightBlue,math.abs(math.sin(BlueAnimTime*math.pi)))local DarkGreen=Color3.fromRGB(0,100,30)local LightGreen=Color3.fromRGB(80,255,120)local GreenMemberColor=DarkGreen:Lerp(LightGreen,math.abs(math.sin(GreenAnimTime*math.pi)))local DarkRed=Color3.fromRGB(120,20,20)local LightRed=Color3.fromRGB(255,80,80)local RedMemberColor=DarkRed:Lerp(LightRed,math.abs(math.sin(RedAnimTime*math.pi)))local DarkPurple=Color3.fromRGB(80,0,120)local LightPurple=Color3.fromRGB(180,80,255)local PurpleMemberColor=DarkPurple:Lerp(LightPurple,math.abs(math.sin(PurpleAnimTime*math.pi)))for _,e in ipairs(GuiElements)do e.Color=Rainbow end if VolFillMain then VolFillMain.BackgroundColor3=Rainbow end if VolFillMenu then VolFillMenu.BackgroundColor3=Rainbow end if PingLabel then PingLabel.Text="PING: "..GetClientPing().."ms"end if ServerPingLabel then ServerPingLabel.Text="SP: "..GetServerPing().."ms"end if not ESP_Enabled then return end for _,P in ipairs(Players:GetPlayers())do if P==LocalPlayer then continue end local Char=P.Character if not Char then continue end local Hum=Char:FindFirstChild("Humanoid")if not Hum or Hum.Health<=0 then pcall(function()if Char:FindFirstChild("BLUE_Outline")then Char.BLUE_Outline:Destroy()end if Char:FindFirstChild("FriendRainbowDot")then Char.FriendRainbowDot:Destroy()end if Char:FindFirstChild("BlueOwnerDot")then Char.BlueOwnerDot:Destroy()end if Char:FindFirstChild("GreenMemberDot")then Char.GreenMemberDot:Destroy()end if Char:FindFirstChild("RedMemberDot")then Char.RedMemberDot:Destroy()end if Char:FindFirstChild("PurpleMemberDot")then Char.PurpleMemberDot:Destroy()end if Char.Head then for _,v in ipairs(Char.Head:GetChildren())do if v.Name=="FriendRainbowDot"or v.Name=="BlueOwnerDot"or v.Name=="GreenMemberDot"or v.Name=="RedMemberDot"or v.Name=="PurpleMemberDot"then v:Destroy()end end end end)continue end local Outline=Char:FindFirstChild("BLUE_Outline")local RoleFill=Char:FindFirstChild("BMH_MM2_RoleFill")if RoleFill then if Outline then Outline:Destroy()end else if not Outline then Outline=Instance.new("Highlight")Outline.Name="BLUE_Outline"Outline.FillTransparency=0.6 Outline.OutlineTransparency=0 Outline.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop Outline.Adornee=Char Outline.Parent=Char end Outline.FillColor=Rainbow Outline.OutlineColor=Rainbow end local IsFriend=IsPlayerFriend(P)local IsOwner=(P.UserId==OWNER_USERID or P.UserId==5698490031)local IsBmaivs=(P.UserId==BMAIVS_USERID)local IsValentina=(P.UserId==VALENTINA_USERID)local IsFiona=(P.UserId==FIONA_USERID)local FriendDot=Char:FindFirstChild("FriendRainbowDot")local OwnerDot=Char:FindFirstChild("BlueOwnerDot")local GreenDot=Char:FindFirstChild("GreenMemberDot")local RedDot=Char:FindFirstChild("RedMemberDot")local PurpleDot=Char:FindFirstChild("PurpleMemberDot")if Char.Head then for _,v in ipairs(Char.Head:GetChildren())do if v.Name=="FriendRainbowDot"then FriendDot=v end if v.Name=="BlueOwnerDot"then OwnerDot=v end if v.Name=="GreenMemberDot"then GreenDot=v end if v.Name=="RedMemberDot"then RedDot=v end if v.Name=="PurpleMemberDot"then PurpleDot=v end end end if IsOwner then if GreenDot then GreenDot:Destroy()end if RedDot then RedDot:Destroy()end if PurpleDot then PurpleDot:Destroy()end if not OwnerDot then OwnerDot=Instance.new("BillboardGui")OwnerDot.Name="BlueOwnerDot"OwnerDot.Size=UDim2.new(0,15,0,15)OwnerDot.StudsOffset=Vector3.new(-1.5,3,0)OwnerDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=BlueOwnerColor Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=OwnerDot OwnerDot.Parent=Char.Head else OwnerDot.Frame.BackgroundColor3=BlueOwnerColor end if IsFriend then if not FriendDot then FriendDot=Instance.new("BillboardGui")FriendDot.Name="FriendRainbowDot"FriendDot.Size=UDim2.new(0,15,0,15)FriendDot.StudsOffset=Vector3.new(1.5,3,0)FriendDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=Rainbow Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=FriendDot FriendDot.Parent=Char.Head else FriendDot.Frame.BackgroundColor3=Rainbow end else if FriendDot then FriendDot:Destroy()end end elseif IsBmaivs then if OwnerDot then OwnerDot:Destroy()end if RedDot then RedDot:Destroy()end if PurpleDot then PurpleDot:Destroy()end if not GreenDot then GreenDot=Instance.new("BillboardGui")GreenDot.Name="GreenMemberDot"GreenDot.Size=UDim2.new(0,15,0,15)GreenDot.StudsOffset=Vector3.new(-1.5,3,0)GreenDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=GreenMemberColor Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=GreenDot GreenDot.Parent=Char.Head else GreenDot.Frame.BackgroundColor3=GreenMemberColor end if IsFriend then if not FriendDot then FriendDot=Instance.new("BillboardGui")FriendDot.Name="FriendRainbowDot"FriendDot.Size=UDim2.new(0,15,0,15)FriendDot.StudsOffset=Vector3.new(1.5,3,0)FriendDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=Rainbow Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=FriendDot FriendDot.Parent=Char.Head else FriendDot.Frame.BackgroundColor3=Rainbow end else if FriendDot then FriendDot:Destroy()end end elseif IsValentina then if OwnerDot then OwnerDot:Destroy()end if GreenDot then GreenDot:Destroy()end if PurpleDot then PurpleDot:Destroy()end if not RedDot then RedDot=Instance.new("BillboardGui")RedDot.Name="RedMemberDot"RedDot.Size=UDim2.new(0,15,0,15)RedDot.StudsOffset=Vector3.new(-1.5,3,0)RedDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=RedMemberColor Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=RedDot RedDot.Parent=Char.Head else RedDot.Frame.BackgroundColor3=RedMemberColor end if IsFriend then if not FriendDot then FriendDot=Instance.new("BillboardGui")FriendDot.Name="FriendRainbowDot"FriendDot.Size=UDim2.new(0,15,0,15)FriendDot.StudsOffset=Vector3.new(1.5,3,0)FriendDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=Rainbow Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=FriendDot FriendDot.Parent=Char.Head else FriendDot.Frame.BackgroundColor3=Rainbow end else if FriendDot then FriendDot:Destroy()end end elseif IsFiona then if OwnerDot then OwnerDot:Destroy()end if GreenDot then GreenDot:Destroy()end if RedDot then RedDot:Destroy()end if not PurpleDot then PurpleDot=Instance.new("BillboardGui")PurpleDot.Name="PurpleMemberDot"PurpleDot.Size=UDim2.new(0,15,0,15)PurpleDot.StudsOffset=Vector3.new(-1.5,3,0)PurpleDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=PurpleMemberColor Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=PurpleDot PurpleDot.Parent=Char.Head else PurpleDot.Frame.BackgroundColor3=PurpleMemberColor end if IsFriend then if not FriendDot then FriendDot=Instance.new("BillboardGui")FriendDot.Name="FriendRainbowDot"FriendDot.Size=UDim2.new(0,15,0,15)FriendDot.StudsOffset=Vector3.new(1.5,3,0)FriendDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=Rainbow Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=FriendDot FriendDot.Parent=Char.Head else FriendDot.Frame.BackgroundColor3=Rainbow end else if FriendDot then FriendDot:Destroy()end end elseif IsFriend then if OwnerDot then OwnerDot:Destroy()end if GreenDot then GreenDot:Destroy()end if RedDot then RedDot:Destroy()end if PurpleDot then PurpleDot:Destroy()end if not FriendDot then FriendDot=Instance.new("BillboardGui")FriendDot.Name="FriendRainbowDot"FriendDot.Size=UDim2.new(0,15,0,15)FriendDot.StudsOffset=Vector3.new(1.5,3,0)FriendDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=Rainbow Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=FriendDot FriendDot.Parent=Char.Head else FriendDot.Frame.BackgroundColor3=Rainbow end else if FriendDot then FriendDot:Destroy()end if OwnerDot then OwnerDot:Destroy()end if GreenDot then GreenDot:Destroy()end if RedDot then RedDot:Destroy()end if PurpleDot then PurpleDot:Destroy()end end end end)end
+end) TPToolBtn.MouseButton1Click:Connect(function()TPTool_Enabled=not TPTool_Enabled if TPTool_Enabled then TPToolBtn.Text="TP: ON"TPToolBtn.BackgroundColor3=Color3.fromRGB(25,120,25)else TPToolBtn.Text="TP: OFF"TPToolBtn.BackgroundColor3=Color3.fromRGB(40,40,40)end end)UserInputService.InputBegan:Connect(function(input,gameProcessed)if not TPTool_Enabled or gameProcessed then return end if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then local myRoot=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")if not myRoot then return end local Mouse=LocalPlayer:GetMouse()if Mouse.Target and Mouse.Target:IsDescendantOf(GuiContainer)then return end if Mouse.Hit then local pos=Vector3.new(Mouse.Hit.X,Mouse.Hit.Y+2.5,Mouse.Hit.Z)myRoot.CFrame=CFrame.new(pos)end end end)local SliderActiveMain=false VolBGMain.InputBegan:Connect(function(i)if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then SliderActiveMain=true end end)UserInputService.InputEnded:Connect(function(i)if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then SliderActiveMain=false end end)UserInputService.InputChanged:Connect(function(i)if SliderActiveMain and(i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch)then local rel=math.clamp((i.Position.X-VolBGMain.AbsolutePosition.X)/VolBGMain.AbsoluteSize.X,0,1)UpdateVolume(math.floor(rel*VOLUME_MAX))end end)local DragState={Active=false,StartX=0,StartY=0,PosX=0,PosY=0}DragHandle.InputBegan:Connect(function(Input)GuiFocused=true if Buttons_Locked then return end if Input.UserInputType==Enum.UserInputType.MouseButton1 or Input.UserInputType==Enum.UserInputType.Touch then DragState.Active=true DragState.StartX=Input.Position.X DragState.StartY=Input.Position.Y DragState.PosX=MainFrame.Position.X.Offset DragState.PosY=MainFrame.Position.Y.Offset end end)UserInputService.InputEnded:Connect(function(Input)if Input.UserInputType==Enum.UserInputType.MouseButton1 or Input.UserInputType==Enum.UserInputType.Touch then DragState.Active=false task.delay(0.2,function()GuiFocused=false end)end end)UserInputService.InputChanged:Connect(function(Input)if DragState.Active and not Buttons_Locked then MainFrame.Position=UDim2.new(0,DragState.PosX+(Input.Position.X-DragState.StartX),0,DragState.PosY+(Input.Position.Y-DragState.StartY))end end)LockBtn.MouseButton1Click:Connect(function()Buttons_Locked=not Buttons_Locked LockBtn.Text=Buttons_Locked and"🔒 LOCKED"or"🔓 UNLOCK"LockBtn.BackgroundColor3=Buttons_Locked and Color3.fromRGB(180,40,40)or Color3.fromRGB(50,50,50)end)MinBtn.MouseButton1Click:Connect(function()IsMinimized=not IsMinimized GhostIcon.Visible=not IsMinimized if IsMinimized then MainFrame.Size=MINI_SIZE ESPBtn.Visible=false TPToolBtn.Visible=false YouTubeBtn.Visible=false MoveBtn.Visible=false CustomRedBtn.Visible=false MusicBtn.Visible=false LockBtn.Visible=false ConsoleBtn.Visible=false ExitBtn.Visible=false AntiFlingBtn.Visible=false TPGunMM2Btn.Visible=false TPTOMurdMM2Btn.Visible=false TPTOSheriffMM2Btn.Visible=false VolLabelMain.Visible=false VolNumTextMain.Visible=false VolBGMain.Visible=false StatsBG.Visible=false DragHandle.Text="BLUE MODE"MinBtn.Text="➕"else MainFrame.Size=FULL_SIZE ESPBtn.Visible=true TPToolBtn.Visible=true YouTubeBtn.Visible=true MoveBtn.Visible=true CustomRedBtn.Visible=true MusicBtn.Visible=true LockBtn.Visible=true ConsoleBtn.Visible=true ExitBtn.Visible=true AntiFlingBtn.Visible=true TPGunMM2Btn.Visible=true TPTOMurdMM2Btn.Visible=true TPTOSheriffMM2Btn.Visible=true VolLabelMain.Visible=true VolNumTextMain.Visible=true VolBGMain.Visible=true StatsBG.Visible=true DragHandle.Text="🔵 BLUE MODE HUB | DRAG ME"MinBtn.Text="➖"end end)ESPBtn.MouseButton1Click:Connect(function()ESP_Enabled=not ESP_Enabled getgenv().BlueMode_ESP_Enabled=ESP_Enabled ESPBtn.Text=ESP_Enabled and"ESP: ON"or"ESP: OFF"ESPBtn.BackgroundColor3=ESP_Enabled and Color3.fromRGB(25,120,25)or Color3.fromRGB(40,40,40)ClearAllESP()end)YouTubeBtn.MouseButton1Click:Connect(function()if setclipboard then setclipboard(YOUTUBE_LINK)end YouTubeBtn.Text="✅ COPIED!"task.wait(1.5)YouTubeBtn.Text="Blue Mode Hub"end)MoveBtn.MouseButton1Click:Connect(ToggleMovementMenu)MusicBtn.MouseButton1Click:Connect(ToggleBoomboxMenu)ConsoleBtn.MouseButton1Click:Connect(ToggleConsole)ExitBtn.MouseButton1Click:Connect(function()ShowExitConfirm(function()ESP_Enabled=false getgenv().BlueMode_ESP_Enabled=false getgenv().BlueMode_ESP_Unloading=true TPTool_Enabled=false pcall(BMH_ClearPatchVisuals) pcall(ClearAllESP) pcall(StopSound) pcall(function() if MasterSoundGroup then MasterSoundGroup:Stop() MasterSoundGroup:Destroy() end end) pcall(function() for _,obj in ipairs(workspace:GetDescendants()) do if obj:IsA("Highlight") and (obj.Name=="BMH_MM2_RoleFill" or obj.Name=="BMH_MM2_NPCFill" or obj.Name=="BMH_MM2_GunFill" or obj.Name=="BLUE_Outline") then obj:Destroy() end if obj:IsA("BillboardGui") and (obj.Name=="FriendRainbowDot" or obj.Name=="BlueOwnerDot" or obj.Name=="GreenMemberDot" or obj.Name=="RedMemberDot" or obj.Name=="PurpleMemberDot") then obj:Destroy() end end end) pcall(function() for _,ui in ipairs(GuiContainer:GetChildren()) do ui:Destroy() end end) if CurrentBoomboxUI then pcall(function() CurrentBoomboxUI:Destroy() end) end if CurrentConsoleUI then pcall(function() CurrentConsoleUI:Destroy() end) end if GhostUI then pcall(function() GhostUI:Destroy() end) end if CurrentMovementUI then pcall(function() CurrentMovementUI:Destroy() end) end if CurrentPlayerListUI then pcall(function() CurrentPlayerListUI:Destroy() end) CurrentPlayerListUI=nil end pcall(function() MainUI:Destroy() end) pcall(function() GuiContainer:Destroy() end) getgenv().BlueMode_Loaded=nil end)end)SetupDeathCheck()Players.PlayerRemoving:Connect(ClearAllESP)task.spawn(function()while task.wait(1)do if FPSLabel then FPSLabel.Text="FPS: "..FPSCounter end FPSCounter=0 end end)RunService.RenderStepped:Connect(function()FPSCounter+=1 end)local _BMH_LastStatsUpdate=0 local _BMH_LastESPUpdate=0 RunService.Heartbeat:Connect(function(Delta)Hue=(Hue+Delta*0.5)%1 BlueAnimTime=(BlueAnimTime+Delta*0.8)%1 GreenAnimTime=(GreenAnimTime+Delta*0.8)%1 RedAnimTime=(RedAnimTime+Delta*0.8)%1 PurpleAnimTime=(PurpleAnimTime+Delta*0.8)%1 local Rainbow=Color3.fromHSV(Hue,1,1)local DarkBlue=Color3.fromRGB(0,30,120)local LightBlue=Color3.fromRGB(80,190,255)local BlueOwnerColor=DarkBlue:Lerp(LightBlue,math.abs(math.sin(BlueAnimTime*math.pi)))local DarkGreen=Color3.fromRGB(0,100,30)local LightGreen=Color3.fromRGB(80,255,120)local GreenMemberColor=DarkGreen:Lerp(LightGreen,math.abs(math.sin(GreenAnimTime*math.pi)))local DarkRed=Color3.fromRGB(120,20,20)local LightRed=Color3.fromRGB(255,80,80)local RedMemberColor=DarkRed:Lerp(LightRed,math.abs(math.sin(RedAnimTime*math.pi)))local DarkPurple=Color3.fromRGB(80,0,120)local LightPurple=Color3.fromRGB(180,80,255)local PurpleMemberColor=DarkPurple:Lerp(LightPurple,math.abs(math.sin(PurpleAnimTime*math.pi)))for _,e in ipairs(GuiElements)do e.Color=Rainbow end if VolFillMain then VolFillMain.BackgroundColor3=Rainbow end if VolFillMenu then VolFillMenu.BackgroundColor3=Rainbow end local _bmhNow=os.clock() if _bmhNow-_BMH_LastStatsUpdate>=1 then _BMH_LastStatsUpdate=_bmhNow if PingLabel then PingLabel.Text="PING: "..GetClientPing().."ms"end if ServerPingLabel then ServerPingLabel.Text="SP: "..GetServerPing().."ms"end end if not ESP_Enabled then return end if _bmhNow-_BMH_LastESPUpdate<0.2 then return end _BMH_LastESPUpdate=_bmhNow for _,P in ipairs(Players:GetPlayers())do if P==LocalPlayer then continue end local Char=P.Character if not Char then continue end local Hum=Char:FindFirstChild("Humanoid")if not Hum or Hum.Health<=0 then pcall(function()if Char:FindFirstChild("BLUE_Outline")then Char.BLUE_Outline:Destroy()end if Char:FindFirstChild("FriendRainbowDot")then Char.FriendRainbowDot:Destroy()end if Char:FindFirstChild("BlueOwnerDot")then Char.BlueOwnerDot:Destroy()end if Char:FindFirstChild("GreenMemberDot")then Char.GreenMemberDot:Destroy()end if Char:FindFirstChild("RedMemberDot")then Char.RedMemberDot:Destroy()end if Char:FindFirstChild("PurpleMemberDot")then Char.PurpleMemberDot:Destroy()end if Char.Head then for _,v in ipairs(Char.Head:GetChildren())do if v.Name=="FriendRainbowDot"or v.Name=="BlueOwnerDot"or v.Name=="GreenMemberDot"or v.Name=="RedMemberDot"or v.Name=="PurpleMemberDot"then v:Destroy()end end end end)continue end local Outline=Char:FindFirstChild("BLUE_Outline")local RoleFill=Char:FindFirstChild("BMH_MM2_RoleFill")if RoleFill then if Outline then Outline:Destroy()end else if not Outline then Outline=Instance.new("Highlight")Outline.Name="BLUE_Outline"Outline.FillTransparency=0.6 Outline.OutlineTransparency=0 Outline.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop Outline.Adornee=Char Outline.Parent=Char end Outline.FillColor=Rainbow Outline.OutlineColor=Rainbow end local IsFriend=IsPlayerFriend(P)local IsOwner=(P.UserId==OWNER_USERID or P.UserId==5698490031)local IsBmaivs=(P.UserId==BMAIVS_USERID)local IsValentina=(P.UserId==VALENTINA_USERID)local IsFiona=(P.UserId==FIONA_USERID)local FriendDot=Char:FindFirstChild("FriendRainbowDot")local OwnerDot=Char:FindFirstChild("BlueOwnerDot")local GreenDot=Char:FindFirstChild("GreenMemberDot")local RedDot=Char:FindFirstChild("RedMemberDot")local PurpleDot=Char:FindFirstChild("PurpleMemberDot")if Char.Head then for _,v in ipairs(Char.Head:GetChildren())do if v.Name=="FriendRainbowDot"then FriendDot=v end if v.Name=="BlueOwnerDot"then OwnerDot=v end if v.Name=="GreenMemberDot"then GreenDot=v end if v.Name=="RedMemberDot"then RedDot=v end if v.Name=="PurpleMemberDot"then PurpleDot=v end end end if IsOwner then if GreenDot then GreenDot:Destroy()end if RedDot then RedDot:Destroy()end if PurpleDot then PurpleDot:Destroy()end if not OwnerDot then OwnerDot=Instance.new("BillboardGui")OwnerDot.Name="BlueOwnerDot"OwnerDot.Size=UDim2.new(0,15,0,15)OwnerDot.StudsOffset=Vector3.new(-1.5,3,0)OwnerDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=BlueOwnerColor Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=OwnerDot OwnerDot.Parent=Char.Head else OwnerDot.Frame.BackgroundColor3=BlueOwnerColor end if IsFriend then if not FriendDot then FriendDot=Instance.new("BillboardGui")FriendDot.Name="FriendRainbowDot"FriendDot.Size=UDim2.new(0,15,0,15)FriendDot.StudsOffset=Vector3.new(1.5,3,0)FriendDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=Rainbow Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=FriendDot FriendDot.Parent=Char.Head else FriendDot.Frame.BackgroundColor3=Rainbow end else if FriendDot then FriendDot:Destroy()end end elseif IsBmaivs then if OwnerDot then OwnerDot:Destroy()end if RedDot then RedDot:Destroy()end if PurpleDot then PurpleDot:Destroy()end if not GreenDot then GreenDot=Instance.new("BillboardGui")GreenDot.Name="GreenMemberDot"GreenDot.Size=UDim2.new(0,15,0,15)GreenDot.StudsOffset=Vector3.new(-1.5,3,0)GreenDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=GreenMemberColor Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=GreenDot GreenDot.Parent=Char.Head else GreenDot.Frame.BackgroundColor3=GreenMemberColor end if IsFriend then if not FriendDot then FriendDot=Instance.new("BillboardGui")FriendDot.Name="FriendRainbowDot"FriendDot.Size=UDim2.new(0,15,0,15)FriendDot.StudsOffset=Vector3.new(1.5,3,0)FriendDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=Rainbow Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=FriendDot FriendDot.Parent=Char.Head else FriendDot.Frame.BackgroundColor3=Rainbow end else if FriendDot then FriendDot:Destroy()end end elseif IsValentina then if OwnerDot then OwnerDot:Destroy()end if GreenDot then GreenDot:Destroy()end if PurpleDot then PurpleDot:Destroy()end if not RedDot then RedDot=Instance.new("BillboardGui")RedDot.Name="RedMemberDot"RedDot.Size=UDim2.new(0,15,0,15)RedDot.StudsOffset=Vector3.new(-1.5,3,0)RedDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=RedMemberColor Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=RedDot RedDot.Parent=Char.Head else RedDot.Frame.BackgroundColor3=RedMemberColor end if IsFriend then if not FriendDot then FriendDot=Instance.new("BillboardGui")FriendDot.Name="FriendRainbowDot"FriendDot.Size=UDim2.new(0,15,0,15)FriendDot.StudsOffset=Vector3.new(1.5,3,0)FriendDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=Rainbow Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=FriendDot FriendDot.Parent=Char.Head else FriendDot.Frame.BackgroundColor3=Rainbow end else if FriendDot then FriendDot:Destroy()end end elseif IsFiona then if OwnerDot then OwnerDot:Destroy()end if GreenDot then GreenDot:Destroy()end if RedDot then RedDot:Destroy()end if not PurpleDot then PurpleDot=Instance.new("BillboardGui")PurpleDot.Name="PurpleMemberDot"PurpleDot.Size=UDim2.new(0,15,0,15)PurpleDot.StudsOffset=Vector3.new(-1.5,3,0)PurpleDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=PurpleMemberColor Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=PurpleDot PurpleDot.Parent=Char.Head else PurpleDot.Frame.BackgroundColor3=PurpleMemberColor end if IsFriend then if not FriendDot then FriendDot=Instance.new("BillboardGui")FriendDot.Name="FriendRainbowDot"FriendDot.Size=UDim2.new(0,15,0,15)FriendDot.StudsOffset=Vector3.new(1.5,3,0)FriendDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=Rainbow Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=FriendDot FriendDot.Parent=Char.Head else FriendDot.Frame.BackgroundColor3=Rainbow end else if FriendDot then FriendDot:Destroy()end end elseif IsFriend then if OwnerDot then OwnerDot:Destroy()end if GreenDot then GreenDot:Destroy()end if RedDot then RedDot:Destroy()end if PurpleDot then PurpleDot:Destroy()end if not FriendDot then FriendDot=Instance.new("BillboardGui")FriendDot.Name="FriendRainbowDot"FriendDot.Size=UDim2.new(0,15,0,15)FriendDot.StudsOffset=Vector3.new(1.5,3,0)FriendDot.AlwaysOnTop=true local Fr=Instance.new("Frame")Fr.Size=UDim2.new(1,0,1,0)Fr.BackgroundColor3=Rainbow Instance.new("UICorner",Fr).CornerRadius=UDim.new(1,0)Fr.Parent=FriendDot FriendDot.Parent=Char.Head else FriendDot.Frame.BackgroundColor3=Rainbow end else if FriendDot then FriendDot:Destroy()end if OwnerDot then OwnerDot:Destroy()end if GreenDot then GreenDot:Destroy()end if RedDot then RedDot:Destroy()end if PurpleDot then PurpleDot:Destroy()end end end end)end
 
 -- Supplemental MM2/NPC ESP updater (kept at script scope so it executes).
 -- Blue Mode Hub full-update patch: MM2-only role fills + grey NPC highlights.
@@ -3365,7 +3387,7 @@ Players.PlayerRemoving:Connect(function(plr) BMH_ROLE_CACHE[plr.UserId] = nil en
 GuiContainer.AncestryChanged:Connect(function(_, parent) if parent == nil then getgenv().BlueMode_ESP_Enabled=false getgenv().BlueMode_ESP_Unloading=true pcall(BMH_ClearPatchVisuals) end end)
 local BMH_PATCH_VISUALS_WERE_ENABLED = false
 task.spawn(function()
-    while task.wait(1) do
+    while task.wait(2) do
         if getgenv().BlueMode_ESP_Unloading then
             BMH_ClearPatchVisuals()
             break
