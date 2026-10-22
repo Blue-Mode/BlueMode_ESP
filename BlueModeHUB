@@ -1946,7 +1946,7 @@ local function CreateTelekinesisControls()
    local physicalStates=MakeAssemblyLight(assembly)
    nextOrbitPhase=nextOrbitPhase+math.rad(137.5)
    local orbitPhase=nextOrbitPhase
-   local orbitRadius=math.clamp(12+assembly.Size.Magnitude*0.35,12,18) -- Wide orbit with extra clearance so blocks do not sit inside the torso.
+   local orbitRadius=math.clamp(16+assembly.Size.Magnitude*0.25,32,42) -- Increase horizontal distance only; preserve the original orbit height.
    local pos=Instance.new("BodyPosition")
    pos.Name="BlueModeMagnetPosition"
    pos.MaxForce=Vector3.new(force,force,force)
@@ -1954,7 +1954,7 @@ local function CreateTelekinesisControls()
    pos.D=math.clamp(mass*650,12000,2e6)
    local currentChar=LocalPlayer.Character
    local currentRoot=currentChar and currentChar:FindFirstChild("HumanoidRootPart")
-   if currentRoot then pos.Position=currentRoot.Position+Vector3.new(5,3,0) end
+   if currentRoot then pos.Position=currentRoot.Position+Vector3.new(8,0.5,0) end
    pos.Parent=assembly
    local spin=Instance.new("BodyAngularVelocity")
    spin.Name="BlueModeMagnetSpin"
@@ -2066,8 +2066,8 @@ local function CreateTelekinesisControls()
      local orbitRoot=hrp
      local angle=elapsed*2.0+(movers.OrbitPhase or 0)
      local radius=movers.OrbitRadius or 14
-     -- Keep the orbit clearly outside the avatar, slightly above the root, in a stable horizontal circle.
-     local orbitHeight=3.5+math.sin(angle*0.55)*0.6
+     -- Keep the orbit around torso level, a little away from the avatar, in a stable horizontal circle.
+     local orbitHeight=0.5+math.sin(angle*0.55)*0.25
      movers[1].Position=orbitRoot.Position+Vector3.new(math.cos(angle)*radius,orbitHeight,math.sin(angle)*radius)
     end
    end
